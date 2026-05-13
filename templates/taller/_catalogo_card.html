@@ -1,0 +1,56 @@
+<article class="cat-card {% if it.destacado %}is-pop{% endif %}" data-item-id="{{ it.id }}">
+  {% if it.destacado %}
+  <span class="cat-pop-badge">⭐ Popular</span>
+  {% endif %}
+
+  <div class="cat-card-media">
+    {% if it.imagen %}
+    <img src="{{ it.imagen.url }}" alt="{{ it.nombre }}" loading="lazy">
+    {% else %}
+    <div class="cat-card-icon" aria-hidden="true">
+      {% if it.icono_lucide == 'droplet' %}🛢️
+      {% elif it.icono_lucide == 'gauge' %}📊
+      {% elif it.icono_lucide == 'disc' %}💿
+      {% elif it.icono_lucide == 'clipboard-check' %}📋
+      {% elif it.icono_lucide == 'cpu' %}🖥️
+      {% elif it.icono_lucide == 'battery' %}🔋
+      {% elif it.icono_lucide == 'wind' %}💨
+      {% elif it.icono_lucide == 'cog' %}⚙️
+      {% elif it.icono_lucide == 'truck' %}🚙
+      {% elif it.icono_lucide == 'sparkles' %}✨
+      {% elif it.icono_lucide == 'filter' %}🌬️
+      {% elif it.icono_lucide == 'circle-dot' %}🛞
+      {% else %}🔧{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="cat-card-body">
+    <h3 class="cat-card-name">{{ it.nombre }}</h3>
+    <p class="cat-card-desc">{{ it.descripcion|truncatechars:90 }}</p>
+
+    <div class="cat-card-meta">
+      {% if it.duracion_min %}
+      <span class="cat-meta-pill">⏱ {{ it.duracion_min }} min</span>
+      {% endif %}
+      <span class="cat-meta-pill">{{ it.get_categoria_display }}</span>
+      {% if it.marca_repuesto %}
+      <span class="cat-meta-pill cat-marca-{{ it.marca_repuesto }}">{{ it.get_marca_repuesto_display }}</span>
+      {% endif %}
+      {% if it.disponibilidad != 'en_stock' %}
+      <span class="cat-meta-pill cat-disp-{{ it.disponibilidad }}">{{ it.get_disponibilidad_display }}</span>
+      {% endif %}
+    </div>
+
+    <div class="cat-card-foot">
+      {% if it.precio_referencia_clp %}
+      <div class="cat-precio">Desde <strong>${{ it.precio_referencia_clp|stringformat:"d" }}</strong></div>
+      {% else %}
+      <div class="cat-precio cat-precio-cons">Cotizar</div>
+      {% endif %}
+      <button type="button" class="cat-add-btn" data-add-id="{{ it.id }}" aria-label="Agregar {{ it.nombre }}">
+        +
+      </button>
+    </div>
+  </div>
+</article>

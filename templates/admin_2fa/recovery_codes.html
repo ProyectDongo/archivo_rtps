@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Recovery codes admin — Pietramonte</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;
+         background:#f5f5f5;color:#1a1a1a}
+    .wrap{max-width:560px;margin:32px auto;padding:0 20px}
+    .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:28px;
+          box-shadow:0 4px 16px rgba(0,0,0,.05)}
+    .logo{font-weight:700;font-size:14px;letter-spacing:1px;color:#C80C0F;margin-bottom:6px}
+    h1{margin:0 0 6px;font-size:22px}
+    .warn{background:#fff3cd;border:1px solid #ffe69c;color:#664d03;
+          padding:12px 14px;border-radius:8px;font-size:14px;margin:16px 0}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
+    .grid code{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:16px;
+               background:#f5f5f5;padding:10px 12px;border-radius:6px;
+               border:1px solid #e0e0e0;text-align:center;letter-spacing:1px}
+    .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    .actions button,.actions a{
+      flex:1;min-width:140px;padding:11px 14px;border:1px solid #C80C0F;background:#fff;color:#C80C0F;
+      border-radius:8px;text-align:center;text-decoration:none;cursor:pointer;font-weight:600;
+      font-family:inherit;font-size:14px
+    }
+    .actions a:hover,.actions button:hover{background:#fdecec}
+    .primary-confirm{width:100%;padding:13px;background:#C80C0F;color:#fff;border:none;
+                     border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;
+                     font-family:inherit}
+    .primary-confirm:hover{background:#a30a0c}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="logo">PIETRAMONTE · ADMIN</div>
+    <h1>Tus 8 códigos de recuperación</h1>
+    <p style="color:#666;margin:6px 0 0">Cada uno funciona <strong>una sola vez</strong>.</p>
+
+    <div class="warn">
+      <strong>Esta es la única vez que se muestran.</strong> Imprimílos, copiálos a un gestor de contraseñas, o anotálos en un papel y guardalo en lugar seguro.
+    </div>
+
+    <div class="grid" id="codes-grid">
+      {% for c in codes %}<code>{{ c }}</code>{% endfor %}
+    </div>
+
+    <div class="actions">
+      <button type="button" id="btn-copiar">Copiar todos</button>
+      <a href="{% url 'admin_2fa_recovery_pdf' %}">Descargar PDF</a>
+      <button type="button" id="btn-imprimir">Imprimir</button>
+    </div>
+    <form method="post" action="{% url 'admin_2fa_recovery_confirmar' %}" style="margin-top:10px">
+      {% csrf_token %}
+      <button type="submit" class="primary-confirm">Listo, los guardé</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  var grid = document.getElementById('codes-grid');
+  var btnC = document.getElementById('btn-copiar');
+  var btnP = document.getElementById('btn-imprimir');
+  function todos(){
+    return Array.prototype.slice.call(grid.querySelectorAll('code'))
+      .map(function(c){return c.textContent.trim();}).join('\n');
+  }
+  btnC && btnC.addEventListener('click', function(){
+    var t = todos();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function(){
+        btnC.textContent = '✓ Copiado'; setTimeout(function(){btnC.textContent='Copiar todos';},1800);
+      });
+    }
+  });
+  btnP && btnP.addEventListener('click', function(){ window.print(); });
+})();
+</script>
+</body>
+</html>

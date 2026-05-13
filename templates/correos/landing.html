@@ -1,0 +1,278 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Pietramonte Automotriz — Taller en Copiapó{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+<link rel="preload" as="image" href="{% static 'img/bg/hero.jpg' %}">
+{% endblock %}
+
+{% block body %}
+
+<div class="tb">
+  <span class="tb-txt">Taller Automotriz · Copiapó, Atacama · +569 9876 1234</span>
+  <div class="tb-meta">
+    <span>Lun–Sáb</span>
+    <span>09:30 – 16:30</span>
+  </div>
+</div>
+
+<nav>
+  <a href="#" aria-label="Inicio">
+    <img class="nav-logo" src="{% static 'img/logo.jpg' %}" alt="Pietramonte Automotriz">
+  </a>
+  <div class="nav-links">
+    <a class="nl" href="#servicios">Servicios</a>
+    <a class="nl" href="#nosotros">Nosotros</a>
+    <a class="nl" href="#horario">Horario</a>
+    <a class="nl" href="#contacto">Contacto</a>
+
+    <a class="nav-portal" href="{% url 'login' %}" rel="nofollow noindex"
+       data-tip="Acceso interno" aria-label="Acceso interno">
+      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </a>
+
+    <a class="nav-cta" href="{% url 'agendar' %}">Agendar online</a>
+  </div>
+  <button class="ham" id="ham-btn" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mob-menu" id="mob-menu">
+  <a class="nl-m" href="#servicios">Servicios</a>
+  <a class="nl-m" href="#nosotros">Nosotros</a>
+  <a class="nl-m" href="#horario">Horario</a>
+  <a class="nl-m" href="#contacto">Contacto</a>
+  <a class="nl-m portal-m" href="{% url 'login' %}" rel="nofollow noindex">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    Acceso interno
+  </a>
+</div>
+
+<section class="hero">
+  <div class="hero-l">
+    <div class="h-kicker fx-zoom">
+      <span class="h-kicker-dot"></span>
+      <span class="h-kicker-t">Taller automotriz · Copiapó</span>
+    </div>
+    <div class="h-rule rv d1"></div>
+    <h1 class="hero-h1 fx-blur d1">Tu vehículo<br>en las <span class="acc">mejores</span><br>manos</h1>
+    <p class="hero-sub rv d3">Servicio técnico integral con más de 10 años en la Región de Atacama. Diagnóstico computarizado, mecánica general y repuestos con garantía.</p>
+    <div class="hero-btns rv d4">
+      <a class="btn-p" href="{% url 'agendar' %}">Agendar online →</a>
+      <button type="button" class="btn-g" data-scroll-to="servicios">Ver servicios</button>
+    </div>
+  </div>
+  <div class="hero-r fx-zoom d2">
+    <div class="hero-frame">
+      <img class="hero-insig" src="{% static 'img/insignia.jpg' %}" alt="Insignia Pietramonte">
+    </div>
+    <div class="hero-metrics rv d3">
+      <div class="hm"><div class="hm-n">+10</div><div class="hm-l">Años</div></div>
+      <div class="hm"><div class="hm-n">+500</div><div class="hm-l">Clientes</div></div>
+      <div class="hm"><div class="hm-n">6</div><div class="hm-l">Días/sem</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="banner-agendar">
+  <div class="banner-inner">
+    <div class="banner-text">
+      <div class="banner-kicker">📅 Reservá tu cita en 1 minuto · sin llamar</div>
+      <h2 class="banner-h">Agendá tu hora <em>aquí</em></h2>
+      <p class="banner-sub">Elegí el servicio o repuesto, picá día y hora, y te confirmamos por email + llamada. Disponible 24/7.</p>
+    </div>
+    <a class="banner-cta" href="{% url 'agendar' %}">
+      Agendar online
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true">
+  <div class="tk-track">
+    <div class="ti"><span class="ti-dot"></span>Mecánica general</div>
+    <div class="ti"><span class="ti-dot"></span>Diagnóstico computarizado</div>
+    <div class="ti"><span class="ti-dot"></span>Car Wash</div>
+    <div class="ti"><span class="ti-dot"></span>Neumáticos y frenos</div>
+    <div class="ti"><span class="ti-dot"></span>Aire acondicionado</div>
+    <div class="ti"><span class="ti-dot"></span>Repuestos originales</div>
+    <div class="ti"><span class="ti-dot"></span>Mecánica general</div>
+    <div class="ti"><span class="ti-dot"></span>Diagnóstico computarizado</div>
+    <div class="ti"><span class="ti-dot"></span>Car Wash</div>
+    <div class="ti"><span class="ti-dot"></span>Neumáticos y frenos</div>
+    <div class="ti"><span class="ti-dot"></span>Aire acondicionado</div>
+    <div class="ti"><span class="ti-dot"></span>Repuestos originales</div>
+  </div>
+</div>
+
+<section class="sec bg-servicios" id="servicios">
+  <div class="sec-tag rv"><div class="sec-bar"></div><span class="sec-tag-t">¿Qué hacemos?</span></div>
+  <h2 class="sec-h2 fx-blur d1">Nuestros <em>servicios</em></h2>
+  <div class="sv-grid">
+    <div class="sv fx-zoom d1">
+      <div class="sv-num">01</div>
+      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <div class="sv-name">Mecánica general</div>
+      <p class="sv-desc">Revisión, diagnóstico y reparación integral con personal técnico certificado.</p>
+      <ul class="sv-list">
+        <li>Cambio de aceite y filtros</li>
+        <li>Sistema de frenos completo</li>
+        <li>Motor y transmisión</li>
+        <li>Suspensión y tren delantero</li>
+      </ul>
+    </div>
+    <div class="sv fx-zoom d2">
+      <div class="sv-num">02</div>
+      <svg class="sv-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <div class="sv-name">Diagnóstico computarizado</div>
+      <p class="sv-desc">Detección electrónica de fallas con equipamiento de última generación.</p>
+      <ul class="sv-list">
+        <li>Scanner OBD profesional</li>
+        <li>Lectura de códigos de falla</li>
+        <li>Calibración de sensores</li>
+        <li>Revisión eléctrica completa</li>
+      </ul>
+    </div>
+    <div class="sv fx-zoom d3">
+      <div class="sv-num">03</div>
+      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div class="sv-name">Car Wash</div>
+      <p class="sv-desc">Lavado y detallado profesional para devolver el brillo original a tu vehículo.</p>
+      <ul class="sv-list">
+        <li>Lavado exterior completo</li>
+        <li>Limpieza interior profunda</li>
+        <li>Pulido y encerado</li>
+        <li>Tratamiento de pintura</li>
+      </ul>
+    </div>
+    <div class="sv fx-zoom d1">
+      <div class="sv-num">04</div>
+      <svg class="sv-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      <div class="sv-name">Neumáticos y frenos</div>
+      <p class="sv-desc">Venta, instalación y balanceo. Reparación completa del sistema de frenos.</p>
+      <ul class="sv-list">
+        <li>Todas las marcas</li>
+        <li>Alineación y balanceo</li>
+        <li>Cambio pastillas y discos</li>
+        <li>Revisión líquido de frenos</li>
+      </ul>
+    </div>
+    <div class="sv fx-zoom d2">
+      <div class="sv-num">05</div>
+      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/></svg>
+      <div class="sv-name">Aire acondicionado</div>
+      <p class="sv-desc">Mantención, carga y reparación del sistema de climatización.</p>
+      <ul class="sv-list">
+        <li>Carga de gas refrigerante</li>
+        <li>Limpieza de evaporador</li>
+        <li>Cambio de compresor</li>
+        <li>Sellado de fugas</li>
+      </ul>
+    </div>
+    <div class="sv fx-zoom d3">
+      <div class="sv-num">06</div>
+      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <div class="sv-name">Repuestos y accesorios</div>
+      <p class="sv-desc">Repuestos originales y alternativos de calidad para todas las marcas.</p>
+      <ul class="sv-list">
+        <li>Filtros, correas y bujías</li>
+        <li>Repuestos OEM garantizados</li>
+        <li>Aceites y lubricantes</li>
+        <li>Accesorios y equipamiento</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec bg-nosotros" id="nosotros">
+  <div class="nos-grid">
+    <div class="nos-img-box rvl">
+      <img class="nos-img" src="{% static 'img/insignia.jpg' %}" alt="Insignia Pietramonte">
+    </div>
+    <div class="rvr">
+      <div class="sec-tag tight"><div class="sec-bar"></div><span class="sec-tag-t">Quiénes somos</span></div>
+      <h2 class="sec-h2 fx-blur tight-h"><em>Sobre</em> Pietramonte</h2>
+      <p class="nos-txt">Más de una década atendiendo a la Región de Atacama con servicio técnico de calidad, diagnóstico honesto y repuestos garantizados. Nuestra prioridad es que tu vehículo vuelva a la ruta seguro.</p>
+      <div class="nos-vals">
+        <div class="nv fx-tilt d1"><div class="nv-t">Calidad</div><div class="nv-d">Repuestos y mano de obra garantizados en cada trabajo</div></div>
+        <div class="nv fx-tilt d2"><div class="nv-t">Confianza</div><div class="nv-d">Diagnóstico honesto, sin sorpresas al cobro</div></div>
+        <div class="nv fx-tilt d3"><div class="nv-t">Experiencia</div><div class="nv-d">Más de 10 años en la Región de Atacama</div></div>
+        <div class="nv fx-tilt d4"><div class="nv-t">Rapidez</div><div class="nv-d">Tiempos de entrega comprometidos y cumplidos</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec bg-horario" id="horario">
+  <div class="hor-layout">
+    <div class="rvl">
+      <div class="sec-tag tight"><div class="sec-bar"></div><span class="sec-tag-t">Atención</span></div>
+      <h2 class="sec-h2 fx-blur tight-h">Horario de <em>atención</em></h2>
+      <p class="hor-sub">Disponibles de lunes a sábado. Le recomendamos agendar hora online para garantizar atención inmediata sin esperas.</p>
+      <a class="btn-p" href="{% url 'agendar' %}">Agendar online →</a>
+    </div>
+    <div class="hor-card fx-tilt d2">
+      <div class="hor-head">
+        <span class="hor-head-t">Horario semanal</span>
+        <span class="hor-dot" aria-hidden="true"></span>
+      </div>
+      <div class="hor-row">
+        <span class="hor-dia">Lunes — Viernes</span>
+        <span class="hor-hora">09:30 — 16:30<span class="hor-badge">Abierto</span></span>
+      </div>
+      <div class="hor-row">
+        <span class="hor-dia">Sábado</span>
+        <span class="hor-hora">09:30 — 13:30<span class="hor-badge">Abierto</span></span>
+      </div>
+      <div class="hor-row">
+        <span class="hor-dia">Domingo</span>
+        <span class="hor-hora hor-closed">Cerrado</span>
+      </div>
+      <div class="hor-addr">Av. Copayapu 123, Copiapó, Región de Atacama</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec bg-contacto" id="contacto">
+  <div class="cont-in">
+    <div class="cont-grid">
+      <div class="rvl">
+        <div class="sec-tag tight">
+          <div class="sec-bar"></div>
+          <span class="sec-tag-t sec-tag-t-dim">Contacto</span>
+        </div>
+        <h2 class="cont-h2 fx-blur">¿Necesitas una <em>revisión?</em></h2>
+      </div>
+      <div class="rvr">
+        <p class="cont-sub">Contáctanos por cualquiera de los medios disponibles. Nuestro equipo responderá a la brevedad para coordinar la atención de tu vehículo.</p>
+        <a class="btn-p" href="tel:+56998761234">Llamar ahora</a>
+      </div>
+    </div>
+    <div class="cont-cards rv d2">
+      <div class="cc"><div class="cc-l">Teléfono</div><div class="cc-v">+569 9876 1234</div></div>
+      <div class="cc"><div class="cc-l">Email</div><div class="cc-v">info@pietramonte.cl</div></div>
+      <div class="cc"><div class="cc-l">Dirección</div><div class="cc-v">Av. Copayapu 123, Copiapó</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <img class="f-logo" src="{% static 'img/logo.jpg' %}" alt="Pietramonte Automotriz">
+  <div class="f-links">
+    <a class="fl" href="#servicios">Servicios</a>
+    <a class="fl" href="#nosotros">Nosotros</a>
+    <a class="fl" href="#horario">Horario</a>
+    <a class="fl" href="#contacto">Contacto</a>
+    <a class="fl" href="{% url 'privacidad' %}">Privacidad</a>
+  </div>
+  <span class="f-copy">© {% now "Y" %} Pietramonte Automotriz — Copiapó</span>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/landing.js' %}" defer></script>
+{% endblock %}

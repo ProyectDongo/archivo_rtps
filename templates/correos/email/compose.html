@@ -1,0 +1,49 @@
+{% load correos_tags %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{{ asunto|default:"Mensaje" }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f2;padding:32px 12px 24px">
+    <tr><td align="center">
+
+      {% if brand_logo_url %}
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;margin-bottom:18px">
+        <tr><td>
+          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" height="36"
+               style="height:36px;max-width:200px;display:block;border:0">
+        </td></tr>
+      </table>
+      {% endif %}
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+             style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0">
+
+        <tr><td style="background:{{ brand_color }};height:4px;font-size:0;line-height:0">&nbsp;</td></tr>
+
+        <tr><td style="padding:28px 32px 16px">
+          {% if cuerpo_usuario|is_html_content %}
+          <div style="font-size:14px;line-height:1.65;color:#222">{{ cuerpo_usuario|sanitizar_email_html_outbound|safe }}</div>
+          {% else %}
+          <div style="font-size:14px;line-height:1.65;color:#222;white-space:pre-wrap">{{ cuerpo_usuario|default:"" }}</div>
+          {% endif %}
+        </td></tr>
+
+        <tr><td style="padding:16px 32px 28px;border-top:1px solid #f0f0f0">
+          {% if buzon %}{% firma_html buzon %}{% endif %}
+        </td></tr>
+
+      </table>
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;padding:14px 0 4px">
+        <tr><td style="text-align:center;font-size:11px;color:#b0b0b0">
+          {{ brand_company_name }} · Portal de Correos
+        </td></tr>
+      </table>
+
+    </td></tr>
+  </table>
+</body>
+</html>

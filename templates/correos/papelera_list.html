@@ -1,0 +1,79 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Papelera{% endblock %}
+{% block body_class %}page-archivos page-papelera{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/archivos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="arc-shell">
+
+  <header class="arc-header">
+    <a href="{% url 'escritorio' %}" class="arc-back">← Escritorio</a>
+    <h1 class="arc-title">🗑 Papelera</h1>
+    <span class="arc-count">{{ total }} archivos eliminados</span>
+  </header>
+
+  {% if archivos %}
+  <p class="arc-empty-hint">
+    Estos archivos están en la papelera. Podés <strong>restaurarlos</strong> o, si sos
+    administrador, <strong>borrarlos permanentemente</strong> (irreversible).
+  </p>
+
+  <main class="arc-main arc-main-full">
+    <ul class="arc-list">
+      {% for a in archivos %}
+      <li class="arc-item arc-item-papelera">
+        <div class="arc-item-name">
+          <span class="arc-item-icon arc-icon-{{ a.tipo }}">
+            {% if a.tipo == 'imagen' %}🖼{% elif a.tipo == 'contrato' %}📋{% elif a.tipo == 'factura' %}🧾{% else %}📄{% endif %}
+          </span>
+          <span class="arc-item-text">
+            <span class="arc-item-title">{{ a.nombre|truncatechars:60 }}</span>
+            <span class="arc-item-meta">
+              <span class="arc-meta-tag">{{ a.get_tipo_display }}</span>
+              {% if a.perfil %}<span class="arc-meta-tag">{{ a.perfil.email|truncatechars:20 }}</span>{% endif %}
+              <span class="arc-meta-size">{{ a.tamano_legible }}</span>
+              <span class="arc-meta-date">Eliminado: {{ a.eliminado_en|date:"d/m/Y H:i" }}{% if a.eliminado_por %} por {{ a.eliminado_por.email|truncatechars:24 }}{% endif %}</span>
+            </span>
+          </span>
+        </div>
+        <div class="arc-item-actions">
+          <form method="post" action="{% url 'archivo_restaurar' a.id %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="arc-btn-restore" title="Restaurar">↩ Restaurar</button>
+          </form>
+          {% if usuario_actual.es_admin %}
+          <form method="post" action="{% url 'archivo_borrar_permanente' a.id %}" style="display:inline"
+                onsubmit="return confirm('¿Borrar PERMANENTEMENTE «{{ a.nombre|escapejs }}»?\n\nEsta acción NO se puede deshacer.');">
+            {% csrf_token %}
+            <button type="submit" class="arc-btn-delete-perm" title="Borrar permanente">🔥 Borrar permanente</button>
+          </form>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if paginator.num_pages > 1 %}
+    <nav class="arc-paginacion">
+      {% if page.has_previous %}<a href="?p={{ page.previous_page_number }}">← Anterior</a>{% endif %}
+      <span class="arc-pag-info">Página {{ page.number }} de {{ paginator.num_pages }}</span>
+      {% if page.has_next %}<a href="?p={{ page.next_page_number }}">Siguiente →</a>{% endif %}
+    </nav>
+    {% endif %}
+  </main>
+
+  {% else %}
+  <div class="arc-empty">
+    <div class="arc-empty-icon">🗑</div>
+    <p>La papelera está vacía.</p>
+    <p class="arc-empty-hint">Cuando borrás un archivo desde Archivos o Contratos, aparece acá durante un tiempo antes de purgarse.</p>
+    <a href="{% url 'escritorio' %}" class="arc-btn-primary" style="background:#94a3b8">← Volver al escritorio</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

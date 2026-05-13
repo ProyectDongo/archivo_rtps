@@ -1,0 +1,51 @@
+{% if usuario_actual %}
+<nav class="app-nav">
+  <a class="app-brand" href="{% url 'inbox' %}">
+    <div class="app-brand-logo">PM</div>
+    <div class="app-brand-text">
+      <span>Pietramonte</span>
+      <span>Automotriz</span>
+    </div>
+  </a>
+
+  <div class="app-nav-center">
+    {% if buzones_visibles|length > 1 %}
+    <form method="post" action="{% url 'cambiar_buzon' %}" class="buzon-selector" id="buzon-form">
+      {% csrf_token %}
+      <label class="buzon-selector-label" for="buzon-select">Buzón</label>
+      <select id="buzon-select" name="buzon_id">
+        {% for b in buzones_visibles %}
+        <option value="{{ b.id }}" {% if buzon_actual and b.id == buzon_actual.id %}selected{% endif %}>
+          {{ b.email }}{% if b.total_correos %} ({{ b.total_correos }}){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+      <noscript><button type="submit">Cambiar</button></noscript>
+    </form>
+    {% elif buzon_actual %}
+    <div class="buzon-actual-static">
+      <span class="buzon-selector-label">Buzón</span>
+      <span class="buzon-actual-email">{{ buzon_actual.email }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="app-nav-right">
+    <span class="app-nav-user" title="{{ usuario_actual.email }}">
+      <strong>{{ usuario_actual.email }}</strong>
+      {% if usuario_actual.es_admin %}<span class="badge-admin">ADMIN</span>{% endif %}
+    </span>
+    <a href="{% url 'cambiar_password' %}" class="btn-salir" title="Cambiar contraseña">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </a>
+    <form method="post" action="{% url 'logout' %}" class="logout-form">
+      {% csrf_token %}
+      <button type="submit" class="btn-salir">Salir</button>
+    </form>
+  </div>
+</nav>
+{% endif %}

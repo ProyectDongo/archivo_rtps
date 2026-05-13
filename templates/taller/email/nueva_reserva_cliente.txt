@@ -1,0 +1,31 @@
+PIETRAMONTE TALLER — Reserva confirmada ✅
+==========================================
+
+Hola {{ reserva.cliente_nombre }},
+
+¡Tu cita está agendada!
+
+  📅 Día:       {{ reserva.fecha|date:"l d \d\e F \d\e Y" }}
+  🕒 Hora:      {{ reserva.hora_inicio|time:"H:i" }} hrs
+  ⏱  Duración:  {{ reserva.duracion_estimada_min }} min aprox
+  💰 Total ref: ${{ reserva.total_referencial_clp|stringformat:"d" }}
+  🚗 Vehículo:  {{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} ({{ reserva.anio }}){% endif %} · {{ reserva.patente }}
+
+Servicios y repuestos:
+{% for it in reserva.items.all %}  · {{ it.nombre }}{% if it.precio_referencia_clp %} — ${{ it.precio_referencia_clp|stringformat:"d" }}{% endif %}
+{% endfor %}
+
+⚠️ Los precios son REFERENCIALES. El precio final se ajusta tras revisar el vehículo.
+
+Ver o cancelar tu reserva:
+  {{ site_url }}/agendar/r/{{ token }}/
+
+Guardá este link — es la única forma de cancelar tu cita por web.
+
+📞 Te llamaremos 24h antes para confirmar.
+
+Si tenés que cambiar la fecha, respondé a este correo o cancelá
+desde el link de arriba y agendá una nueva.
+
+—
+Pietramonte Taller · agenda@pietramonte.cl

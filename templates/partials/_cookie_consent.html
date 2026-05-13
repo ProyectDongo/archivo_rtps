@@ -1,0 +1,37 @@
+{% load static %}
+{% comment %}
+Banner de consentimiento de cookies. Se incluye desde base_public.html
+(landing, agendar, verificar). El portal interno NO lo muestra porque
+sólo usa cookies estrictamente necesarias (sesión + CSRF) que no
+requieren consentimiento explícito según ley CL 21.719 / RGPD.
+
+Decisión persistida en localStorage por el JS:
+  - "all"       → opcionales aceptadas
+  - "essential" → sólo necesarias
+  - undefined   → mostrar banner
+
+Si el usuario ya decidió, el banner permanece hidden (CSS) y el JS no lo muestra.
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'css/cookie_consent.css' %}">
+<aside class="cookie-banner" id="cookie-banner" hidden role="dialog"
+       aria-labelledby="cookie-banner-title" aria-live="polite">
+  <div class="cookie-banner-content">
+    <h2 id="cookie-banner-title" class="cookie-banner-title">Usamos cookies</h2>
+    <p class="cookie-banner-text">
+      Usamos cookies <strong>estrictamente necesarias</strong> para que el sitio
+      funcione (sesión, seguridad, preferencias). Las opcionales nos ayudan a
+      entender cómo usás el sitio de forma anónima. Podés rechazar las opcionales
+      sin afectar la experiencia.
+      <a href="{% url 'privacidad' %}" class="cookie-banner-link">Política de privacidad</a>
+    </p>
+  </div>
+  <div class="cookie-banner-actions">
+    <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-essentials">
+      Solo esenciales
+    </button>
+    <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-all">
+      Aceptar todas
+    </button>
+  </div>
+</aside>
+<script src="{% static 'js/cookie_consent.js' %}" defer></script>

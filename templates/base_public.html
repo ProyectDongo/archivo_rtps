@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  {% include 'partials/_head.html' %}
+  <title>{% block title %}Pietramonte Automotriz — Copiapó{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Taller automotriz en Copiapó, Región de Atacama. Más de 10 años en mecánica general, diagnóstico computarizado, repuestos y car wash.{% endblock %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% block body %}{% endblock %}
+
+  {% include 'partials/_cookie_consent.html' %}
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,126 @@
+{% extends 'base_app.html' %}
+{% load correos_tags %}
+
+{% block title %}Responder — {{ correo.asunto|truncatechars:40 }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'detalle' correo.id %}" class="back-link">← Volver al correo</a>
+
+<article class="correo-card">
+  <header class="correo-head">
+    <div class="correo-asunto">
+      {% if modo == 'todos' %}↩↩ Responder a todos{% else %}↩ Responder{% endif %}
+    </div>
+    <p class="dash-sub" style="margin-top:.6rem">
+      Vas a responder desde <strong>{{ correo.buzon.email }}</strong>.
+      Las respuestas que reciba el destinatario van a llegar
+      <strong>al mismo buzón</strong> y aparecerán en este archivo.
+    </p>
+    <div style="margin-top:.8rem">
+      {% if modo == 'todos' %}
+      <a href="{% url 'responder_correo' correo.id %}" class="filter-pill">
+        ↩ Solo al remitente
+      </a>
+      {% else %}
+      <a href="{% url 'responder_correo' correo.id %}?modo=todos" class="filter-pill">
+        ↩↩ Responder a todos
+      </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="correo-body">
+    {% if messages %}
+    <div class="msg-block">
+      {% for msg in messages %}
+      <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="reenvio-summary">
+      <div class="meta-item">
+        <span class="meta-label">En respuesta a</span>
+        <span class="meta-value">{{ correo.asunto|default:"(sin asunto)"|truncatechars:80 }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">De</span>
+        <span class="meta-value">{{ correo.remitente|truncatechars:80 }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Fecha</span>
+        <span class="meta-value">
+          {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <form method="post" class="reenvio-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="modo" value="{{ modo }}">
+
+      <label class="adv-field" style="display:block;margin-bottom:1rem">
+        <span class="adv-label">Para <span style="color:#C80C0F">*</span></span>
+        <input type="text"
+               name="to"
+               value="{{ to|default:'' }}"
+               placeholder="destinatario@empresa.cl"
+               required
+               maxlength="500"
+               autocomplete="off">
+      </label>
+
+      <label class="adv-field" style="display:block;margin-bottom:1rem">
+        <span class="adv-label">Cc</span>
+        <input type="text"
+               name="cc"
+               value="{{ cc|default:'' }}"
+               placeholder="otro@empresa.cl, mas@empresa.cl"
+               maxlength="500"
+               autocomplete="off">
+        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
+          Coma para separar varios. Total To+Cc máximo 10.
+        </small>
+      </label>
+
+      <label class="adv-field" style="display:block;margin-bottom:1rem">
+        <span class="adv-label">Asunto <span style="color:#C80C0F">*</span></span>
+        <input type="text"
+               name="asunto"
+               value="{{ asunto|default:'' }}"
+               required
+               maxlength="500"
+               autocomplete="off">
+      </label>
+
+      <label class="adv-field" style="display:block;margin-bottom:1rem">
+        <span class="adv-label">Mensaje</span>
+        <textarea name="cuerpo"
+                  rows="10"
+                  maxlength="50000"
+                  placeholder="Escribí tu respuesta aquí. El correo original se incluye automáticamente abajo."
+                  style="width:100%;font-family:inherit;font-size:14px;padding:10px 12px;border-radius:8px;border:1px solid #d0d0d0;line-height:1.5">{{ cuerpo|default:'' }}</textarea>
+        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
+          El correo original se cita automáticamente debajo de tu respuesta.
+        </small>
+      </label>
+
+      <div class="reenvio-rate" style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px">
+        ℹ️ Envíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
+        {% if restantes == 0 %}
+        — <span style="color:#C80C0F;font-weight:600">llegaste al límite</span>.
+        {% else %}
+        — te quedan <strong>{{ restantes }}</strong>.
+        {% endif %}
+      </div>
+
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button type="submit" class="btn-acceder" {% if restantes == 0 %}disabled{% endif %}>
+          {% if modo == 'todos' %}↩↩ Enviar respuesta a todos{% else %}↩ Enviar respuesta{% endif %}
+        </button>
+        <a href="{% url 'detalle' correo.id %}" class="filter-pill">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</article>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Verificar email — Pietramonte Taller{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/taller.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="verify-card">
+  <h1>📬 Confirmá tu email</h1>
+  <p>Te mandamos un código de 6 dígitos a <strong>{{ email_oculto }}</strong>. Ingresalo acá para confirmar tu reserva del <strong>{{ reserva.fecha|date:"d/m/Y" }}</strong> a las <strong>{{ reserva.hora_inicio|time:"H:i" }}</strong>.</p>
+
+  {% if messages %}
+  <div class="msg-block">
+    {% for msg in messages %}
+    <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'verificar_email' %}" class="verify-form">
+    {% csrf_token %}
+    <label class="ff full">
+      <span>Código de 6 dígitos</span>
+      <input type="text" name="codigo" inputmode="numeric" pattern="[0-9]{6}"
+             autocomplete="one-time-code" maxlength="6" required autofocus
+             style="font-size:24px;letter-spacing:8px;text-align:center;font-family:monospace">
+    </label>
+    <button type="submit" class="btn-confirmar">Confirmar reserva</button>
+  </form>
+
+  <form method="post" action="{% url 'reenviar_codigo' %}" class="verify-resend">
+    {% csrf_token %}
+    <button type="submit" class="link-btn">¿No te llegó? Reenviar código</button>
+  </form>
+
+  <p class="form-hint">El código vence en 15 minutos. Mirá también la carpeta de spam.</p>
+</div>
+{% endblock %}

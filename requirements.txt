@@ -1,0 +1,19 @@
+Django==5.0.4
+python-dotenv==1.0.1
+whitenoise==6.6.0
+gunicorn==21.2.0
+chardet==5.2.0
+dj-database-url==2.2.0
+psycopg[binary]==3.2.3
+pyotp==2.9.0
+qrcode==7.4.2
+reportlab==4.2.0
+cryptography==43.0.3
+Pillow==10.4.0
+bleach[css]==6.2.0
+
+# Cache backend: Django 5+ trae el adaptador, pero requiere el paquete `redis`
+# para funcionar. Solo se usa si REDIS_URL está seteado en env (sino el cache
+# cae a LocMemCache automáticamente).
+redis==5.2.0
+

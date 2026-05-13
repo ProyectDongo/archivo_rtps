@@ -1,0 +1,141 @@
+{% extends 'base_app.html' %}
+{% load correos_tags %}
+
+{% block title %}Reenviar — {{ correo.asunto|truncatechars:40 }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'detalle' correo.id %}" class="back-link">← Volver al correo</a>
+
+<article class="correo-card">
+  <header class="correo-head">
+    <div class="correo-asunto">📤 Reenviar correo</div>
+    <p class="dash-sub" style="margin-top:.6rem">
+      Vas a reenviar el correo <em>"{{ correo.asunto|default:"(sin asunto)"|truncatechars:80 }}"</em>
+      a un destinatario externo. Las respuestas que reciba el destinatario llegarán
+      <strong>directamente a tu casilla</strong> ({{ request.session.usuario_email }}).
+    </p>
+  </header>
+
+  <div class="correo-body">
+    {% if messages %}
+    <div class="msg-block">
+      {% for msg in messages %}
+      <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="reenvio-summary">
+      <div class="meta-item">
+        <span class="meta-label">Asunto original</span>
+        <span class="meta-value">{{ correo.asunto|default:"(sin asunto)" }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">De</span>
+        <span class="meta-value">{{ correo.remitente|truncatechars:80 }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Fecha</span>
+        <span class="meta-value">
+          {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+        </span>
+      </div>
+      {% if correo.tiene_adjunto %}
+      <div class="meta-item">
+        <span class="meta-label">Adjuntos</span>
+        <span class="meta-value">📎 {{ correo.adjuntos.count }} archivo{{ correo.adjuntos.count|pluralize:"s" }} (se reenvían tal cual)</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <form method="post" class="reenvio-form" novalidate>
+      {% csrf_token %}
+
+      <label class="adv-field" style="display:block;margin-bottom:1rem">
+        <span class="adv-label">Destinatario(s) <span style="color:#C80C0F">*</span></span>
+        <input type="text"
+               name="destinatarios"
+               value="{{ destinatarios|default:'' }}"
+               placeholder="cliente@empresa.cl, supervisor@empresa.cl"
+               required
+               maxlength="500"
+               autocomplete="off">
+        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
+          Coma para separar varios. Máximo 5 destinatarios por reenvío.
+        </small>
+      </label>
+
+      <label class="adv-field" style="display:block;margin-bottom:1rem">
+        <span class="adv-label">Mensaje extra (opcional)</span>
+        <textarea name="mensaje_extra"
+                  rows="4"
+                  maxlength="2000"
+                  placeholder="Hola, te paso este correo para tu revisión..."
+                  style="width:100%;font-family:inherit;font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid #d0d0d0">{{ mensaje_extra|default:'' }}</textarea>
+        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
+          Aparece arriba del correo original en el email que recibirá el destinatario.
+        </small>
+      </label>
+
+      <div class="reenvio-rate" style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px">
+        ℹ️ Reenvíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
+        {% if restantes == 0 %}
+        — <span style="color:#C80C0F;font-weight:600">llegaste al límite</span>.
+        {% else %}
+        — te quedan <strong>{{ restantes }}</strong>.
+        {% endif %}
+      </div>
+
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button type="submit" class="btn-acceder" {% if restantes == 0 %}disabled{% endif %}>
+          📤 Reenviar correo
+        </button>
+        <a href="{% url 'detalle' correo.id %}" class="filter-pill">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</article>
+
+<style>
+.reenvio-summary {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 1.4rem;
+}
+.reenvio-summary .meta-item {
+  margin-bottom: .35rem;
+}
+.reenvio-summary .meta-item:last-child {
+  margin-bottom: 0;
+}
+.msg-block {
+  margin-bottom: 1.2rem;
+}
+.msg {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: .5rem;
+  font-size: 14px;
+}
+.msg-success { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
+.msg-error,
+.msg-warning { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
+.msg-info { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }
+.reenvio-form input[type="text"] {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.reenvio-form input:focus,
+.reenvio-form textarea:focus {
+  outline: none;
+  border-color: #C80C0F;
+  box-shadow: 0 0 0 3px rgba(200,12,15,.12);
+}
+</style>
+{% endblock %}

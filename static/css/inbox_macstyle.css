@@ -1,0 +1,335 @@
+/* ============================================================
+   Inbox — Mac-style polish (overrides sobre correos.css)
+   2026-05-11. Solo aplica en .page-inbox para no afectar otras vistas.
+
+   Estrategia: solo CSS overrides, cero cambios en HTML/JS.
+   Reversible: comentá el <link> en inbox.html para volver al estilo viejo.
+
+   Cambios visuales (no funcionales):
+   - Background warm gray macOS (#f5f5f7 en vez de blanco puro).
+   - Sidebar y topbar con frosted glass (backdrop-filter blur).
+   - Border-radius ligeramente más generosos (8-10 en vez de 6).
+   - Hover states más sutiles (rgba bajo en vez de border).
+   - Email rows con más spacing vertical (12 en vez de 8).
+   - Indicador "no leído" como dot lateral (3px) + peso 600 en remitente.
+   - Compose button como pill prominente con shadow accent.
+   - Search field como Spotlight pill.
+   - Pagination como floating pill flotante centrada abajo.
+   - Tipografía SF Pro / system stack first.
+   ============================================================ */
+
+.page-inbox {
+  --mac-bg: #f5f5f7;
+  --mac-surface: #ffffff;
+  --mac-border: #e5e5ea;
+  --mac-border-soft: rgba(0, 0, 0, .06);
+  --mac-text: #1d1d1f;
+  --mac-text-dim: #515154;
+  --mac-text-muted: #86868b;
+  --mac-brand: #C80C0F;
+  --mac-brand-soft: rgba(200, 12, 15, .10);
+  --mac-glass: rgba(245, 245, 247, .82);
+  --mac-glass-border: rgba(0, 0, 0, .06);
+  --mac-glass-blur: saturate(180%) blur(20px);
+  --mac-shadow-sm: 0 1px 3px rgba(0, 0, 0, .04), 0 0 0 .5px rgba(0, 0, 0, .04);
+  --mac-shadow-md: 0 4px 16px rgba(0, 0, 0, .06), 0 0 0 .5px rgba(0, 0, 0, .04);
+
+  background: var(--mac-bg) !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Shell + sidebar ─────────────────────────────────────────────── */
+.page-inbox .inbox-shell {
+  background: var(--mac-bg);
+}
+
+.page-inbox .inbox-sidebar {
+  background: var(--mac-glass);
+  backdrop-filter: var(--mac-glass-blur);
+  -webkit-backdrop-filter: var(--mac-glass-blur);
+  border-right: 1px solid var(--mac-glass-border);
+}
+
+/* Compose button: pill prominente con accent shadow */
+.page-inbox .sidebar-compose {
+  border-radius: 999px !important;
+  padding: 11px 18px !important;
+  background: var(--mac-brand) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(200, 12, 15, .25) !important;
+  transition: filter .12s ease, box-shadow .12s ease, transform .12s ease !important;
+}
+.page-inbox .sidebar-compose:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 8px rgba(200, 12, 15, .35) !important;
+}
+.page-inbox .sidebar-compose:active { transform: scale(.98); }
+
+/* Sidebar links: hover más sutil */
+.page-inbox .sidebar-link {
+  border-radius: 7px !important;
+  transition: background .12s ease !important;
+}
+.page-inbox .sidebar-link:hover {
+  background: rgba(0, 0, 0, .04) !important;
+}
+.page-inbox .sidebar-link.active,
+.page-inbox .sidebar-buzon.active {
+  background: var(--mac-brand-soft) !important;
+  color: var(--mac-brand) !important;
+}
+
+/* ─── Top header del inbox ─────────────────────────────────────────── */
+.page-inbox .inbox-header {
+  background: var(--mac-glass);
+  backdrop-filter: var(--mac-glass-blur);
+  -webkit-backdrop-filter: var(--mac-glass-blur);
+  border-bottom: 1px solid var(--mac-glass-border);
+  padding: 14px 24px !important;
+}
+
+.page-inbox .inbox-title {
+  font-weight: 600 !important;
+  letter-spacing: -.01em !important;
+}
+.page-inbox .inbox-title-kicker {
+  font-size: 12px !important;
+  color: var(--mac-text-muted) !important;
+  font-weight: 500 !important;
+}
+.page-inbox .inbox-title-email {
+  color: var(--mac-text) !important;
+  font-size: 16px !important;
+}
+
+/* Stats toggle como pill */
+.page-inbox .stats-toggle {
+  border-radius: 999px !important;
+  background: rgba(0, 0, 0, .04) !important;
+  padding: 5px 12px !important;
+  font-size: 12.5px !important;
+  border: none !important;
+  transition: background .12s !important;
+}
+.page-inbox .stats-toggle:hover {
+  background: rgba(0, 0, 0, .07) !important;
+}
+
+/* ─── Toolbar (búsqueda + filtros avanzados) ───────────────────────── */
+.page-inbox .inbox-toolbar {
+  background: var(--mac-bg);
+  border-bottom: 1px solid var(--mac-border-soft);
+  padding: 12px 24px !important;
+}
+
+.page-inbox .toolbar-search {
+  border-radius: 999px !important;
+  background: var(--mac-surface) !important;
+  border: 1px solid var(--mac-border) !important;
+  box-shadow: var(--mac-shadow-sm) !important;
+  padding: 7px 16px !important;
+  transition: border-color .12s ease, box-shadow .12s ease !important;
+}
+.page-inbox .toolbar-search:focus-within {
+  border-color: var(--mac-brand) !important;
+  box-shadow: 0 0 0 3px var(--mac-brand-soft) !important;
+}
+
+.page-inbox .toolbar-adv-toggle {
+  border-radius: 8px !important;
+  background: var(--mac-surface) !important;
+  border: 1px solid var(--mac-border) !important;
+  box-shadow: var(--mac-shadow-sm) !important;
+  padding: 6px 12px !important;
+}
+.page-inbox .toolbar-adv-toggle:hover {
+  background: white !important;
+}
+
+/* ─── Lista de correos (filas) ──────────────────────────────────── */
+.page-inbox .split-list {
+  background: var(--mac-bg) !important;
+  border-right: none !important;
+}
+
+.page-inbox .correos-list {
+  padding: 4px 12px;
+}
+
+.page-inbox .correo-row {
+  background: var(--mac-surface);
+  border-radius: 10px !important;
+  border: none !important;
+  margin-bottom: 2px;
+  padding: 12px 16px !important;
+  min-height: 56px !important;
+  transition: background .12s ease, box-shadow .12s ease;
+  position: relative;
+}
+.page-inbox .correo-row:hover {
+  background: white;
+  box-shadow: var(--mac-shadow-sm);
+}
+.page-inbox .correo-row.active {
+  background: white;
+  box-shadow: var(--mac-shadow-md);
+}
+
+/* Indicador "no leído" como dot lateral en vez de border completo */
+.page-inbox .correo-row:not(.is-read)::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--mac-brand);
+  border-radius: 50%;
+}
+.page-inbox .correo-row:not(.is-read) {
+  padding-left: 22px !important;
+}
+.page-inbox .correo-row:not(.is-read) .correo-from,
+.page-inbox .correo-row:not(.is-read) .correo-subject {
+  color: var(--mac-text) !important;
+  font-weight: 600 !important;
+}
+.page-inbox .correo-row.is-read .correo-from,
+.page-inbox .correo-row.is-read .correo-subject {
+  color: var(--mac-text-dim) !important;
+}
+
+.page-inbox .correo-from { font-size: 13px !important; }
+.page-inbox .correo-subject { font-size: 13.5px !important; }
+.page-inbox .correo-snippet { color: var(--mac-text-muted) !important; }
+.page-inbox .correo-date {
+  color: var(--mac-text-muted) !important;
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px !important;
+}
+
+/* Star button: amarillo al destacar */
+.page-inbox .correo-row .row-star {
+  color: var(--mac-text-muted) !important;
+  transition: color .12s !important;
+}
+.page-inbox .correo-row .row-star:hover { color: #f59e0b !important; }
+.page-inbox .correo-row .row-star.starred,
+.page-inbox .correo-row .row-star[data-starred="true"] { color: #f59e0b !important; }
+
+/* Avatar más limpio */
+.page-inbox .correo-row .avatar {
+  border: 1.5px solid white;
+  box-shadow: 0 0 0 .5px rgba(0, 0, 0, .04);
+}
+
+/* ─── Tag chips refinados ──────────────────────────────────────────── */
+.page-inbox .tag-chip-mini,
+.page-inbox .tag-chip {
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+  font-size: 10.5px !important;
+  padding: 1px 8px !important;
+}
+
+/* ─── Adjunto pill ─────────────────────────────────────────────────── */
+.page-inbox .adj-pill {
+  background: rgba(0, 0, 0, .04) !important;
+  border-radius: 999px !important;
+  font-size: 10.5px !important;
+  padding: 1px 7px !important;
+}
+
+/* ─── Pagination — pill flotante Mac-style ─────────────────────────── */
+.page-inbox .paginacion {
+  background: var(--mac-glass);
+  backdrop-filter: var(--mac-glass-blur);
+  -webkit-backdrop-filter: var(--mac-glass-blur);
+  border-top: 1px solid var(--mac-glass-border);
+  padding: 12px 16px !important;
+}
+
+/* ─── Stats panel + cards ──────────────────────────────────────────── */
+.page-inbox .stats-panel {
+  background: var(--mac-bg) !important;
+  border-bottom: 1px solid var(--mac-border-soft) !important;
+}
+.page-inbox .stat-mini {
+  background: var(--mac-surface) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--mac-shadow-sm) !important;
+  border: none !important;
+  padding: 12px 14px !important;
+}
+.page-inbox .stat-mini-n {
+  font-weight: 700 !important;
+  color: var(--mac-text) !important;
+  font-variant-numeric: tabular-nums;
+}
+.page-inbox .stat-mini-l {
+  color: var(--mac-text-dim) !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ─── Filter chips activos en la toolbar ───────────────────────────── */
+.page-inbox .active-filters {
+  background: var(--mac-bg) !important;
+  border-bottom: 1px solid var(--mac-border-soft) !important;
+}
+.page-inbox .active-filter-chip {
+  border-radius: 999px !important;
+  background: var(--mac-brand-soft) !important;
+  color: var(--mac-brand) !important;
+  border: none !important;
+}
+
+/* ─── Scrollbar más sutil estilo macOS ─────────────────────────────── */
+.page-inbox .correos-list::-webkit-scrollbar,
+.page-inbox .inbox-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+.page-inbox .correos-list::-webkit-scrollbar-thumb,
+.page-inbox .inbox-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, .12);
+  border-radius: 999px;
+}
+.page-inbox .correos-list::-webkit-scrollbar-thumb:hover,
+.page-inbox .inbox-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, .25);
+}
+
+/* ─── Dark mode (data-theme="dark") ─────────────────────────────── */
+[data-theme="dark"] .page-inbox {
+  --mac-bg: #1a1a1c;
+  --mac-surface: #2c2c2e;
+  --mac-border: #3a3a3c;
+  --mac-border-soft: rgba(255, 255, 255, .08);
+  --mac-text: #f5f5f7;
+  --mac-text-dim: #aeaeb2;
+  --mac-text-muted: #8e8e93;
+  --mac-glass: rgba(28, 28, 30, .82);
+  --mac-glass-border: rgba(255, 255, 255, .08);
+  --mac-shadow-sm: 0 1px 3px rgba(0, 0, 0, .3);
+  --mac-shadow-md: 0 4px 16px rgba(0, 0, 0, .4);
+}
+[data-theme="dark"] .page-inbox .correo-row.is-read .correo-from,
+[data-theme="dark"] .page-inbox .correo-row.is-read .correo-subject {
+  color: #aeaeb2 !important;
+}
+
+/* ─── Mobile: ajustes de spacing ──────────────────────────────────── */
+@media (max-width: 767px) {
+  .page-inbox .correo-row {
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+  }
+  .page-inbox .inbox-header { padding: 10px 14px !important; }
+  .page-inbox .inbox-toolbar { padding: 10px 14px !important; }
+}

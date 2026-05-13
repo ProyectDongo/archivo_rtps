@@ -1,0 +1,87 @@
+{% extends 'base_app.html' %}
+{% load correos_tags %}
+
+{% block title %}Mi firma — {{ buzon.email }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'inbox' %}" class="back-link">← Volver a la bandeja</a>
+
+<article class="correo-card firma-edit-card">
+  <header class="correo-head">
+    <div class="correo-asunto">✉️ Firma del buzón</div>
+    <p class="dash-sub" style="margin-top:.6rem">
+      Editás la firma de <strong>{{ buzon.email }}</strong>. Se agrega automáticamente al final de cada correo que mandes desde este buzón.
+    </p>
+  </header>
+
+  <div class="correo-body firma-edit-grid">
+
+    <form method="post" class="firma-edit-form">
+      {% csrf_token %}
+
+      <label class="firma-toggle">
+        <input type="checkbox" name="firma_activa" value="1" {% if buzon.firma_activa %}checked{% endif %}>
+        <span>Agregar firma al enviar correos desde este buzón</span>
+      </label>
+
+      <div class="firma-field">
+        <label for="firma_nombre">Nombre</label>
+        <input type="text" name="firma_nombre" id="firma_nombre"
+               value="{{ buzon.firma_nombre }}" maxlength="120"
+               placeholder="Ej. Valentina Pietrasanta"
+               autocomplete="off">
+        <small>Si lo dejás vacío, la firma queda como solo el logo + email.</small>
+      </div>
+
+      <div class="firma-field">
+        <label for="firma_cargo">Empresa / Cargo</label>
+        <input type="text" name="firma_cargo" id="firma_cargo"
+               value="{{ buzon.firma_cargo }}" maxlength="120"
+               placeholder="Pietramonte Automotriz"
+               autocomplete="off">
+      </div>
+
+      <div class="firma-field">
+        <label for="firma_telefono">Teléfono</label>
+        <input type="text" name="firma_telefono" id="firma_telefono"
+               value="{{ buzon.firma_telefono }}" maxlength="40"
+               placeholder="+56 9 9174 6472"
+               autocomplete="off">
+      </div>
+
+      <div class="firma-field">
+        <label for="firma_email_visible">Email visible en la firma</label>
+        <input type="email" name="firma_email_visible" id="firma_email_visible"
+               value="{{ buzon.firma_email_visible }}" maxlength="254"
+               placeholder="{{ buzon.email }}"
+               autocomplete="off">
+        <small>Vacío = se muestra <strong>{{ buzon.email }}</strong>.</small>
+      </div>
+
+      <div class="firma-field">
+        <label for="firma_web">Sitio web (opcional)</label>
+        <input type="text" name="firma_web" id="firma_web"
+               value="{{ buzon.firma_web }}" maxlength="120"
+               placeholder="www.pietramonte.cl"
+               autocomplete="off">
+        <small>Si no tiene <code>https://</code> se completa automáticamente al hacer click desde el correo.</small>
+      </div>
+
+      <div class="firma-actions">
+        <button type="submit" class="btn-acceder">Guardar firma</button>
+      </div>
+    </form>
+
+    <aside class="firma-preview-pane">
+      <div class="firma-preview-label">Vista previa</div>
+      <div class="firma-preview-frame" id="firma-preview-frame">
+        {% firma_html buzon %}
+      </div>
+      <p class="firma-preview-hint">
+        Así se ve al pie de cada correo. Cambia con cada edit y se actualiza al guardar.
+      </p>
+    </aside>
+
+  </div>
+</article>
+{% endblock %}

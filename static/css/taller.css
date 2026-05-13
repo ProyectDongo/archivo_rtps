@@ -1,0 +1,484 @@
+/* ─────────────────────────────────────────────────────────────────
+ * Pietramonte Taller — estilos del agendamiento público.
+ * Reusa variables de correos.css (--r, --rl, --gd, --gm, --w, --sh).
+ * ───────────────────────────────────────────────────────────────── */
+
+.agendar-hero {
+  text-align: center;
+  padding: 2rem 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+}
+.agendar-hero h1 {
+  font-size: 2rem;
+  margin: 0 0 .6rem;
+  color: var(--gd);
+}
+.agendar-hero p {
+  color: #666;
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.agendar-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .agendar-layout { grid-template-columns: 1fr; }
+  .cart { position: sticky; top: 60px; z-index: 5; max-height: 320px; overflow: auto; }
+}
+
+/* ─── Tabs servicio/repuesto ────────────────────────────── */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+.cat-tab {
+  background: transparent;
+  border: 0;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all .15s ease;
+  margin-bottom: -2px;
+}
+.cat-tab:hover { color: var(--gd); }
+.cat-tab.active {
+  color: var(--r);
+  border-bottom-color: var(--r);
+}
+
+/* ─── Grid del catálogo ─────────────────────────────────── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 2rem;
+}
+.cat-grid.hidden { display: none; }
+.cat-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #888;
+}
+
+.cat-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all .15s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.cat-card:hover {
+  border-color: var(--r);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+}
+.cat-card.is-pop { border-color: #FFB300; }
+.cat-pop-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #FFB300;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  z-index: 2;
+}
+.cat-card-media {
+  height: 140px;
+  background: linear-gradient(135deg, #fafafa, #f0f0f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.cat-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cat-card-icon { font-size: 64px; opacity: .85; }
+
+.cat-card-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+.cat-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--gd);
+}
+.cat-card-desc {
+  font-size: 12px;
+  color: #777;
+  margin: 0 0 10px;
+  line-height: 1.4;
+  flex: 1;
+}
+.cat-card-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.cat-meta-pill {
+  font-size: 10px;
+  padding: 3px 8px;
+  background: #f5f5f5;
+  border-radius: 999px;
+  color: #555;
+  font-weight: 500;
+}
+.cat-marca-oem      { background: #E8F5E9; color: #1B5E20; }
+.cat-marca-premium  { background: #E3F2FD; color: #0D47A1; }
+.cat-marca-generico { background: #FFF3E0; color: #E65100; }
+.cat-disp-bajo_pedido { background: #FFF8E1; color: #BF360C; }
+.cat-disp-consultar   { background: #F3E5F5; color: #4A148C; }
+
+.cat-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cat-precio { font-size: 13px; color: #666; }
+.cat-precio strong { color: var(--gd); font-size: 16px; font-weight: 700; }
+.cat-precio-cons { color: #777; font-style: italic; }
+.cat-add-btn {
+  width: 36px; height: 36px;
+  background: var(--r);
+  color: #fff;
+  border: 0;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.cat-add-btn:hover {
+  background: #a00a0c;
+  transform: scale(1.1);
+}
+.cat-add-btn.is-added {
+  background: #388E3C;
+  font-size: 18px;
+}
+
+/* ─── Carrito ───────────────────────────────────────────── */
+.cart {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 16px;
+  position: sticky;
+  top: 80px;
+}
+.cart h3 { margin: 0 0 12px; font-size: 16px; color: var(--gd); }
+.cart-empty { color: #888; font-size: 13px; padding: 16px 0; text-align: center; }
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  gap: 8px;
+}
+.cart-item:last-child { border-bottom: 0; }
+.cart-item-name { flex: 1; }
+.cart-item-price { color: var(--gd); font-weight: 600; }
+.cart-item-rm {
+  background: transparent;
+  border: 0;
+  color: #B71C1C;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 6px;
+}
+.cart-totals { padding-top: 12px; border-top: 2px solid #eee; }
+.cart-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 14px;
+}
+.cart-line strong { color: var(--r); font-size: 16px; }
+.cart-dur { color: #666; font-size: 12px; }
+
+/* ─── Calendario ────────────────────────────────────────── */
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+.cal-day {
+  background: #fff;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: all .15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: inherit;
+  font-size: 11px;
+}
+.cal-day:hover:not(:disabled) {
+  border-color: var(--r);
+  transform: translateY(-1px);
+}
+.cal-day.active {
+  background: var(--r);
+  border-color: var(--r);
+  color: #fff;
+}
+.cal-day:disabled, .cal-day.is-blocked {
+  opacity: .4;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+.cal-dow { font-size: 10px; text-transform: uppercase; color: #888; }
+.cal-day.active .cal-dow { color: rgba(255,255,255,.85); }
+.cal-num { font-size: 22px; font-weight: 700; line-height: 1; margin: 4px 0; color: var(--gd); }
+.cal-day.active .cal-num { color: #fff; }
+.cal-mon { font-size: 11px; color: #888; }
+.cal-day.active .cal-mon { color: rgba(255,255,255,.8); }
+.cal-libres { font-size: 9px; color: #1B5E20; margin-top: 4px; font-weight: 600; }
+.cal-llena { color: #B71C1C; }
+.cal-day.active .cal-libres { color: rgba(255,255,255,.9); }
+
+/* ─── Slots ─────────────────────────────────────────────── */
+.slots-grid h3 { font-size: 14px; color: #666; margin: 0 0 8px; }
+.slots-grid-inner {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+.slot-btn {
+  background: #fff;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s ease;
+}
+.slot-btn:hover:not(:disabled) { border-color: var(--r); transform: translateY(-1px); }
+.slot-btn.active { background: var(--r); border-color: var(--r); color: #fff; }
+.slot-btn:disabled {
+  opacity: .35; cursor: not-allowed;
+  background: #f5f5f5;
+  text-decoration: line-through;
+}
+
+/* ─── Form ──────────────────────────────────────────────── */
+.agendar-form { background: #fafafa; border-radius: 12px; padding: 24px; }
+.agendar-form h2 { margin: 1.5rem 0 .8rem; font-size: 18px; color: var(--gd); }
+.agendar-form h2:first-child { margin-top: 0; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.ff { display: block; font-size: 13px; }
+.ff.full { grid-column: 1 / -1; }
+.ff > span { display: block; color: #555; font-weight: 600; margin-bottom: 4px; }
+.ff input,
+.ff textarea,
+.ff select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #d5d5d5;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+}
+.ff input:focus,
+.ff textarea:focus {
+  outline: none;
+  border-color: var(--r);
+  box-shadow: 0 0 0 3px rgba(200,12,15,.12);
+}
+.form-hint { font-size: 12px; color: #777; margin-top: 8px; }
+.form-hint.disclaimer {
+  background: #FFF8E1;
+  border: 1px solid #FFE082;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #5D4037;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+/* ─── Captcha ──────────────────────────────────────────── */
+.captcha-wrap { background: #fff; padding: 16px; border-radius: 10px; border: 1px solid #e5e5e5; margin-bottom: 14px; }
+.captcha-pregunta { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: var(--gd); }
+.captcha-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-width: 240px;
+}
+.captcha-cell {
+  cursor: pointer;
+  position: relative;
+}
+.captcha-cell input { position: absolute; opacity: 0; pointer-events: none; }
+.captcha-cell-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  background: #fafafa;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  color: var(--gd);
+  transition: all .12s ease;
+}
+.captcha-cell-inner svg { width: 60%; height: 60%; }
+.captcha-cell:hover .captcha-cell-inner { border-color: var(--r); }
+.captcha-cell input:checked + .captcha-cell-inner {
+  border-color: var(--r);
+  background: var(--rl);
+  color: var(--r);
+}
+
+.btn-confirmar {
+  width: 100%;
+  padding: 14px;
+  background: var(--r);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 16px;
+  font-family: inherit;
+  transition: all .15s ease;
+}
+.btn-confirmar:hover:not(:disabled) { background: #a00a0c; transform: translateY(-1px); }
+.btn-confirmar:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ─── Página verificar email ────────────────────────────── */
+.verify-card {
+  max-width: 500px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid #e5e5e5;
+  text-align: center;
+}
+.verify-card h1 { color: var(--gd); margin: 0 0 1rem; }
+.verify-form { margin: 1.5rem 0 1rem; }
+.verify-resend { margin-top: 8px; }
+.link-btn {
+  background: transparent;
+  border: 0;
+  color: var(--r);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+/* ─── Página mi reserva ──────────────────────────────── */
+.reserva-card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.reserva-card h1 { color: var(--gd); margin: 1rem 0; }
+.reserva-card h2 { font-size: 16px; color: var(--gd); margin: 1.5rem 0 .8rem; }
+.reserva-banner {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.reserva-banner.ok { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
+.reserva-banner.pend { background: #FFF8E1; color: #BF360C; border: 1px solid #FFE082; }
+.reserva-banner.cancel { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
+
+.reserva-resumen {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 1rem;
+}
+.rr-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+.rr-row:last-child { border-bottom: 0; }
+.rr-l { color: #888; font-size: 13px; }
+
+.reserva-items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+.reserva-items li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+.ri-name { font-weight: 600; color: var(--gd); }
+.ri-cat { color: #888; font-size: 12px; }
+.ri-price { color: var(--r); font-weight: 700; }
+
+.reserva-acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.btn-cancelar {
+  padding: 12px 20px;
+  background: #fff;
+  color: #B71C1C;
+  border: 1.5px solid #B71C1C;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-cancelar:hover { background: #FFEBEE; }
+
+.msg-block { margin-bottom: 1rem; }
+.msg {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: .5rem;
+  font-size: 14px;
+}
+.msg-success { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
+.msg-error,
+.msg-warning { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
+.msg-info { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }

@@ -1,0 +1,360 @@
+{% extends 'base_app.html' %}
+{% load correos_tags static %}
+
+{% block title %}Bandeja — {{ buzon.email }}{% endblock %}
+{% block body_class %}page-inbox{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/inbox_macstyle.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="inbox-shell">
+{% include 'partials/_inbox_sidebar.html' %}
+
+  <section class="inbox-main">
+<header class="inbox-header">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menú lateral" aria-controls="inbox-sidebar">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+
+      <h1 class="inbox-title">
+        <span class="inbox-title-kicker">Bandeja</span>
+        <span class="inbox-title-email" title="{{ buzon.email }}">{{ buzon.email }}</span>
+      </h1>
+
+      {% if stats %}
+      <button type="button" class="stats-toggle" id="stats-toggle"
+              aria-controls="stats-panel" aria-expanded="false"
+              title="Mostrar/ocultar resumen del buzón">
+        <span class="stats-toggle-num">{{ stats.total }}</span>
+        <span class="stats-toggle-label">correos</span>
+        <svg class="stats-toggle-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {% endif %}
+    </header>
+{% if stats %}
+    <section class="stats-panel" id="stats-panel" hidden aria-label="Resumen del buzón">
+      <div class="stats-cards">
+        <div class="stat-mini">
+          <div class="stat-mini-n">{{ stats.total }}</div>
+          <div class="stat-mini-l">Correos totales</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-n">{{ stats.recientes_30d }}</div>
+          <div class="stat-mini-l">Últimos 30 días</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-n">{{ stats.con_adjuntos }}</div>
+          <div class="stat-mini-l">Con adjuntos</div>
+        </div>
+        {% if cant_destacados %}
+        <div class="stat-mini">
+          <div class="stat-mini-n">{{ cant_destacados }}</div>
+          <div class="stat-mini-l">★ Destacados</div>
+        </div>
+        {% endif %}
+        {% if stats.fecha_mas_antigua %}
+        <div class="stat-mini stat-mini-period">
+          <div class="stat-mini-n stat-mini-n-text">{{ stats.fecha_mas_antigua|date:"M Y" }}</div>
+          <div class="stat-mini-l">Histórico desde</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="stats-bottom">
+        {% if stats.chart %}
+        <div class="stats-chart" aria-label="Actividad mensual últimos 6 meses">
+          <div class="stats-chart-label">Actividad reciente</div>
+          <div class="chart-bars">
+            {% for mes, n in stats.chart %}
+            <div class="chart-bar-wrap" title="{{ mes|date:'F Y' }}: {{ n }} correos">
+              <div class="chart-bar" data-h="{% widthratio n stats.chart_max 100 %}"></div>
+              <div class="chart-bar-label">{{ mes|date:"M" }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if stats.top_remitentes %}
+        <div class="stats-senders">
+          <div class="stats-chart-label">Top remitentes</div>
+          <div class="dash-senders-list">
+            {% for r in stats.top_remitentes %}
+            <button type="button" class="sender-chip" data-remitente="{{ r.remitente }}">
+              <span class="avatar avatar-sm" data-color="{{ r.remitente|avatar_color }}">{{ r.remitente|avatar_iniciales }}</span>
+              <span class="sender-text">
+                <span class="sender-name">{{ r.remitente|truncatechars:30 }}</span>
+                <span class="sender-count">{{ r.n }}</span>
+              </span>
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+<div class="inbox-toolbar">
+      <form class="toolbar-search" method="get" action="{% url 'inbox' %}" role="search" id="search-form">
+        <svg class="toolbar-search-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" name="q" value="{{ query }}"
+               placeholder='Buscar — usá from:, to:, subject:, has:attachment, before:, after:, label:, is:starred…'
+               autocomplete="off" maxlength="200" aria-label="Buscar correos">
+        <button type="button" class="toolbar-search-help" id="search-help-btn" tabindex="-1"
+                aria-label="Ayuda de operadores de búsqueda" aria-expanded="false"
+                title="Ayuda: operadores de búsqueda">?</button>
+        {% if query %}
+        <a href="{% url_sin_filtros 'q' %}" class="toolbar-search-clear" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">✕</a>
+        {% endif %}
+{% if carpeta %}<input type="hidden" name="carpeta" value="{{ carpeta }}">{% endif %}
+        {% if solo_destacados %}<input type="hidden" name="destacado" value="1">{% endif %}
+        {% if solo_adjuntos %}<input type="hidden" name="adjuntos" value="1">{% endif %}
+        {% if solo_no_leidos %}<input type="hidden" name="no_leidos" value="1">{% endif %}
+        {% if etiqueta_actual %}<input type="hidden" name="etiqueta" value="{{ etiqueta_actual.id }}">{% endif %}
+        {% if fecha_desde %}<input type="hidden" name="desde" value="{{ fecha_desde }}">{% endif %}
+        {% if fecha_hasta %}<input type="hidden" name="hasta" value="{{ fecha_hasta }}">{% endif %}
+        {% if orden and orden != 'desc' %}<input type="hidden" name="orden" value="{{ orden }}">{% endif %}
+      </form>
+<div class="search-help-pop" id="search-help-pop" hidden role="dialog" aria-label="Operadores de búsqueda">
+        <div class="search-help-title">Operadores de búsqueda</div>
+        <ul class="search-help-list">
+          <li><code>from:cobranza@empresa.cl</code> — del remitente</li>
+          <li><code>to:contacto</code> — al destinatario</li>
+          <li><code>subject:"factura abril"</code> — en el asunto (comillas para frases)</li>
+          <li><code>has:attachment</code> — solo con adjunto</li>
+          <li><code>before:2026-01-01</code> / <code>after:2025-12-01</code> — rango de fechas</li>
+          <li><code>label:Urgente</code> — con esa etiqueta</li>
+          <li><code>is:starred</code> · <code>is:unread</code> · <code>is:read</code></li>
+        </ul>
+        <div class="search-help-foot">Combinables: <code>from:juan has:attachment after:2025-01-01</code></div>
+      </div>
+
+      <button type="button" class="toolbar-adv-toggle" id="adv-toggle"
+              aria-controls="toolbar-adv" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="14" y2="18"/>
+        </svg>
+        Filtros
+      </button>
+    </div>
+<form class="toolbar-adv" method="get" action="{% url 'inbox' %}" id="toolbar-adv" hidden>
+      {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+      {% if carpeta %}<input type="hidden" name="carpeta" value="{{ carpeta }}">{% endif %}
+      {% if solo_destacados %}<input type="hidden" name="destacado" value="1">{% endif %}
+      {% if solo_adjuntos %}<input type="hidden" name="adjuntos" value="1">{% endif %}
+      {% if solo_no_leidos %}<input type="hidden" name="no_leidos" value="1">{% endif %}
+      {% if etiqueta_actual %}<input type="hidden" name="etiqueta" value="{{ etiqueta_actual.id }}">{% endif %}
+      <label class="adv-field">
+        <span class="adv-label">Desde</span>
+        <input type="date" name="desde" value="{{ fecha_desde }}" max="{{ fecha_hasta|default:'' }}">
+      </label>
+      <label class="adv-field">
+        <span class="adv-label">Hasta</span>
+        <input type="date" name="hasta" value="{{ fecha_hasta }}" min="{{ fecha_desde|default:'' }}">
+      </label>
+      <label class="adv-field">
+        <span class="adv-label">Orden</span>
+        <select name="orden" onchange="this.form.submit()">
+          <option value="desc" {% if orden == 'desc' %}selected{% endif %}>Más recientes primero</option>
+          <option value="asc"  {% if orden == 'asc'  %}selected{% endif %}>Más antiguos primero</option>
+        </select>
+      </label>
+      <button type="submit" class="adv-apply">Aplicar</button>
+    </form>
+{% if hay_filtros_activos %}
+    <div class="active-filters" role="region" aria-label="Filtros aplicados">
+      <span class="active-filters-label">Filtros activos:</span>
+
+      {% if query %}
+      <a href="{% url_sin_filtros 'q' %}" class="active-chip" title="Quitar búsqueda">
+        <span class="active-chip-key">Búsqueda</span>
+        <span class="active-chip-val">"{{ query|truncatechars:40 }}"</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if carpeta %}
+      <a href="{% url_sin_filtros 'carpeta' %}" class="active-chip" title="Quitar carpeta">
+        <span class="active-chip-key">Carpeta</span>
+        <span class="active-chip-val">{% if carpeta == 'inbox' %}Recibidos{% elif carpeta == 'enviados' %}Enviados{% else %}Otros{% endif %}</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if solo_no_leidos %}
+      <a href="{% url_sin_filtros 'no_leidos' %}" class="active-chip active-chip-unread" title="Quitar 'sin leer'">
+        <span class="active-chip-val">Sin leer</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if solo_destacados %}
+      <a href="{% url_sin_filtros 'destacado' %}" class="active-chip active-chip-star" title="Quitar 'destacados'">
+        <span class="active-chip-val">★ Destacados</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if solo_adjuntos %}
+      <a href="{% url_sin_filtros 'adjuntos' %}" class="active-chip" title="Quitar 'con adjunto'">
+        <span class="active-chip-val">📎 Con adjunto</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if etiqueta_actual %}
+      <a href="{% url_sin_filtros 'etiqueta' %}" class="active-chip active-chip-tag"
+         data-color="{{ etiqueta_actual.color }}" title="Quitar etiqueta">
+        <span class="active-chip-key">Etiqueta</span>
+        <span class="active-chip-val">{{ etiqueta_actual.nombre }}</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if fecha_desde or fecha_hasta %}
+      <a href="{% url_sin_filtros 'desde' 'hasta' %}" class="active-chip" title="Quitar rango de fechas">
+        <span class="active-chip-key">Fechas</span>
+        <span class="active-chip-val">
+          {% if fecha_desde and fecha_hasta %}{{ fecha_desde }} → {{ fecha_hasta }}
+          {% elif fecha_desde %}desde {{ fecha_desde }}
+          {% else %}hasta {{ fecha_hasta }}{% endif %}
+        </span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      {% if orden and orden != 'desc' %}
+      <a href="{% url_sin_filtros 'orden' %}" class="active-chip" title="Volver a orden por defecto">
+        <span class="active-chip-key">Orden</span>
+        <span class="active-chip-val">Antiguos primero</span>
+        <span class="active-chip-x" aria-hidden="true">✕</span>
+      </a>
+      {% endif %}
+
+      <a href="{% url 'inbox' %}" class="active-chip-clearall" title="Quitar todos los filtros">Limpiar todo</a>
+      <span class="active-filters-count">{{ total }} resultado{{ total|pluralize:"s" }}</span>
+    </div>
+    {% endif %}
+<div class="bulk-bar" id="bulk-bar" hidden role="region" aria-label="Acciones en masa">
+      <label class="bulk-bar-checkall" title="Seleccionar / quitar todo en esta página">
+        <input type="checkbox" id="bulk-checkall">
+        <span class="bulk-bar-count"><span id="bulk-bar-n">0</span> seleccionado<span id="bulk-bar-s">s</span></span>
+      </label>
+      <div class="bulk-bar-actions">
+        <button type="button" class="bulk-btn" data-bulk-accion="leer" title="Marcar como leídos">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Leídos
+        </button>
+        <button type="button" class="bulk-btn" data-bulk-accion="no_leer" title="Marcar como no leídos">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M4 4l8 8 8-8"/></svg>
+          No leídos
+        </button>
+        <button type="button" class="bulk-btn" data-bulk-accion="destacar" title="Destacar todos">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          Destacar
+        </button>
+        <button type="button" class="bulk-btn" data-bulk-accion="no_destacar" title="Quitar destacado">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          Sin destacar
+        </button>
+
+        {% if etiquetas_disponibles %}
+        <div class="bulk-tag-wrap">
+          <button type="button" class="bulk-btn" id="bulk-tag-btn" title="Asignar etiqueta">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13 21l-9-9V4h8l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+            Etiquetar
+          </button>
+          <div class="bulk-tag-menu" id="bulk-tag-menu" hidden>
+            {% for et in etiquetas_disponibles %}
+            <button type="button" class="bulk-tag-opt" data-etiqueta-id="{{ et.id }}" data-color="{{ et.color }}">
+              <span class="tag-dot" style="background:{{ et.color }}"></span>{{ et.nombre|truncatechars:24 }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <button type="button" class="bulk-bar-close" id="bulk-bar-close" title="Cerrar selección" aria-label="Cerrar selección">✕</button>
+    </div>
+<div class="inbox-list-wrap">
+      <div class="split-list" id="split-list">
+        {% if page.object_list %}
+        <ul class="correos-list" role="list">
+          {% for correo in page.object_list %}
+          <li>
+            <a class="correo-row {% if correo.destacado %}is-starred{% endif %} {% if correo.is_leido %}is-read{% endif %}"
+               href="{% url 'detalle' correo.id %}"
+               data-correo-id="{{ correo.id }}">
+              <input type="checkbox" class="row-check" data-correo-id="{{ correo.id }}"
+                     aria-label="Seleccionar correo"
+                     title="Seleccionar (Shift+click para rango)">
+              <button type="button" class="row-star" data-correo-id="{{ correo.id }}"
+                      title="{% if correo.destacado %}Quitar destacado{% else %}Destacar{% endif %}"
+                      aria-label="{% if correo.destacado %}Quitar destacado{% else %}Destacar{% endif %}">
+                <svg viewBox="0 0 24 24" width="16" height="16"
+                     fill="{% if correo.destacado %}currentColor{% else %}none{% endif %}"
+                     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
+                </svg>
+              </button>
+              <span class="avatar" data-color="{{ correo.remitente|avatar_color }}">{{ correo.remitente|avatar_iniciales }}</span>
+              <span class="correo-from" title="{{ correo.remitente }}">{{ correo.remitente_nombre|default:correo.remitente|truncatechars:28 }}</span>
+              <span class="correo-content">
+                <span class="correo-subject">{{ correo.asunto|default:"(sin asunto)" }}</span>
+                <span class="correo-sep">—</span>
+                <span class="correo-snippet">{{ correo.cuerpo_texto|truncatechars:200 }}</span>
+                {% for et in correo.etiquetas.all %}
+                <span class="tag-chip-mini" data-color="{{ et.color }}">{{ et.nombre }}</span>
+                {% endfor %}
+              </span>
+              {% if correo.tiene_adjunto %}<span class="adj-pill" title="Con adjunto">📎</span>{% endif %}
+              <span class="correo-date" title="{{ correo.fecha|fecha_iso }}">{{ correo.fecha|fecha_amigable }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if page.has_other_pages %}
+        <nav class="paginacion" aria-label="Paginación">
+          {% if page.has_previous %}
+          <a href="{% url 'inbox' %}?page={{ page.previous_page_number }}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if solo_destacados %}&destacado=1{% endif %}{% if solo_adjuntos %}&adjuntos=1{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}{% if etiqueta_actual %}&etiqueta={{ etiqueta_actual.id }}{% endif %}{% if fecha_desde %}&desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&hasta={{ fecha_hasta }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if ver_pospuestos %}&pospuestos=1{% endif %}">← Anterior</a>
+          {% endif %}
+          <span class="actual">{{ page.number }} / {{ page.paginator.num_pages }} · {{ total }} correo{{ total|pluralize:"s" }}</span>
+          {% if page.has_next %}
+          <a href="{% url 'inbox' %}?page={{ page.next_page_number }}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if solo_destacados %}&destacado=1{% endif %}{% if solo_adjuntos %}&adjuntos=1{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}{% if etiqueta_actual %}&etiqueta={{ etiqueta_actual.id }}{% endif %}{% if fecha_desde %}&desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&hasta={{ fecha_hasta }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if ver_pospuestos %}&pospuestos=1{% endif %}">Siguiente →</a>
+          {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="estado-vacio">
+          <div class="estado-vacio-icon">📭</div>
+          {% if hay_filtros_activos %}
+          <p>No hay correos con esos filtros.</p>
+          {% else %}
+          <p>Esta bandeja no tiene correos importados aún.</p>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/inbox.js' %}" defer></script>
+<script src="{% static 'js/bulk_select.js' %}" defer></script>
+{% endblock %}

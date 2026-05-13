@@ -1,0 +1,2 @@
+{% load correos_tags %}{{ cuerpo_usuario|default:"" }}
+{% if buzon %}{% firma_texto buzon %}{% endif %}

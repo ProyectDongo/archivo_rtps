@@ -1,0 +1,28 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Regenerar códigos de recuperación{% endblock %}
+
+{% block content %}
+<div class="cambiar-pwd-wrap">
+  <a href="{% url 'inbox' %}" class="back-link">← Volver a la bandeja</a>
+
+  <div class="cambiar-pwd-card">
+    <header class="cambiar-pwd-head">
+      <h1>Regenerar códigos de recuperación</h1>
+      <p>Esto descarta los códigos anteriores y emite 8 nuevos. Para confirmar, ingresá tu contraseña.</p>
+    </header>
+
+    {% include 'partials/_messages.html' %}
+
+    <form method="post" novalidate autocomplete="off">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="password">Contraseña actual</label>
+        <input type="password" id="password" name="password" required autofocus
+               autocomplete="current-password" maxlength="200">
+      </div>
+      <button type="submit" class="btn-acceder">Generar nuevos códigos</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Verificación 2FA — Pietramonte{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="{% static 'css/correos.css' %}">
+<style>
+  .twofa-wrap{max-width:420px;margin:64px auto;padding:0 20px;color:#1a1a1a}
+  .twofa-card{background:#fff;border:1px solid #e5e5e5;border-radius:14px;padding:32px;
+              box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .twofa-card h1{margin:0 0 6px;font-size:22px}
+  .twofa-card p.lead{margin:0 0 20px;color:#666}
+  .twofa-input{width:100%;padding:14px;font-size:22px;letter-spacing:6px;
+               text-align:center;border:1px solid #ccc;border-radius:8px;
+               font-family:ui-monospace,Menlo,Consolas,monospace}
+  .twofa-input.recovery{font-size:18px;letter-spacing:2px}
+  .twofa-input:focus{outline:none;border-color:#C80C0F;box-shadow:0 0 0 3px rgba(200,12,15,.1)}
+  .twofa-modo-toggle{margin-top:18px;text-align:center}
+  .twofa-modo-toggle a{color:#666;font-size:13px;text-decoration:underline}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="twofa-wrap">
+  <div class="twofa-card">
+    {% if modo == 'recovery' %}
+      <h1>Código de recuperación</h1>
+      <p class="lead">Ingresá uno de los códigos que guardaste al configurar 2FA. Cada código sirve solo una vez.</p>
+    {% else %}
+      <h1>Código de verificación</h1>
+      <p class="lead">Abrí tu app de autenticación e ingresá el código de 6 dígitos.</p>
+    {% endif %}
+
+    {% include 'partials/_messages.html' %}
+
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="modo" value="{{ modo }}">
+      {% if modo == 'recovery' %}
+        <input type="text" name="codigo" maxlength="9" autocomplete="off" autofocus
+               class="twofa-input recovery" placeholder="XXXX-XXXX" required
+               style="text-transform:uppercase">
+      {% else %}
+        <input type="text" name="codigo" inputmode="numeric" pattern="[0-9]*"
+               maxlength="6" autocomplete="one-time-code" autofocus
+               class="twofa-input" placeholder="000000" required>
+      {% endif %}
+
+      <button type="submit" class="btn-acceder" style="margin-top:14px;width:100%">
+        {% if modo == 'recovery' %}Usar recovery code{% else %}Verificar{% endif %}
+      </button>
+    </form>
+
+    <div class="twofa-modo-toggle">
+      {% if modo == 'recovery' %}
+        <a href="?modo=totp">← Volver a usar mi app de autenticación</a>
+      {% else %}
+        <a href="?modo=recovery">¿Perdiste tu app? Usar un código de recuperación</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% load correos_tags %}{{ cuerpo_usuario|default:"" }}
+{% if buzon %}{% firma_texto buzon %}{% endif %}
+
+El {% if correo_original.fecha %}{{ correo_original.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}, {{ correo_original.remitente|default:"—" }} escribió:
+
+{% with cuerpo=correo_original.cuerpo_texto|limpiar_cid_brackets|default:"" %}{% for line in cuerpo.splitlines %}> {{ line }}
+{% endfor %}{% endwith %}

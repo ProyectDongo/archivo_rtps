@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Reserva confirmada</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#222">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden">
+        <tr><td style="background:#C80C0F;color:#fff;padding:24px">
+          <div style="font-weight:700;font-size:20px;letter-spacing:.5px">PIETRAMONTE TALLER</div>
+          <div style="font-size:14px;opacity:.95;margin-top:4px">✅ Reserva confirmada</div>
+        </td></tr>
+        <tr><td style="padding:28px 28px 12px">
+          <p style="font-size:15px;line-height:1.5;margin:0 0 18px">Hola <strong>{{ reserva.cliente_nombre }}</strong>,</p>
+          <p style="font-size:14px;line-height:1.5;margin:0 0 18px">¡Tu cita está agendada! Acá los detalles:</p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:10px;padding:14px;margin:0 0 18px;font-size:14px">
+            <tr><td style="padding:6px 10px;color:#888;width:120px">📅 Día</td>
+                <td style="padding:6px 10px"><strong>{{ reserva.fecha|date:"l d \d\e F \d\e Y" }}</strong></td></tr>
+            <tr><td style="padding:6px 10px;color:#888">🕒 Hora</td>
+                <td style="padding:6px 10px"><strong>{{ reserva.hora_inicio|time:"H:i" }}</strong> hrs</td></tr>
+            <tr><td style="padding:6px 10px;color:#888">⏱ Duración</td>
+                <td style="padding:6px 10px">{{ reserva.duracion_estimada_min }} min aprox</td></tr>
+            <tr><td style="padding:6px 10px;color:#888">💰 Total ref.</td>
+                <td style="padding:6px 10px"><strong>${{ reserva.total_referencial_clp|stringformat:"d" }}</strong></td></tr>
+            <tr><td style="padding:6px 10px;color:#888">🚗 Vehículo</td>
+                <td style="padding:6px 10px">{{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} ({{ reserva.anio }}){% endif %} · {{ reserva.patente }}</td></tr>
+          </table>
+
+          <p style="font-size:13px;color:#666;margin:0 0 18px">
+            <strong>Servicios y repuestos:</strong>
+            <ul style="margin:6px 0;padding-left:20px;font-size:13px">
+              {% for it in reserva.items.all %}
+              <li style="padding:2px 0">{{ it.nombre }}{% if it.precio_referencia_clp %} — ${{ it.precio_referencia_clp|stringformat:"d" }}{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </p>
+
+          <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:12px 14px;margin:18px 0;font-size:13px;line-height:1.5;color:#5D4037">
+            ⚠️ Los precios son <strong>referenciales</strong>. El precio final se ajusta tras revisar el vehículo.
+          </div>
+
+          <div style="text-align:center;margin:24px 0">
+            <a href="{{ site_url }}/agendar/r/{{ token }}/"
+               style="display:inline-block;background:#C80C0F;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">
+              Ver / cancelar mi reserva
+            </a>
+            <div style="font-size:12px;color:#666;margin-top:10px">Guardá este link — es la única forma de cancelar tu cita por web.</div>
+          </div>
+
+          <p style="font-size:13px;color:#666;line-height:1.5;margin:14px 0 6px">📞 <strong>Te llamaremos</strong> 24h antes para confirmar la cita y aclarar dudas.</p>
+          <p style="font-size:13px;color:#666;line-height:1.5;margin:0">Si tenés que cambiar la fecha, respondé a este correo o cancelá desde el link de arriba y agendá una nueva.</p>
+        </td></tr>
+        <tr><td style="background:#fafafa;padding:16px 24px;font-size:11px;color:#888;text-align:center;border-top:1px solid #eee">
+          Pietramonte Taller · agenda@pietramonte.cl
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

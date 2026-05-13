@@ -1,0 +1,218 @@
+{% load correos_tags %}
+<article class="preview-card" data-correo-id="{{ correo.id }}">
+  <header class="preview-head">
+    <div class="preview-head-top">
+      <button type="button" class="preview-star" data-correo-id="{{ correo.id }}"
+              title="{% if correo.destacado %}Quitar destacado{% else %}Destacar{% endif %}">
+        <svg viewBox="0 0 24 24" width="20" height="20"
+             fill="{% if correo.destacado %}currentColor{% else %}none{% endif %}"
+             stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
+        </svg>
+      </button>
+      <span class="avatar avatar-lg" data-color="{{ correo.remitente|avatar_color }}">{{ correo.remitente|avatar_iniciales }}</span>
+      <div class="preview-meta-main">
+        <div class="preview-from" title="{{ correo.remitente }}">{{ correo.remitente_nombre|default:correo.remitente }}</div>
+        <div class="preview-from-mail" title="{{ correo.remitente_email }}">{{ correo.remitente_email }}</div>
+        <div class="preview-date" title="{{ correo.fecha|fecha_iso }}">
+          <span class="date-friendly">{{ correo.fecha|fecha_amigable }}</span>{% if correo.fecha %}<span class="date-iso"> · {{ correo.fecha|date:"d/m/Y H:i" }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="preview-actions">
+        <a href="{% url 'responder_correo' correo.id %}" class="preview-reply-btn" title="Responder al remitente">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+          </svg>
+          <span>Responder</span>
+        </a>
+        <a href="{% url 'responder_correo' correo.id %}?modo=todos" class="preview-reply-btn" title="Responder a todos los destinatarios">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="7 17 2 12 7 7"/><polyline points="12 17 7 12 12 7"/><path d="M22 18v-2a4 4 0 0 0-4-4H7"/>
+          </svg>
+          <span>Resp. todos</span>
+        </a>
+        <button type="button" class="preview-unread-btn" data-correo-id="{{ correo.id }}"
+                title="Marcar como no leído">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M4 4l8 8 8-8"/>
+          </svg>
+          <span>No leído</span>
+        </button>
+        <div class="preview-snooze-wrap">
+          <button type="button" class="preview-snooze-btn" data-correo-id="{{ correo.id }}"
+                  data-snoozed-until="{{ correo.snoozed_until|default_if_none:''|date:'c' }}"
+                  title="Posponer este correo">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/>
+              <path d="M5 3 2 6M19 3l3 3"/>
+            </svg>
+            <span>{% if correo.snoozed_until %}Pospuesto{% else %}Posponer{% endif %}</span>
+          </button>
+          <div class="preview-snooze-menu" hidden>
+            <button type="button" class="snooze-opt" data-preset="esta_tarde">
+              <span class="snooze-opt-l">Esta tarde</span>
+              <span class="snooze-opt-r">+4h</span>
+            </button>
+            <button type="button" class="snooze-opt" data-preset="manana">
+              <span class="snooze-opt-l">Mañana</span>
+              <span class="snooze-opt-r">9:00</span>
+            </button>
+            <button type="button" class="snooze-opt" data-preset="proxima_semana">
+              <span class="snooze-opt-l">Próxima semana</span>
+              <span class="snooze-opt-r">Lun 9:00</span>
+            </button>
+            <div class="snooze-custom">
+              <label>
+                <span>Personalizado</span>
+                <input type="datetime-local" class="snooze-custom-input">
+              </label>
+              <button type="button" class="snooze-custom-go">Posponer</button>
+            </div>
+            {% if correo.snoozed_until %}
+            <button type="button" class="snooze-cancel" data-correo-id="{{ correo.id }}">
+              Cancelar (vuelve a la bandeja)
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        <a href="{% url 'reenviar_correo' correo.id %}" class="preview-fwd-btn" title="Reenviar a un destinatario externo">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
+          </svg>
+          <span>Reenviar</span>
+        </a>
+        <a href="{% url 'detalle' correo.id %}" class="preview-open-btn" title="Abrir detalle">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7M9 7h8v8"/>
+          </svg>
+          <span>Abrir</span>
+        </a>
+      </div>
+    </div>
+
+    <h2 class="preview-subject">{{ correo.asunto|default:"(sin asunto)" }}</h2>
+    <div class="preview-to">
+      <span class="preview-to-l">Para:</span>
+      <span class="preview-to-v">{{ correo.destinatario|default:"—"|truncatechars:200 }}</span>
+    </div>
+<div class="preview-tags-wrap" data-correo-id="{{ correo.id }}">
+      <div class="preview-tags-label">Etiquetas</div>
+      <div class="preview-tags-list">
+        {% for et in correo.etiquetas.all %}
+        <span class="tag-chip" data-tag-id="{{ et.id }}" data-color="{{ et.color }}">
+          <span class="tag-dot"></span>{{ et.nombre }}
+          <button type="button" class="tag-remove" data-tag-id="{{ et.id }}" aria-label="Quitar etiqueta">×</button>
+        </span>
+        {% empty %}
+        <span class="preview-tags-empty">Sin etiquetas</span>
+        {% endfor %}
+        <button type="button" class="tag-add-btn" id="tag-add-btn" data-correo-id="{{ correo.id }}">+ Asignar</button>
+      </div>
+      <div class="tag-picker" id="tag-picker" hidden>
+</div>
+    </div>
+  </header>
+
+  <div class="preview-body">
+    {% if correo.cuerpo_html or correo.cuerpo_texto %}
+    <div class="preview-content preview-content-html">{% render_correo_body correo %}</div>
+    {% else %}
+    <div class="preview-empty-body">Este correo no tiene cuerpo en texto plano o es solo adjunto.</div>
+    {% endif %}
+  </div>
+{% if thread %}
+  <section class="preview-thread" aria-label="Otros mensajes del hilo">
+    <button type="button" class="preview-thread-toggle" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>{{ thread|length }} mensaje{{ thread|length|pluralize:"s" }} más en este hilo</span>
+      <svg class="preview-thread-chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
+    <ul class="preview-thread-list" hidden role="list">
+      {% for c in thread %}
+      <li>
+        <a href="{% url 'detalle' c.id %}" class="preview-thread-item" data-correo-id="{{ c.id }}"
+           data-preview-url="{% url 'correo_preview' c.id %}">
+          <span class="preview-thread-from" title="{{ c.remitente }}">{{ c.remitente_nombre|default:c.remitente|truncatechars:30 }}</span>
+          <span class="preview-thread-asunto">{{ c.asunto|default:"(sin asunto)"|truncatechars:60 }}</span>
+          <span class="preview-thread-fecha" title="{{ c.fecha|fecha_iso }}">{{ c.fecha|fecha_amigable }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+<div class="preview-notas" data-correo-id="{{ correo.id }}">
+    <div class="preview-notas-head">
+      <span class="preview-notas-label">📝 Notas internas</span>
+      <span class="notas-status" id="notas-status"></span>
+    </div>
+    <textarea class="preview-notas-input" data-correo-id="{{ correo.id }}"
+              placeholder="Anotaciones del equipo. Se guardan automáticamente al perder el foco."
+              maxlength="5000">{{ correo.notas }}</textarea>
+  </div>
+
+  {% with adjuntos=correo.adjuntos.all %}
+  {% if adjuntos %}
+  <footer class="preview-foot">
+    <div class="adj-list-label">📎 Adjuntos ({{ adjuntos|length }})</div>
+    {% include 'correos/_adjuntos_galeria.html' with adjuntos=adjuntos %}
+  </footer>
+  {% elif correo.tiene_adjunto %}
+  <footer class="preview-foot">
+    <span class="adj-badge-warn">📎 Marcado con adjuntos pero no se importaron archivos</span>
+  </footer>
+  {% endif %}
+  {% endwith %}
+
+  {# ─── Archivos del Archivo digital vinculados a este correo ─── #}
+  <footer class="preview-foot preview-vinculos">
+    <div class="adj-list-label">
+      🔗 Archivos del Archivo
+      {% if archivo_vinculos %}<span class="vinc-count">({{ archivo_vinculos|length }})</span>{% endif %}
+    </div>
+    {% if archivo_vinculos %}
+    <ul class="vinc-list">
+      {% for v in archivo_vinculos %}
+      <li class="vinc-row">
+        <a href="{% url 'archivo_descargar' v.archivo.id %}" target="_blank" class="vinc-name">
+          📄 {{ v.archivo.nombre|truncatechars:60 }}
+          {% if v.archivo.version_num > 1 %}<span class="vinc-ver">v{{ v.archivo.version_num }}</span>{% endif %}
+        </a>
+        <span class="vinc-meta">{{ v.archivo.tamano_legible }} · {{ v.creado|date:"d/m/Y" }}</span>
+        <form method="post" action="{% url 'correo_desvincular_archivo' correo.id v.id %}"
+              data-confirm="¿Quitar vínculo con «{{ v.archivo.nombre|escapejs }}»?">
+          {% csrf_token %}
+          <button type="submit" class="vinc-rm" title="Quitar vínculo">✕</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if archivos_para_vincular %}
+    <details class="vinc-add">
+      <summary class="vinc-add-toggle">+ Vincular archivo del Archivo</summary>
+      <form method="post" action="{% url 'correo_vincular_archivo' correo.id %}" class="vinc-add-form">
+        {% csrf_token %}
+        <select name="archivo_id" required>
+          <option value="" disabled selected>— Elegí un archivo —</option>
+          {% for a in archivos_para_vincular %}
+          <option value="{{ a.id }}">{{ a.nombre|truncatechars:80 }}{% if a.version_num > 1 %} (v{{ a.version_num }}){% endif %}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="vinc-add-btn">Vincular</button>
+      </form>
+    </details>
+    {% endif %}
+  </footer>
+</article>

@@ -1,0 +1,17 @@
+⏰ RECORDATORIO — Tu cita en Pietramonte es MAÑANA
+==================================================
+
+Hola {{ reserva.cliente_nombre }},
+
+Tu cita está agendada para:
+
+  📅 {{ reserva.fecha|date:"l d \d\e F" }}
+  🕒 {{ reserva.hora_inicio|time:"H:i" }} hrs
+  🚗 {{ reserva.marca }} {{ reserva.modelo }} · {{ reserva.patente }}
+
+📞 Te llamaremos hoy o mañana temprano para confirmar.
+
+Si surgió un imprevisto, respondé a este correo lo antes posible.
+
+—
+Pietramonte Taller · agenda@pietramonte.cl

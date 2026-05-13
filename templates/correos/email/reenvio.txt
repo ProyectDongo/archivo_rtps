@@ -1,0 +1,22 @@
+{% load correos_tags %}PIETRAMONTE — Correo reenviado
+================================
+
+{% if mensaje_extra %}{{ mensaje_extra }}
+
+— Reenviado por {{ reenviado_por }}
+
+----------------------------------
+{% endif %}MENSAJE ORIGINAL REENVIADO
+
+De:      {{ correo.remitente|default:"—" }}
+Para:    {{ correo.destinatario|default:"—" }}
+Fecha:   {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+Asunto:  {{ correo.asunto|default:"(sin asunto)" }}
+
+----------------------------------
+
+{{ correo.cuerpo_texto|limpiar_cid_brackets|default:"(este correo no tiene cuerpo de texto plano)" }}
+
+----------------------------------
+Bóveda Pietramonte
+Reenviado vía portal interno · Respuestas → {{ reenviado_por }}

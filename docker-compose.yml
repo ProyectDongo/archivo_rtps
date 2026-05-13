@@ -1,0 +1,37 @@
+services:
+  web:
+    build: .
+    image: archivo-pietramonte:latest
+    container_name: pietramonte_archivo
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      # Datos persistentes (BD + mbox + adjuntos). Sobreviven recreaciones.
+      - ./data:/app/data
+      # Estáticos comprimidos generados en build
+      - static_files:/app/staticfiles
+    ports:
+      # Solo localhost — el Tunnel de Cloudflare se conecta a este puerto.
+      # NO expongas a 0.0.0.0:8001, queremos cero acceso público directo.
+      - "127.0.0.1:8001:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    # Límites razonables para que NO consuma todo en CPX21 (4 GB RAM)
+    deploy:
+      resources:
+        limits:
+          memory: 700M
+        reservations:
+          memory: 200M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  static_files:

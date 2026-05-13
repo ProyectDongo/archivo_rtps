@@ -1,0 +1,15 @@
+🚨 TU CITA ES EN 1 HORA — Pietramonte
+======================================
+
+Hola {{ reserva.cliente_nombre }},
+
+Tu cita es a las {{ reserva.hora_inicio|time:"H:i" }} hrs.
+
+Vehículo: {{ reserva.marca }} {{ reserva.modelo }} · {{ reserva.patente }}
+
+📍 Te esperamos. Llegá unos 5 min antes para hacer la recepción tranquilos.
+
+Si tuviste un imprevisto, llamá al taller o respondé a este correo.
+
+—
+Pietramonte Taller · agenda@pietramonte.cl

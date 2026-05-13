@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Recordatorio: tu cita es mañana</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#222">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="540" cellpadding="0" cellspacing="0" style="max-width:540px;background:#ffffff;border-radius:12px;overflow:hidden">
+        <tr><td style="background:#FFB300;color:#fff;padding:20px 24px">
+          <div style="font-weight:700;font-size:18px">⏰ Recordatorio</div>
+          <div style="font-size:13px;opacity:.95;margin-top:4px">Tu cita en Pietramonte es mañana</div>
+        </td></tr>
+        <tr><td style="padding:24px">
+          <p style="font-size:15px;line-height:1.5;margin:0 0 14px">Hola <strong>{{ reserva.cliente_nombre }}</strong>,</p>
+          <p style="font-size:14px;line-height:1.5;margin:0 0 18px">Te recordamos tu cita en Pietramonte:</p>
+
+          <div style="text-align:center;background:#fafafa;border-radius:10px;padding:18px;margin:0 0 18px">
+            <div style="font-size:13px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">{{ reserva.fecha|date:"l d \d\e F" }}</div>
+            <div style="font-size:32px;font-weight:700;color:#C80C0F;margin:6px 0">{{ reserva.hora_inicio|time:"H:i" }} hrs</div>
+            <div style="font-size:13px;color:#666">{{ reserva.marca }} {{ reserva.modelo }} · {{ reserva.patente }}</div>
+          </div>
+
+          <p style="font-size:13px;color:#666;line-height:1.5;margin:0 0 6px">📞 Te llamaremos hoy o mañana temprano para confirmar.</p>
+          <p style="font-size:13px;color:#666;line-height:1.5;margin:0">Si surgió un imprevisto, respondé a este correo lo antes posible.</p>
+        </td></tr>
+        <tr><td style="background:#fafafa;padding:14px 24px;font-size:11px;color:#888;text-align:center;border-top:1px solid #eee">
+          Pietramonte Taller · agenda@pietramonte.cl
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

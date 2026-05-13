@@ -1,0 +1,76 @@
+{% load correos_tags %}
+<div class="adj-strip">
+  {% for a in adjuntos %}{% with tipo=a|tipo_archivo %}
+  <div class="adj-chip-wrap">
+
+    {% if a|es_imagen %}
+    <a href="{% url 'adjunto' a.id %}"
+       class="adj-chip adj-chip-img adj-thumb"
+       data-mime="{{ a.mime_type }}"
+       data-name="{{ a.nombre_original }}"
+       data-size="{{ a.tamano_legible }}"
+       title="{{ a.nombre_original }} · {{ a.tamano_legible }}">
+      <div class="adj-chip-preview-area">
+        <img src="{% url 'adjunto' a.id %}" alt="{{ a.nombre_original|truncatechars:30 }}" loading="lazy">
+      </div>
+      <div class="adj-chip-info">
+        <span class="adj-chip-name">{{ a.nombre_original|truncatechars:22 }}</span>
+        <span class="adj-chip-size">{{ a.tamano_legible }}</span>
+      </div>
+    </a>
+
+    {% else %}
+    <a href="{% url 'adjunto' a.id %}"
+       class="adj-chip adj-chip-file adj-chip-{{ tipo }} adj-card"
+       data-mime="{{ a.mime_type }}"
+       data-name="{{ a.nombre_original }}"
+       data-size="{{ a.tamano_legible }}">
+      <div class="adj-chip-preview-area">
+        {% if tipo == 'pdf' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
+        {% elif tipo == 'sheet' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8M8 17h8M12 11v10"/></svg>
+        {% elif tipo == 'doc' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+        {% elif tipo == 'slides' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        {% elif tipo == 'zip' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M11 12v2M11 16v2M11 20v.5"/></svg>
+        {% elif tipo == 'audio' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3z"/><path d="M3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
+        {% elif tipo == 'video' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        {% elif tipo == 'codigo' %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        {% else %}
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        {% endif %}
+      </div>
+      <div class="adj-chip-info">
+        <span class="adj-chip-name">{{ a.nombre_original|truncatechars:22 }}</span>
+        <span class="adj-chip-size">{{ a.tamano_legible }} · {{ tipo|upper }}</span>
+      </div>
+    </a>
+    {% endif %}
+
+    <!-- Botones de hover (sibling válido — no nested <a> dentro de <a>) -->
+    <div class="adj-chip-hover-actions" aria-hidden="true">
+      {% if a.es_seguro_inline and not a|es_imagen %}
+      <a href="{% url 'adjunto' a.id %}"
+         class="adj-chip-action-btn adj-card"
+         data-mime="{{ a.mime_type }}"
+         data-name="{{ a.nombre_original }}"
+         data-size="{{ a.tamano_legible }}"
+         title="Previsualizar">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </a>
+      {% endif %}
+      <a href="{% url 'adjunto' a.id %}" download="{{ a.nombre_original }}"
+         class="adj-chip-action-btn" title="Descargar">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </a>
+    </div>
+
+  </div>
+  {% endwith %}{% endfor %}
+</div>

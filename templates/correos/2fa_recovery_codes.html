@@ -1,0 +1,64 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Códigos de recuperación — Pietramonte{% endblock %}
+
+{% block extra_head %}
+<style>
+  .codes-wrap{max-width:560px;margin:48px auto;padding:0 20px;color:#1a1a1a}
+  .codes-card{background:#fff;border:1px solid #e5e5e5;border-radius:14px;padding:32px;
+              box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .codes-warn{background:#fff3cd;border:1px solid #ffe69c;color:#664d03;
+              padding:12px 14px;border-radius:8px;font-size:14px;margin-bottom:18px}
+  .codes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0}
+  .codes-grid code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px;
+                   background:#f5f5f5;padding:10px 12px;border-radius:6px;
+                   border:1px solid #e0e0e0;text-align:center;letter-spacing:1px}
+  .codes-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .codes-actions button,.codes-actions a{
+    flex:1;min-width:140px;padding:11px 14px;border:1px solid #C80C0F;background:#fff;color:#C80C0F;
+    border-radius:8px;text-align:center;text-decoration:none;cursor:pointer;font-weight:600;
+    font-family:inherit;font-size:14px
+  }
+  .codes-actions a:hover,.codes-actions button:hover{background:#fdecec}
+  .primary-confirm{width:100%;padding:13px;background:#C80C0F;color:#fff;border:none;
+                   border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;
+                   font-family:inherit}
+  .primary-confirm:hover{background:#a30a0c}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="codes-wrap">
+  <div class="codes-card">
+    <h1 style="margin:0 0 6px">Tus 8 códigos de recuperación</h1>
+    <p style="color:#666;margin:0 0 18px">
+      Cada uno funciona <strong>una sola vez</strong>. Si perdés el teléfono y no
+      tenés ninguno de estos guardados, vas a quedar fuera del archivo.
+    </p>
+
+    <div class="codes-warn">
+      <strong>Esta es la única vez que se muestran.</strong> Imprimílos, guardalos en
+      un gestor de contraseñas, o copiálos a un papel y guardalo en un lugar seguro.
+    </div>
+
+    <div class="codes-grid" id="codes-grid">
+      {% for c in codes %}<code>{{ c }}</code>{% endfor %}
+    </div>
+
+    <div class="codes-actions">
+      <button type="button" id="btn-copiar-codes">Copiar todos</button>
+      <a href="{% url 'descargar_recovery_pdf' %}">Descargar PDF</a>
+      <button type="button" id="btn-imprimir-codes">Imprimir</button>
+    </div>
+    <form method="post" action="{% url 'confirmar_recovery_codes' %}" style="margin-top:10px">
+      {% csrf_token %}
+      <button type="submit" class="primary-confirm">Listo, los guardé</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/2fa_recovery_codes.js' %}" defer></script>
+{% endblock %}

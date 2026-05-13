@@ -1,0 +1,108 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Configurar 2FA — Pietramonte{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="{% static 'css/correos.css' %}">
+<style>
+  .twofa-wrap{max-width:520px;margin:48px auto;padding:0 20px;color:#1a1a1a}
+  .twofa-card{background:#fff;border:1px solid #e5e5e5;border-radius:14px;padding:32px;
+              box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .twofa-head h1{margin:0 0 6px;font-size:22px}
+  .twofa-head p{margin:0 0 20px;color:#666}
+  .twofa-step{margin:18px 0;padding-left:28px;position:relative}
+  .twofa-step::before{content:counter(s);counter-increment:s;
+                      position:absolute;left:0;top:0;width:22px;height:22px;
+                      background:#C80C0F;color:#fff;border-radius:50%;
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:13px;font-weight:700}
+  .twofa-list{counter-reset:s;list-style:none;padding:0;margin:0}
+  .twofa-qr{display:flex;justify-content:center;margin:18px 0;
+            background:#fff;padding:14px;border:1px solid #eee;border-radius:8px}
+  .twofa-qr svg{width:220px;height:220px}
+  .twofa-secret{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;
+                background:#f5f5f5;border:1px dashed #d4d4d4;padding:10px 14px;
+                border-radius:6px;word-break:break-all;text-align:center;
+                user-select:all}
+  .twofa-input{width:100%;padding:14px;font-size:22px;letter-spacing:6px;
+               text-align:center;border:1px solid #ccc;border-radius:8px;
+               font-family:ui-monospace,Menlo,Consolas,monospace}
+  .twofa-input:focus{outline:none;border-color:#C80C0F;box-shadow:0 0 0 3px rgba(200,12,15,.1)}
+  .app-btns{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .app-btn{flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
+           padding:10px 14px;border:1px solid #ccc;border-radius:8px;
+           text-decoration:none;color:#1a1a1a;background:#fff;font-size:13px;
+           transition:border-color .15s, transform .15s}
+  .app-btn:hover{border-color:#C80C0F;transform:translateY(-1px)}
+  .app-btn-icon{font-size:22px;line-height:1}
+  .app-btn-os{font-size:11px;color:#777;display:block}
+  .app-btn-text{font-weight:600}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="twofa-wrap">
+  <div class="twofa-card">
+    <div class="twofa-head">
+      <h1>Configurar autenticación en dos pasos</h1>
+      <p>Necesario para acceder. Solo lo configurás una vez.</p>
+    </div>
+
+    {% include 'partials/_messages.html' %}
+
+    <ol class="twofa-list">
+      <li class="twofa-step">
+        Instalá <strong>Google Authenticator</strong> en tu celular (o Authy / Bitwarden / 1Password si ya las usás):
+        <div class="app-btns">
+          <a class="app-btn" href="https://apps.apple.com/app/google-authenticator/id388497605"
+             target="_blank" rel="noopener noreferrer">
+            <span class="app-btn-icon"></span>
+            <div>
+              <span class="app-btn-os">Descargar para</span>
+              <span class="app-btn-text">iPhone (App Store)</span>
+            </div>
+          </a>
+          <a class="app-btn" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
+             target="_blank" rel="noopener noreferrer">
+            <span class="app-btn-icon">▶</span>
+            <div>
+              <span class="app-btn-os">Descargar para</span>
+              <span class="app-btn-text">Android (Google Play)</span>
+            </div>
+          </a>
+        </div>
+      </li>
+      <li class="twofa-step">
+        Escaneá este QR con la app:
+        <div class="twofa-qr">{{ qr_svg|safe }}</div>
+        <details>
+          <summary style="cursor:pointer;color:#666;font-size:13px">¿No podés escanear? Ingresá el código a mano</summary>
+          <div class="twofa-secret">{{ secret }}</div>
+          <p style="font-size:12px;color:#777;margin:8px 0 0">
+            Cuenta: <strong>{{ user_email }}</strong> · Emisor: <strong>Pietramonte Archivo</strong>
+          </p>
+        </details>
+      </li>
+      <li class="twofa-step">
+        Ingresá el código de 6 dígitos que muestra la app:
+        <form method="post" autocomplete="off" style="margin-top:12px">
+          {% csrf_token %}
+          <input type="text" name="codigo" inputmode="numeric" pattern="[0-9]*"
+                 maxlength="6" autocomplete="one-time-code" autofocus
+                 class="twofa-input" placeholder="000000" required>
+          <button type="submit" class="btn-acceder" style="margin-top:14px;width:100%">
+            Activar 2FA
+          </button>
+        </form>
+      </li>
+    </ol>
+
+    <p style="font-size:12px;color:#888;margin-top:24px;text-align:center">
+      Después de activarlo, te vamos a mostrar 8 códigos de recuperación.
+      Guardalos en un lugar seguro: son tu única forma de entrar si perdés el celular.
+    </p>
+  </div>
+</div>
+{% endblock %}

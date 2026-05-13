@@ -1,0 +1,332 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{{ app_label }}{% endblock %}
+{% block body_class %}page-archivos{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/archivos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="arc-shell">
+
+  <header class="arc-header">
+    <a href="{% url 'escritorio' %}" class="arc-back">← Escritorio</a>
+    <h1 class="arc-title">{{ app_label }}</h1>
+    <form method="get" class="arc-search">
+      <svg class="arc-search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input type="search" name="q" value="{{ busqueda }}"
+             placeholder="Buscar por nombre, descripción, tema..."
+             autocomplete="off">
+      {% if filtro_perfil %}<input type="hidden" name="perfil" value="{{ filtro_perfil }}">{% endif %}
+      {% if filtro_tema %}<input type="hidden" name="tema" value="{{ filtro_tema }}">{% endif %}
+      {% if filtro_tipo %}<input type="hidden" name="tipo" value="{{ filtro_tipo }}">{% endif %}
+      {% if filtro_visib %}<input type="hidden" name="visibilidad" value="{{ filtro_visib }}">{% endif %}
+    </form>
+    <span class="arc-count">{{ total }} {{ is_contratos|yesno:"contratos,archivos" }}</span>
+    <button type="button" class="arc-btn-primary" id="btn-subir-archivo"
+            style="background:{{ app_color }}">
+      + Subir {{ is_contratos|yesno:"contrato,archivo" }}
+    </button>
+  </header>
+
+  {% if prox_vencer %}
+  <section class="arc-alerts">
+    <strong>⚠ Próximos a vencer (30 días):</strong>
+    {% for c in prox_vencer|slice:":5" %}
+    <a href="{% url 'archivo_descargar' c.id %}" target="_blank">
+      {{ c.nombre }} ({{ c.contrato_vencimiento|date:"d/m" }})
+    </a>{% if not forloop.last %} · {% endif %}
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <div class="arc-layout">
+
+    <aside class="arc-sidebar">
+      <div class="arc-section">
+        <div class="arc-section-title">Filtros</div>
+        <a href="?" class="arc-filter {% if not filtro_perfil and not filtro_tema and not filtro_tipo %}active{% endif %}">
+          Todos
+          <span class="arc-count-pill">{{ total }}</span>
+        </a>
+      </div>
+
+      <div class="arc-section">
+        <div class="arc-section-title">Por perfil</div>
+        {% for b in buzones_visibles %}
+        <a href="?perfil={{ b.id }}" class="arc-filter {% if filtro_perfil == b.id|stringformat:'s' %}active{% endif %}">
+          {{ b.email|truncatechars:24 }}
+        </a>
+        {% endfor %}
+      </div>
+
+      {% if carpetas %}
+      <div class="arc-section">
+        <div class="arc-section-title">Carpetas</div>
+        {% for c in carpetas %}
+        <a href="?tema={{ c.path|urlencode }}" class="arc-filter arc-folder arc-folder-d{{ c.depth }} {% if filtro_tema == c.path %}active{% endif %}">
+          <span class="arc-folder-icon" aria-hidden="true">📁</span>
+          <span class="arc-folder-name">{{ c.nombre|truncatechars:22 }}</span>
+          <span class="arc-count-pill">{{ c.count }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if not is_contratos %}
+      <div class="arc-section">
+        <div class="arc-section-title">Por tipo</div>
+        {% for valor, etiqueta in tipos_choices %}
+        <a href="?tipo={{ valor }}" class="arc-filter {% if filtro_tipo == valor %}active{% endif %}">
+          {{ etiqueta }}
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="arc-section">
+        <div class="arc-section-title">Visibilidad</div>
+        <a href="?visibilidad=privado" class="arc-filter {% if filtro_visib == 'privado' %}active{% endif %}">
+          🔒 Privados (míos)
+        </a>
+        <a href="?visibilidad=perfil" class="arc-filter {% if filtro_visib == 'perfil' %}active{% endif %}">
+          👥 Por perfil
+        </a>
+        <a href="?visibilidad=publico" class="arc-filter {% if filtro_visib == 'publico' %}active{% endif %}">
+          🌐 Públicos
+        </a>
+      </div>
+
+      <div class="arc-section arc-section-bottom">
+        <a href="{% url 'papelera' %}" class="arc-link-papelera">🗑 Papelera</a>
+      </div>
+    </aside>
+
+    <main class="arc-main">
+      {% if archivos %}
+      <ul class="arc-list">
+        {% for a in archivos %}
+        <li class="arc-item">
+          <a href="{% url 'archivo_descargar' a.id %}" target="_blank" class="arc-item-name">
+            <span class="arc-item-icon arc-icon-{{ a.tipo }}">
+              {% if a.tipo == 'imagen' %}🖼{% elif a.tipo == 'contrato' %}📋{% elif a.tipo == 'factura' %}🧾{% else %}📄{% endif %}
+            </span>
+            <span class="arc-item-text">
+              <span class="arc-item-title">
+                <span class="arc-visib arc-visib-{{ a.visibilidad }}" title="{{ a.get_visibilidad_display }}">
+                  {% if a.visibilidad == 'privado' %}🔒{% elif a.visibilidad == 'publico' %}🌐{% else %}👥{% endif %}
+                </span>
+                {{ a.nombre|truncatechars:60 }}
+                {% if a.version_num > 1 %}<span class="arc-meta-tag arc-meta-ver" title="Versión {{ a.version_num }}">v{{ a.version_num }}</span>{% endif %}
+              </span>
+              <span class="arc-item-meta">
+                {% if a.perfil %}<span class="arc-meta-tag">{{ a.perfil.email|truncatechars:20 }}</span>{% endif %}
+                {% if a.tema %}<span class="arc-meta-tag arc-meta-tema">📁 {{ a.tema|truncatechars:32 }}</span>{% endif %}
+                {% if a.fecha %}<span class="arc-meta-date">{{ a.fecha|date:"d/m/Y" }}</span>{% endif %}
+                <span class="arc-meta-size">{{ a.tamano_legible }}</span>
+                {% if a.contrato_vencimiento %}
+                  <span class="arc-meta-tag arc-meta-vence">Vence: {{ a.contrato_vencimiento|date:"d/m/Y" }}</span>
+                {% endif %}
+              </span>
+            </span>
+          </a>
+          <div class="arc-item-actions">
+            <span class="arc-item-uploader">{{ a.creado|date:"d/m/Y H:i" }}</span>
+            <button type="button" class="arc-btn-preview"
+                    data-preview-url="{% url 'archivo_descargar' a.id %}?inline=1"
+                    data-preview-name="{{ a.nombre|escapejs }}"
+                    data-preview-mime="{{ a.mime_type|default:'' }}"
+                    data-preview-size="{{ a.tamano_legible }}"
+                    title="Vista previa">👁</button>
+            <a href="{% url 'compose' %}?archivo={{ a.id }}" class="arc-btn-send"
+               title="Enviar por correo">📧</a>
+            <details class="arc-more">
+              <summary class="arc-btn-more" title="Más acciones">⋯</summary>
+              <div class="arc-more-panel">
+                <form method="post" action="{% url 'archivo_subir_version' a.id %}"
+                      enctype="multipart/form-data" class="arc-more-form">
+                  {% csrf_token %}
+                  <strong>📋 Subir nueva versión</strong>
+                  <input type="file" name="archivo" required>
+                  <input type="text" name="nota" maxlength="300" placeholder="Qué cambió (opcional)">
+                  <button type="submit" class="arc-btn-primary" style="background:{{ app_color }}">Subir v{{ a.version_num|add:1 }}</button>
+                </form>
+                <form method="post" action="{% url 'archivo_compartir' a.id %}"
+                      class="arc-more-form">
+                  {% csrf_token %}
+                  <strong>👥 Compartir con un usuario</strong>
+                  <input type="email" name="email" required placeholder="email@dominio.cl"
+                         maxlength="200" autocomplete="off">
+                  <button type="submit" class="arc-btn-primary" style="background:{{ app_color }}">Compartir</button>
+                </form>
+                {% if a.comparticiones.all %}
+                <div class="arc-more-shares">
+                  <strong>Compartido con:</strong>
+                  <ul class="arc-share-list">
+                    {% for c in a.comparticiones.all %}
+                    <li>
+                      <span>{{ c.usuario.email }}</span>
+                      <form method="post" action="{% url 'archivo_descompartir' a.id c.id %}"
+                            data-confirm="¿Quitar compartición con {{ c.usuario.email|escapejs }}?">
+                        {% csrf_token %}
+                        <button type="submit" class="arc-btn-delete" title="Quitar">✕</button>
+                      </form>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+            </details>
+            <form method="post" action="{% url 'archivo_borrar' a.id %}"
+                  data-confirm="¿Mover «{{ a.nombre|escapejs }}» a la papelera?">
+              {% csrf_token %}
+              <button type="submit" class="arc-btn-delete" title="Mover a papelera">🗑</button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      {% if paginator.num_pages > 1 %}
+      <nav class="arc-paginacion">
+        {% if page.has_previous %}
+        <a href="?p={{ page.previous_page_number }}{% if filtro_perfil %}&perfil={{ filtro_perfil }}{% endif %}{% if filtro_tema %}&tema={{ filtro_tema|urlencode }}{% endif %}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}">← Anterior</a>
+        {% endif %}
+        <span class="arc-pag-info">Página {{ page.number }} de {{ paginator.num_pages }}</span>
+        {% if page.has_next %}
+        <a href="?p={{ page.next_page_number }}{% if filtro_perfil %}&perfil={{ filtro_perfil }}{% endif %}{% if filtro_tema %}&tema={{ filtro_tema|urlencode }}{% endif %}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}">Siguiente →</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+
+      {% else %}
+      <div class="arc-empty">
+        <div class="arc-empty-icon">📁</div>
+        <p>No hay {{ is_contratos|yesno:"contratos,archivos" }} todavía.</p>
+        <button type="button" class="arc-btn-primary" id="btn-subir-archivo-empty"
+                style="background:{{ app_color }}">
+          + Subir el primero
+        </button>
+      </div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+{# Modal de upload — minimal, sin JS lib #}
+<div id="upload-modal" class="arc-modal" hidden role="dialog" aria-modal="true">
+  <div class="arc-modal-backdrop" data-close-modal></div>
+  <div class="arc-modal-body">
+    <header class="arc-modal-head">
+      <h2>Subir {{ is_contratos|yesno:"contrato,archivo" }}</h2>
+      <button type="button" class="arc-modal-close" data-close-modal aria-label="Cerrar">✕</button>
+    </header>
+    <form method="post" enctype="multipart/form-data" action="{% url 'archivos_upload' %}" class="arc-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% if forzar_tipo %}<input type="hidden" name="tipo" value="{{ forzar_tipo }}">{% endif %}
+
+      <div class="arc-field">
+        <span class="arc-field-label">Archivo</span>
+        <div class="arc-dropzone">
+          <svg class="arc-dropzone-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span class="arc-dropzone-label">Arrastrá un archivo o hacé click para elegir</span>
+          <input type="file" name="archivo" required>
+        </div>
+        <small class="arc-field-hint">Máx 50 MB</small>
+      </div>
+
+      <label class="arc-field">
+        <span class="arc-field-label">Nombre descriptivo</span>
+        <input type="text" name="nombre" maxlength="200"
+               placeholder="(opcional — si vacío usa el filename)">
+      </label>
+
+      <div class="arc-field-row">
+        <label class="arc-field">
+          <span class="arc-field-label">Perfil</span>
+          <select name="perfil">
+            <option value="">— Compartido —</option>
+            {% for b in buzones_visibles %}
+            <option value="{{ b.id }}">{{ b.email }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="arc-field">
+          <span class="arc-field-label">Carpeta / Tema</span>
+          <input type="text" name="tema" maxlength="80"
+                 placeholder="ej. Facturación/2026/Enero">
+          <small class="arc-field-hint">Usá «/» para subcarpetas anidadas</small>
+        </label>
+      </div>
+
+      <label class="arc-field">
+        <span class="arc-field-label">¿Quién puede verlo?</span>
+        <select name="visibilidad">
+          <option value="privado">🔒 Privado — solo yo y admins</option>
+          <option value="perfil" selected>👥 Por perfil — users con acceso al buzón asignado</option>
+          <option value="publico">🌐 Público — todos los users del portal</option>
+        </select>
+        <small class="arc-field-hint">Si elegís «Por perfil» y dejás el perfil vacío, queda como Privado.</small>
+      </label>
+
+      <div class="arc-field-row">
+        {% if not forzar_tipo %}
+        <label class="arc-field">
+          <span class="arc-field-label">Tipo</span>
+          <select name="tipo">
+            {% for valor, etiqueta in tipos_choices %}
+            <option value="{{ valor }}">{{ etiqueta }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        {% endif %}
+
+        <label class="arc-field">
+          <span class="arc-field-label">Fecha del documento</span>
+          <input type="date" name="fecha">
+        </label>
+      </div>
+
+      {% if is_contratos %}
+      <div class="arc-field-row">
+        <label class="arc-field">
+          <span class="arc-field-label">Partes firmantes</span>
+          <input type="text" name="partes" maxlength="300"
+                 placeholder="ej. Cliente Andina; Pietramonte SpA">
+        </label>
+        <label class="arc-field">
+          <span class="arc-field-label">Vencimiento</span>
+          <input type="date" name="vencimiento">
+        </label>
+      </div>
+      {% endif %}
+
+      <label class="arc-field">
+        <span class="arc-field-label">Descripción</span>
+        <textarea name="descripcion" rows="2" placeholder="(opcional)"></textarea>
+      </label>
+
+      <footer class="arc-form-foot">
+        <button type="button" data-close-modal class="arc-btn-cancel">Cancelar</button>
+        <button type="submit" class="arc-btn-primary" style="background:{{ app_color }}">Subir</button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/archivos_upload.js' %}" defer></script>
+{% endblock %}

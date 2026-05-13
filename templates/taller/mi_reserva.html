@@ -1,0 +1,104 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Mi reserva — Pietramonte Taller{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/taller.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reserva-card">
+
+  {% if reserva.estado == 'confirmada_email' or reserva.estado == 'confirmada_llamada' %}
+  <div class="reserva-banner ok">
+    ✅ Reserva confirmada · {{ reserva.fecha|date:"l d \d\e F" }} a las {{ reserva.hora_inicio|time:"H:i" }}
+  </div>
+  {% elif reserva.estado == 'pendiente_email' %}
+  <div class="reserva-banner pend">
+    ⏳ Pendiente de verificación por email
+  </div>
+  {% elif reserva.estado == 'cancelada_cliente' %}
+  <div class="reserva-banner cancel">
+    ❌ Cancelaste esta reserva el {{ reserva.cancelada_en|date:"d/m/Y H:i" }}
+  </div>
+  {% elif reserva.estado == 'cancelada_taller' %}
+  <div class="reserva-banner cancel">
+    ❌ El taller canceló esta reserva. {% if reserva.cancelada_motivo %}Motivo: {{ reserva.cancelada_motivo }}{% endif %}
+  </div>
+  {% elif reserva.estado == 'completada' %}
+  <div class="reserva-banner ok">
+    ✅ Servicio completado — ¡Gracias!
+  </div>
+  {% elif reserva.estado == 'no_show' %}
+  <div class="reserva-banner cancel">
+    ⚠️ Marcada como no-show (no se presentó). Si fue un error, contactanos.
+  </div>
+  {% endif %}
+
+  {% if messages %}
+  <div class="msg-block">
+    {% for msg in messages %}
+    <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h1>Tu reserva en Pietramonte Taller</h1>
+
+  <div class="reserva-resumen">
+    <div class="rr-row"><span class="rr-l">📅 Día</span><strong>{{ reserva.fecha|date:"l d \d\e F \d\e Y" }}</strong></div>
+    <div class="rr-row"><span class="rr-l">🕒 Hora</span><strong>{{ reserva.hora_inicio|time:"H:i" }}</strong> · llegada estimada (último auto recibido a las 18:00)</div>
+    <div class="rr-row"><span class="rr-l">⏱ Tiempo estimado</span>{{ reserva.duracion_estimada_min }} min <em>(no preciso — depende del diagnóstico)</em></div>
+    <div class="rr-row"><span class="rr-l">💰 Total referencial</span><strong>${{ reserva.total_referencial_clp|stringformat:"d" }}</strong></div>
+  </div>
+
+  <h2>Servicios y repuestos</h2>
+  <ul class="reserva-items">
+    {% for it in reserva.items.all %}
+    <li>
+      <span class="ri-name">{{ it.nombre }}</span>
+      <span class="ri-cat">{{ it.get_categoria_display }}</span>
+      {% if it.precio_referencia_clp %}<span class="ri-price">${{ it.precio_referencia_clp|stringformat:"d" }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Tus datos</h2>
+  <div class="reserva-resumen">
+    <div class="rr-row"><span class="rr-l">Nombre</span>{{ reserva.cliente_nombre }}</div>
+    <div class="rr-row"><span class="rr-l">Email</span>{{ reserva.cliente_email }}</div>
+    <div class="rr-row"><span class="rr-l">Teléfono</span>{{ reserva.cliente_telefono }}</div>
+  </div>
+
+  <h2>Tu vehículo</h2>
+  <div class="reserva-resumen">
+    <div class="rr-row"><span class="rr-l">Patente</span><strong>{{ reserva.patente }}</strong></div>
+    <div class="rr-row"><span class="rr-l">Vehículo</span>{{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} · {{ reserva.anio }}{% endif %}</div>
+    {% if reserva.motor %}<div class="rr-row"><span class="rr-l">Motor</span>{{ reserva.motor }}</div>{% endif %}
+    {% if reserva.kilometraje %}<div class="rr-row"><span class="rr-l">Kilometraje</span>{{ reserva.kilometraje }} km</div>{% endif %}
+    {% if reserva.contexto_problema %}<div class="rr-row"><span class="rr-l">Contexto</span><em>{{ reserva.contexto_problema }}</em></div>{% endif %}
+  </div>
+
+  {% if puede_cancelar %}
+  <div class="reserva-acciones">
+    <form method="post" action="{% url 'cancelar_reserva' token=token %}"
+          onsubmit="return confirm('¿Seguro que querés cancelar esta reserva?')">
+      {% csrf_token %}
+      <button type="submit" class="btn-cancelar">❌ Cancelar reserva</button>
+    </form>
+    {% if reserva.estado == 'confirmada_email' %}
+    <form method="post" action="{% url 'confirmar_reserva_token' token=token %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-confirmar">✅ Confirmar mi llegada</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <p class="form-hint">
+    📞 También recibirás una llamada {% if reserva.estado != 'cancelada_cliente' and reserva.estado != 'cancelada_taller' %}24h antes y 1h antes{% endif %} para confirmar.
+    Si tenés dudas, escribinos a <a href="mailto:agenda@pietramonte.cl">agenda@pietramonte.cl</a>.
+  </p>
+</div>
+{% endblock %}

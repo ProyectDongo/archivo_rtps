@@ -1,0 +1,26 @@
+🚗 NUEVA RESERVA AGENDADA — Pietramonte
+========================================
+
+📅 {{ reserva.fecha|date:"l d \d\e F" }} · 🕒 {{ reserva.hora_inicio|time:"H:i" }} hrs
+
+CLIENTE
+  Nombre:    {{ reserva.cliente_nombre }}
+  Email:     {{ reserva.cliente_email }}
+  Teléfono:  {{ reserva.cliente_telefono }}
+
+VEHÍCULO
+  Patente:   {{ reserva.patente }}
+  Vehículo:  {{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} ({{ reserva.anio }}){% endif %}
+  {% if reserva.motor %}Motor:     {{ reserva.motor }}{% endif %}
+  {% if reserva.kilometraje %}Km:        {{ reserva.kilometraje }}{% endif %}
+  {% if reserva.contexto_problema %}Contexto:
+    {{ reserva.contexto_problema }}{% endif %}
+
+ITEMS ({{ reserva.items.count }}){% for it in reserva.items.all %}
+  · [{{ it.get_tipo_display }}] {{ it.nombre }} — ${{ it.precio_referencia_clp|stringformat:"d" }} · {{ it.duracion_min }}min{% endfor %}
+
+TOTAL REFERENCIAL: ${{ reserva.total_referencial_clp|stringformat:"d" }}
+
+📞 Recordá llamar al cliente 24h antes para confirmar.
+
+Ver en admin: {{ site_url }}/admin-pm-00cfe5865105/taller/reserva/{{ reserva.id }}/change/

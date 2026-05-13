@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pietramonte — Escritorio</title>
+<style>
+  /* ============================================================
+     Pietramonte — Mockup Home Fase 0 (2026-05-11)
+     Standalone HTML. No JS framework. Abrir con doble-click.
+     ============================================================ */
+
+  :root {
+    --brand: #C80C0F;
+    --brand-soft: rgba(200, 12, 15, .12);
+    --text: #0f172a;
+    --text-dim: #64748b;
+    --text-muted: #94a3b8;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --border: #e2e8f0;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .04);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .06);
+    --shadow-lg: 0 12px 32px rgba(15, 23, 42, .12), 0 4px 8px rgba(15, 23, 42, .08);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    --glass: rgba(255, 255, 255, .72);
+    --glass-border: rgba(255, 255, 255, .55);
+    --glass-blur: saturate(140%) blur(20px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ------------------- Wallpaper -------------------------------- */
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(ellipse 90% 70% at 15% 0%, #475569 0%, transparent 55%),
+      radial-gradient(ellipse 80% 60% at 85% 100%, #1e293b 0%, transparent 55%),
+      linear-gradient(135deg, #334155 0%, #0f172a 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* Subtle brand glow accent on wallpaper */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%; right: -10%;
+    width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(200, 12, 15, .12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ------------------- Top status bar -------------------------- */
+  .statusbar {
+    height: 36px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text);
+    font-size: 13px;
+    z-index: 10;
+    position: relative;
+  }
+  .statusbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .brand-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    background: var(--brand);
+  }
+  .statusbar .right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-dim);
+  }
+  .statusbar .user {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .5);
+  }
+  .avatar {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* ------------------- Desktop area ---------------------------- */
+  .desktop {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(280px, 320px) 1fr;
+    gap: 32px;
+    padding: 32px 40px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ------------------- App icons (escritorio) ------------------ */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 12px;
+    align-content: start;
+  }
+
+  .app-icon {
+    all: unset;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: white;
+    text-align: center;
+    position: relative;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .app-icon:hover {
+    background: rgba(255, 255, 255, .12);
+  }
+  .app-icon:active {
+    transform: scale(.96);
+  }
+  .app-icon:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  .app-icon-tile {
+    width: 64px; height: 64px;
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .app-icon-tile svg {
+    width: 36px; height: 36px;
+  }
+  .app-icon-label {
+    font-size: 12.5px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+    line-height: 1.2;
+  }
+  .app-icon-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--brand);
+    color: white;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+  }
+
+  /* App-specific tile colors (subtle accent backgrounds) */
+  .tile-correos { background: linear-gradient(135deg, #fee2e2, #ffffff); }
+  .tile-correos svg { color: var(--brand); }
+
+  .tile-archivos { background: linear-gradient(135deg, #dbeafe, #ffffff); }
+  .tile-archivos svg { color: #2563eb; }
+
+  .tile-contratos { background: linear-gradient(135deg, #fef3c7, #ffffff); }
+  .tile-contratos svg { color: #d97706; }
+
+  .tile-taller { background: linear-gradient(135deg, #d1fae5, #ffffff); }
+  .tile-taller svg { color: #059669; }
+
+  .tile-papelera { background: linear-gradient(135deg, #e2e8f0, #ffffff); }
+  .tile-papelera svg { color: var(--text-dim); }
+
+  .tile-config { background: linear-gradient(135deg, #ede9fe, #ffffff); }
+  .tile-config svg { color: #7c3aed; }
+
+  /* ------------------- Widgets panel --------------------------- */
+  .widgets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-content: start;
+  }
+  .widget {
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .widget.wide {
+    grid-column: 1 / -1;
+  }
+
+  .widget-header {
+    padding: 14px 18px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .widget-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .widget-title svg {
+    width: 16px; height: 16px;
+    color: var(--brand);
+  }
+  .widget-action {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background .12s ease, color .12s ease;
+  }
+  .widget-action:hover {
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+
+  .widget-body { padding: 6px; }
+  .widget-body.dense { padding: 4px; }
+
+  /* ---- email list ---- */
+  .email-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    align-items: center;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .email-row:hover { background: rgba(15, 23, 42, .04); }
+  .email-row.unread .email-subject { font-weight: 600; }
+  .email-row.unread .email-sender::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--brand);
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .email-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 11px; font-weight: 600;
+  }
+  .email-content { min-width: 0; }
+  .email-sender {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .email-subject {
+    font-size: 12.5px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+  .email-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- appointments ---- */
+  .appt-row {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    align-items: center;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .appt-row:hover { background: rgba(15, 23, 42, .04); }
+  .appt-date-tile {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .appt-date-tile .day {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .appt-date-tile .month {
+    font-size: 9px;
+    color: var(--brand);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 600;
+  }
+  .appt-info { min-width: 0; }
+  .appt-client {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .appt-svc {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .appt-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- file list ---- */
+  .file-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    align-items: center;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .file-row:hover { background: rgba(15, 23, 42, .04); }
+  .file-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-2);
+  }
+  .file-icon svg { width: 18px; height: 18px; }
+  .file-icon.pdf { background: #fee2e2; color: var(--brand); }
+  .file-icon.doc { background: #dbeafe; color: #2563eb; }
+  .file-icon.img { background: #d1fae5; color: #059669; }
+  .file-icon.xls { background: #dcfce7; color: #16a34a; }
+
+  .file-name {
+    font-size: 12.5px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .file-meta {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .file-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ---- folder tree preview (Archivos widget) ---- */
+  .folder-tree {
+    padding: 8px 14px;
+  }
+  .folder-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text);
+    transition: background .12s;
+  }
+  .folder-row:hover { background: rgba(15, 23, 42, .04); }
+  .folder-row svg { width: 16px; height: 16px; color: #d97706; flex-shrink: 0; }
+  .folder-row.nested-1 { padding-left: 24px; font-size: 12px; color: var(--text-dim); }
+  .folder-row.nested-2 { padding-left: 40px; font-size: 11.5px; color: var(--text-muted); }
+  .folder-row.nested-2 svg { color: var(--text-muted); width: 14px; height: 14px; }
+  .folder-count {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    background: rgba(15, 23, 42, .05);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ---- stats widget ---- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 8px 4px 12px;
+  }
+  .stat-cell {
+    text-align: center;
+    padding: 10px 4px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-label {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: 2px;
+  }
+
+  /* ------------------- Personalizar button --------------------- */
+  .btn-personalizar {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: background .12s, color .12s;
+  }
+  .btn-personalizar:hover {
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .btn-personalizar svg { width: 13px; height: 13px; }
+
+  /* ------------------- Chart widget ---------------------------- */
+  .chart-wrap { padding: 10px 14px 6px; }
+  .chart-svg {
+    width: 100%;
+    height: 140px;
+    display: block;
+    overflow: visible;
+  }
+  .chart-svg .bar-correos { fill: var(--brand); }
+  .chart-svg .bar-archivos { fill: #2563eb; }
+  .chart-svg .axis-label {
+    font: 500 9.5px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    fill: var(--text-muted);
+  }
+  .chart-legend {
+    display: flex;
+    gap: 18px;
+    padding: 4px 16px 10px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chart-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+  }
+  .chart-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+  }
+  .chart-kpi {
+    text-align: center;
+    padding: 12px 4px;
+    border-right: 1px solid var(--border);
+  }
+  .chart-kpi:last-child { border-right: none; }
+  .chart-kpi-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .chart-kpi-label {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: 3px;
+  }
+
+  /* ------------------- Top temas widget ------------------------ */
+  .theme-row {
+    display: grid;
+    grid-template-columns: 1fr 60px auto 16px;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .theme-row:hover { background: rgba(15, 23, 42, .04); }
+  .theme-row:hover .theme-edit { opacity: 1; }
+  .theme-name {
+    font-size: 12.5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .theme-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .theme-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    border-radius: 3px;
+  }
+  .theme-count {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    min-width: 28px;
+    text-align: right;
+  }
+  .theme-edit {
+    opacity: 0;
+    transition: opacity .12s;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .theme-edit svg { width: 12px; height: 12px; }
+
+  /* ------------------- Top perfiles widget --------------------- */
+  .profile-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 60px 40px;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .profile-row:hover { background: rgba(15, 23, 42, .04); }
+  .profile-avatar-sm {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .profile-info { min-width: 0; }
+  .profile-name {
+    font-size: 12.5px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .profile-role {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .profile-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .profile-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, var(--brand));
+    border-radius: 3px;
+  }
+  .profile-count {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* ------------------- Taskbar (bottom) ------------------------ */
+  .taskbar {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    z-index: 20;
+  }
+  .taskbar-btn {
+    all: unset;
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .12s ease, transform .12s ease;
+    position: relative;
+  }
+  .taskbar-btn:hover { background: rgba(15, 23, 42, .08); }
+  .taskbar-btn:active { transform: scale(.92); }
+  .taskbar-btn svg { width: 22px; height: 22px; }
+  .taskbar-btn .indicator {
+    position: absolute;
+    bottom: 3px; left: 50%;
+    transform: translateX(-50%);
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--brand);
+  }
+  .taskbar-divider {
+    width: 1px; height: 24px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+  .taskbar-clock {
+    position: fixed;
+    bottom: 18px; right: 20px;
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 6px 14px;
+    box-shadow: var(--shadow-md);
+    color: var(--text);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    z-index: 20;
+  }
+  .clock-time { font-size: 14px; font-weight: 600; line-height: 1.1; }
+  .clock-date { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+
+  /* ------------------- Responsive ------------------------------ */
+  @media (max-width: 900px) {
+    .desktop {
+      grid-template-columns: 1fr;
+      padding: 20px 16px 110px;
+      gap: 20px;
+    }
+    .app-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .widgets {
+      grid-template-columns: 1fr;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .stat-cell:nth-child(2) { border-right: none; }
+    .statusbar .user span { display: none; }
+  }
+  @media (max-width: 480px) {
+    .app-grid { grid-template-columns: repeat(3, 1fr); }
+    .app-icon-tile { width: 56px; height: 56px; }
+    .app-icon-tile svg { width: 30px; height: 30px; }
+    .taskbar { gap: 2px; padding: 4px 6px; }
+    .taskbar-btn { width: 38px; height: 38px; }
+    .taskbar-clock { padding: 4px 10px; }
+    .clock-time { font-size: 12px; }
+    .clock-date { font-size: 10px; }
+  }
+
+  /* ------------------- Footer note ----------------------------- */
+  .mockup-flag {
+    position: fixed;
+    top: 50px;
+    right: 16px;
+    background: rgba(200, 12, 15, .9);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 30;
+    letter-spacing: .03em;
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-flag">MOCKUP · Fase 0 v2</div>
+
+<!-- ============================================================
+     TOP STATUS BAR
+     ============================================================ -->
+<header class="statusbar">
+  <div class="brand">
+    <span class="brand-dot"></span>
+    <span>PIETRAMONTE — Archivo Digital</span>
+  </div>
+  <div class="right">
+    <button class="btn-personalizar" title="Modo personalización — reordenar widgets y apps">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
+      </svg>
+      Personalizar
+    </button>
+    <span id="status-date">11/05/2026</span>
+    <div class="user">
+      <div class="avatar">CP</div>
+      <span>cpietrasanta@</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     DESKTOP
+     ============================================================ -->
+<main class="desktop">
+
+  <!-- APP ICONS (left column) -->
+  <section class="app-grid" aria-label="Aplicaciones">
+
+    <button class="app-icon" title="Correos">
+      <div class="app-icon-tile tile-correos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M3 7l9 6 9-6"/>
+        </svg>
+        <span class="app-icon-badge">12</span>
+      </div>
+      <div class="app-icon-label">Correos</div>
+    </button>
+
+    <button class="app-icon" title="Archivos">
+      <div class="app-icon-tile tile-archivos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        </svg>
+      </div>
+      <div class="app-icon-label">Archivos</div>
+    </button>
+
+    <button class="app-icon" title="Contratos">
+      <div class="app-icon-tile tile-contratos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <path d="M14 3v6h6"/>
+          <path d="M8 13h8M8 17h5"/>
+        </svg>
+        <span class="app-icon-badge">3</span>
+      </div>
+      <div class="app-icon-label">Contratos</div>
+    </button>
+
+    <button class="app-icon" title="Taller">
+      <div class="app-icon-tile tile-taller">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
+      <div class="app-icon-label">Taller</div>
+    </button>
+
+    <button class="app-icon" title="Papelera">
+      <div class="app-icon-tile tile-papelera">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+      </div>
+      <div class="app-icon-label">Papelera</div>
+    </button>
+
+    <button class="app-icon" title="Configuración">
+      <div class="app-icon-tile tile-config">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </div>
+      <div class="app-icon-label">Ajustes</div>
+    </button>
+
+  </section>
+
+  <!-- WIDGETS (right column) -->
+  <section class="widgets" aria-label="Widgets">
+
+    <!-- Dashboard: ingresos últimos 14 días + KPIs -->
+    <article class="widget wide">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/>
+            <path d="M7 14l4-4 4 4 5-5"/>
+          </svg>
+          Ingresos · últimos 14 días
+        </div>
+        <a class="widget-action" href="#">Ver detalle →</a>
+      </header>
+
+      <div class="chart-wrap">
+        <!-- Bar chart inline SVG · 14 días × 2 series.
+             Datos hardcoded para mockup; en Django se renderiza
+             con un template tag que pasa la query. -->
+        <svg class="chart-svg" viewBox="0 0 560 140" preserveAspectRatio="none" role="img" aria-label="Gráfico de ingresos correos vs archivos últimos 14 días">
+          <!-- 14 días, cada día ocupa 40px. Bar correos 14px, bar archivos 14px, gap 4px, padding 4px lateral. -->
+          <!-- Y-axis máximo: 40 (correos) → escala lineal a 110px de altura. -->
+
+          <!-- Líneas guía horizontales sutiles -->
+          <line x1="0" y1="120" x2="560" y2="120" stroke="#e2e8f0" stroke-width="1"/>
+          <line x1="0" y1="80"  x2="560" y2="80"  stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 4"/>
+          <line x1="0" y1="40"  x2="560" y2="40"  stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 4"/>
+
+          <!-- Día 1 (28/04) → correos=28, archivos=5 -->
+          <rect class="bar-correos"  x="4"   y="43"  width="14" height="77" rx="2"/>
+          <rect class="bar-archivos" x="22"  y="106" width="14" height="14" rx="2"/>
+          <!-- Día 2 → 22, 8 -->
+          <rect class="bar-correos"  x="44"  y="60"  width="14" height="60" rx="2"/>
+          <rect class="bar-archivos" x="62"  y="98"  width="14" height="22" rx="2"/>
+          <!-- Día 3 → 31, 4 -->
+          <rect class="bar-correos"  x="84"  y="35"  width="14" height="85" rx="2"/>
+          <rect class="bar-archivos" x="102" y="109" width="14" height="11" rx="2"/>
+          <!-- Día 4 → 25, 12 -->
+          <rect class="bar-correos"  x="124" y="51"  width="14" height="69" rx="2"/>
+          <rect class="bar-archivos" x="142" y="87"  width="14" height="33" rx="2"/>
+          <!-- Día 5 → 19, 3 -->
+          <rect class="bar-correos"  x="164" y="68"  width="14" height="52" rx="2"/>
+          <rect class="bar-archivos" x="182" y="112" width="14" height="8"  rx="2"/>
+          <!-- Día 6 → 35, 9 -->
+          <rect class="bar-correos"  x="204" y="24"  width="14" height="96" rx="2"/>
+          <rect class="bar-archivos" x="222" y="95"  width="14" height="25" rx="2"/>
+          <!-- Día 7 → 24, 6 -->
+          <rect class="bar-correos"  x="244" y="54"  width="14" height="66" rx="2"/>
+          <rect class="bar-archivos" x="262" y="104" width="14" height="16" rx="2"/>
+          <!-- Día 8 → 27, 11 -->
+          <rect class="bar-correos"  x="284" y="46"  width="14" height="74" rx="2"/>
+          <rect class="bar-archivos" x="302" y="90"  width="14" height="30" rx="2"/>
+          <!-- Día 9 → 33, 7 -->
+          <rect class="bar-correos"  x="324" y="29"  width="14" height="91" rx="2"/>
+          <rect class="bar-archivos" x="342" y="101" width="14" height="19" rx="2"/>
+          <!-- Día 10 → 21, 4 -->
+          <rect class="bar-correos"  x="364" y="62"  width="14" height="58" rx="2"/>
+          <rect class="bar-archivos" x="382" y="109" width="14" height="11" rx="2"/>
+          <!-- Día 11 → 28, 13 -->
+          <rect class="bar-correos"  x="404" y="43"  width="14" height="77" rx="2"/>
+          <rect class="bar-archivos" x="422" y="84"  width="14" height="36" rx="2"/>
+          <!-- Día 12 → 30, 8 -->
+          <rect class="bar-correos"  x="444" y="38"  width="14" height="82" rx="2"/>
+          <rect class="bar-archivos" x="462" y="98"  width="14" height="22" rx="2"/>
+          <!-- Día 13 → 26, 10 -->
+          <rect class="bar-correos"  x="484" y="49"  width="14" height="71" rx="2"/>
+          <rect class="bar-archivos" x="502" y="93"  width="14" height="27" rx="2"/>
+          <!-- Día 14 (11/05, hoy) → 32, 5 -->
+          <rect class="bar-correos"  x="524" y="32"  width="14" height="88" rx="2"/>
+          <rect class="bar-archivos" x="542" y="106" width="14" height="14" rx="2"/>
+
+          <!-- Eje X: labels solo cada 3 días -->
+          <text class="axis-label" x="14"  y="135" text-anchor="middle">28/04</text>
+          <text class="axis-label" x="134" y="135" text-anchor="middle">01/05</text>
+          <text class="axis-label" x="254" y="135" text-anchor="middle">04/05</text>
+          <text class="axis-label" x="374" y="135" text-anchor="middle">07/05</text>
+          <text class="axis-label" x="494" y="135" text-anchor="middle">10/05</text>
+        </svg>
+      </div>
+
+      <div class="chart-legend">
+        <div class="chart-legend-item">
+          <span class="chart-legend-dot" style="background:var(--brand)"></span>
+          Correos recibidos
+        </div>
+        <div class="chart-legend-item">
+          <span class="chart-legend-dot" style="background:#2563eb"></span>
+          Archivos subidos
+        </div>
+      </div>
+
+      <div class="chart-kpis">
+        <div class="chart-kpi">
+          <div class="chart-kpi-value">8.024</div>
+          <div class="chart-kpi-label">Correos total</div>
+        </div>
+        <div class="chart-kpi">
+          <div class="chart-kpi-value">1.412</div>
+          <div class="chart-kpi-label">Archivos</div>
+        </div>
+        <div class="chart-kpi">
+          <div class="chart-kpi-value">37</div>
+          <div class="chart-kpi-label">Contratos</div>
+        </div>
+        <div class="chart-kpi">
+          <div class="chart-kpi-value">9</div>
+          <div class="chart-kpi-label">Citas semana</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Últimos correos -->
+    <article class="widget">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <path d="M3 7l9 6 9-6"/>
+          </svg>
+          Últimos correos
+        </div>
+        <a class="widget-action" href="#">Abrir →</a>
+      </header>
+      <div class="widget-body">
+        <div class="email-row unread">
+          <div class="email-avatar" style="background:#2563eb">R</div>
+          <div class="email-content">
+            <div class="email-sender">Resend — facturación</div>
+            <div class="email-subject">Tu reporte mensual está listo</div>
+          </div>
+          <div class="email-date">11/05/2026</div>
+        </div>
+        <div class="email-row unread">
+          <div class="email-avatar" style="background:#059669">JP</div>
+          <div class="email-content">
+            <div class="email-sender">Juan Pérez</div>
+            <div class="email-subject">Re: cotización mantención 10.000 km</div>
+          </div>
+          <div class="email-date">11/05/2026</div>
+        </div>
+        <div class="email-row">
+          <div class="email-avatar" style="background:#d97706">SB</div>
+          <div class="email-content">
+            <div class="email-sender">Banco Estado</div>
+            <div class="email-subject">Movimiento cuenta corriente — 10/05</div>
+          </div>
+          <div class="email-date">10/05/2026</div>
+        </div>
+        <div class="email-row">
+          <div class="email-avatar" style="background:#7c3aed">MV</div>
+          <div class="email-content">
+            <div class="email-sender">María Valdés</div>
+            <div class="email-subject">Contrato arriendo bodega — borrador</div>
+          </div>
+          <div class="email-date">09/05/2026</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Top 5 temas mencionados (editable) -->
+    <article class="widget">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 7h10M7 12h10M7 17h6"/>
+          </svg>
+          Top temas mencionados
+        </div>
+        <a class="widget-action" href="#" title="Agregar/editar categorías desde Ajustes">Editar categorías →</a>
+      </header>
+      <div class="widget-body dense">
+        <div class="theme-row">
+          <div class="theme-name">Cotizaciones</div>
+          <div class="theme-bar"><div class="theme-bar-fill" style="width:100%"></div></div>
+          <div class="theme-count">147</div>
+          <div class="theme-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-name">Pedidos de repuestos</div>
+          <div class="theme-bar"><div class="theme-bar-fill" style="width:78%"></div></div>
+          <div class="theme-count">114</div>
+          <div class="theme-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-name">Recibos / pagos</div>
+          <div class="theme-bar"><div class="theme-bar-fill" style="width:61%"></div></div>
+          <div class="theme-count">89</div>
+          <div class="theme-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-name">Facturas</div>
+          <div class="theme-bar"><div class="theme-bar-fill" style="width:45%"></div></div>
+          <div class="theme-count">66</div>
+          <div class="theme-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-name">Cancelaciones / reclamos</div>
+          <div class="theme-bar"><div class="theme-bar-fill" style="width:22%"></div></div>
+          <div class="theme-count">32</div>
+          <div class="theme-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Próximas citas Taller -->
+    <article class="widget">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          Próximas citas — Taller
+        </div>
+        <a class="widget-action" href="#">Ver agenda →</a>
+      </header>
+      <div class="widget-body">
+        <div class="appt-row">
+          <div class="appt-date-tile">
+            <div class="day">12</div>
+            <div class="month">May</div>
+          </div>
+          <div class="appt-info">
+            <div class="appt-client">Carlos Riquelme</div>
+            <div class="appt-svc">Cambio de aceite + filtros</div>
+            <div class="appt-time">09:30 · Box 2</div>
+          </div>
+        </div>
+        <div class="appt-row">
+          <div class="appt-date-tile">
+            <div class="day">12</div>
+            <div class="month">May</div>
+          </div>
+          <div class="appt-info">
+            <div class="appt-client">Sofía Hernández</div>
+            <div class="appt-svc">Mantención 30.000 km</div>
+            <div class="appt-time">11:00 · Box 1</div>
+          </div>
+        </div>
+        <div class="appt-row">
+          <div class="appt-date-tile">
+            <div class="day">13</div>
+            <div class="month">May</div>
+          </div>
+          <div class="appt-info">
+            <div class="appt-client">Logística Andina S.A.</div>
+            <div class="appt-svc">Revisión flota — 3 vehículos</div>
+            <div class="appt-time">08:00 · Box 1+2</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Top 5 perfiles activos -->
+    <article class="widget">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Top perfiles activos
+        </div>
+        <a class="widget-action" href="#">Ver todos →</a>
+      </header>
+      <div class="widget-body dense">
+        <div class="profile-row">
+          <div class="profile-avatar-sm" style="background:#C80C0F">CP</div>
+          <div class="profile-info">
+            <div class="profile-name">Claudia Pietrasanta</div>
+            <div class="profile-role">cpietrasanta@</div>
+          </div>
+          <div class="profile-bar"><div class="profile-bar-fill" style="width:100%"></div></div>
+          <div class="profile-count">412</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-avatar-sm" style="background:#2563eb">VP</div>
+          <div class="profile-info">
+            <div class="profile-name">Vicente Pietrasanta</div>
+            <div class="profile-role">vpietrasanta@</div>
+          </div>
+          <div class="profile-bar"><div class="profile-bar-fill" style="width:94%"></div></div>
+          <div class="profile-count">388</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-avatar-sm" style="background:#059669">AL</div>
+          <div class="profile-info">
+            <div class="profile-name">Ana Ledezma</div>
+            <div class="profile-role">aledezma@</div>
+          </div>
+          <div class="profile-bar"><div class="profile-bar-fill" style="width:70%"></div></div>
+          <div class="profile-count">287</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-avatar-sm" style="background:#d97706">CO</div>
+          <div class="profile-info">
+            <div class="profile-name">Cobranza</div>
+            <div class="profile-role">cobranza@</div>
+          </div>
+          <div class="profile-bar"><div class="profile-bar-fill" style="width:48%"></div></div>
+          <div class="profile-count">198</div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-avatar-sm" style="background:#7c3aed">CN</div>
+          <div class="profile-info">
+            <div class="profile-name">Contacto</div>
+            <div class="profile-role">contacto@</div>
+          </div>
+          <div class="profile-bar"><div class="profile-bar-fill" style="width:34%"></div></div>
+          <div class="profile-count">142</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Carpetas archivos (preview de jerarquía perfil/tema/fecha) -->
+    <article class="widget">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          Archivos · perfil / tema / fecha
+        </div>
+        <a class="widget-action" href="#">Explorar →</a>
+      </header>
+      <div class="folder-tree">
+        <div class="folder-row">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Claudia Pietrasanta</span>
+          <span class="folder-count">412</span>
+        </div>
+        <div class="folder-row nested-1">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Facturación</span>
+          <span class="folder-count">187</span>
+        </div>
+        <div class="folder-row nested-2">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>05 / 2026</span>
+          <span class="folder-count">23</span>
+        </div>
+        <div class="folder-row nested-2">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>04 / 2026</span>
+          <span class="folder-count">31</span>
+        </div>
+        <div class="folder-row nested-1">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Proveedores</span>
+          <span class="folder-count">98</span>
+        </div>
+        <div class="folder-row">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Vicente Pietrasanta</span>
+          <span class="folder-count">388</span>
+        </div>
+        <div class="folder-row">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Compartidos</span>
+          <span class="folder-count">126</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Archivos recientes -->
+    <article class="widget wide">
+      <header class="widget-header">
+        <div class="widget-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 8v4l3 2"/>
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
+          Archivos recientes
+        </div>
+        <a class="widget-action" href="#">Todos →</a>
+      </header>
+      <div class="widget-body">
+        <div class="file-row">
+          <div class="file-icon pdf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <path d="M14 3v6h6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="file-name">contrato-arriendo-bodega-2026.pdf</div>
+            <div class="file-meta">Vicente Pietrasanta · Contratos · 2,1 MB</div>
+          </div>
+          <div class="file-date">11/05/2026</div>
+        </div>
+        <div class="file-row">
+          <div class="file-icon xls">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 9l6 6M15 9l-6 6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="file-name">facturas-abril-2026.xlsx</div>
+            <div class="file-meta">Claudia Pietrasanta · Facturación · 854 KB</div>
+          </div>
+          <div class="file-date">10/05/2026</div>
+        </div>
+        <div class="file-row">
+          <div class="file-icon img">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+          </div>
+          <div>
+            <div class="file-name">recepcion-flota-andina.jpg</div>
+            <div class="file-meta">Taller · Recepciones · 3,4 MB</div>
+          </div>
+          <div class="file-date">10/05/2026</div>
+        </div>
+        <div class="file-row">
+          <div class="file-icon doc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <path d="M14 3v6h6"/>
+              <path d="M8 13h8M8 17h5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="file-name">acta-reunion-proveedores.docx</div>
+            <div class="file-meta">Compartidos · Reuniones · 142 KB</div>
+          </div>
+          <div class="file-date">09/05/2026</div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+</main>
+
+<!-- ============================================================
+     TASKBAR (bottom)
+     ============================================================ -->
+<nav class="taskbar" aria-label="Apps abiertas">
+  <button class="taskbar-btn" title="Inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  </button>
+
+  <button class="taskbar-btn" title="Buscar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.3-4.3"/>
+    </svg>
+  </button>
+
+  <div class="taskbar-divider"></div>
+
+  <button class="taskbar-btn" title="Correos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand)">
+      <rect x="3" y="5" width="18" height="14" rx="2"/>
+      <path d="M3 7l9 6 9-6"/>
+    </svg>
+    <span class="indicator"></span>
+  </button>
+
+  <button class="taskbar-btn" title="Archivos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2563eb">
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    </svg>
+  </button>
+
+  <button class="taskbar-btn" title="Contratos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#d97706">
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+      <path d="M14 3v6h6"/>
+    </svg>
+  </button>
+
+  <button class="taskbar-btn" title="Taller">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#059669">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+    </svg>
+  </button>
+</nav>
+
+<div class="taskbar-clock">
+  <div class="clock-time" id="clock-time">09:42</div>
+  <div class="clock-date" id="clock-date">11/05/2026</div>
+</div>
+
+<script>
+  // Reloj — formato dd/mm/yyyy como pidió el usuario.
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function tick() {
+    const d = new Date();
+    const time = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    const date = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+    document.getElementById('clock-time').textContent = time;
+    document.getElementById('clock-date').textContent = date;
+    const sd = document.getElementById('status-date');
+    if (sd) sd.textContent = date;
+  }
+  tick();
+  setInterval(tick, 30000);
+</script>
+
+</body>
+</html>

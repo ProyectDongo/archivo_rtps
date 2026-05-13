@@ -1,0 +1,208 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Agendar tu cita — Pietramonte Taller{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/taller.css' %}">
+{% if turnstile_site_key %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<header class="agendar-hero">
+  <h1>Agendá tu cita en el taller</h1>
+  <p>Elegí los servicios o repuestos que necesitás, picá día y hora, y completá tus datos. Te confirmamos por email y por llamada el día anterior.</p>
+</header>
+
+{% if messages %}
+<div class="msg-block">
+  {% for msg in messages %}
+  <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="agendar-layout">
+
+  <div class="agendar-main">
+
+    <div class="cat-tabs" role="tablist">
+      <button type="button" class="cat-tab active" data-tipo="servicio" role="tab" aria-selected="true">
+        🔧 Servicios
+      </button>
+      <button type="button" class="cat-tab" data-tipo="repuesto" role="tab" aria-selected="false">
+        🛞 Repuestos
+      </button>
+    </div>
+
+    <section id="cat-servicio" class="cat-grid" data-tipo-panel="servicio">
+      {% for it in servicios %}
+      {% include 'taller/_catalogo_card.html' with it=it %}
+      {% empty %}
+      <p class="cat-empty">Sin servicios cargados aún.</p>
+      {% endfor %}
+    </section>
+
+    <section id="cat-repuesto" class="cat-grid hidden" data-tipo-panel="repuesto">
+      {% for it in repuestos %}
+      {% include 'taller/_catalogo_card.html' with it=it %}
+      {% empty %}
+      <p class="cat-empty">Sin repuestos cargados aún.</p>
+      {% endfor %}
+    </section>
+
+    <form method="post" action="{% url 'confirmar_reserva' %}" id="agendar-form" class="agendar-form" novalidate>
+      {% csrf_token %}
+
+      <input type="text" name="website" tabindex="-1" autocomplete="off"
+             style="position:absolute;left:-9999px;top:-9999px;visibility:hidden" aria-hidden="true">
+
+      <div id="form-items-hidden"></div>
+
+      <h2>📅 Día y hora</h2>
+      <div class="calendario" id="calendario">
+        {% for d in fechas_calendario %}
+        <button type="button" class="cal-day {% if not d.es_laboral %}is-blocked{% endif %}"
+                data-fecha="{{ d.fecha|date:'Y-m-d' }}"
+                {% if not d.es_laboral or d.slots_libres == 0 %}disabled{% endif %}
+                title="{% if d.es_laboral %}{{ d.slots_libres }} slots libres{% else %}{{ d.motivo }}{% endif %}">
+          <span class="cal-dow">{{ d.fecha|date:"D"|truncatechars:3 }}</span>
+          <span class="cal-num">{{ d.fecha|date:"j" }}</span>
+          <span class="cal-mon">{{ d.fecha|date:"M" }}</span>
+          {% if d.es_laboral and d.slots_libres > 0 %}
+          <span class="cal-libres">{{ d.slots_libres }} libres</span>
+          {% elif d.es_laboral %}
+          <span class="cal-libres cal-llena">Lleno</span>
+          {% else %}
+          <span class="cal-libres">{{ d.motivo|truncatechars:14 }}</span>
+          {% endif %}
+        </button>
+        {% endfor %}
+      </div>
+
+      <div id="slots-container" class="slots-grid" hidden>
+        <h3>Horarios disponibles</h3>
+        <div class="slots-grid-inner" id="slots-grid"></div>
+      </div>
+
+      <input type="hidden" name="fecha" id="hidden-fecha">
+      <input type="hidden" name="hora_inicio" id="hidden-hora">
+
+      <h2>👤 Tus datos</h2>
+      <div class="form-row">
+        <label class="ff">
+          <span>Nombre completo *</span>
+          <input type="text" name="cliente_nombre" required maxlength="120">
+        </label>
+        <label class="ff">
+          <span>Email *</span>
+          <input type="email" name="cliente_email" required maxlength="254">
+        </label>
+        <label class="ff">
+          <span>Teléfono *</span>
+          <input type="tel" name="cliente_telefono" required maxlength="20"
+                 placeholder="+56912345678">
+        </label>
+      </div>
+
+      <h2>🚗 Tu vehículo</h2>
+      <div class="form-row">
+        <label class="ff">
+          <span>Patente *</span>
+          <input type="text" name="patente" required maxlength="10"
+                 placeholder="ABCD12" style="text-transform:uppercase">
+        </label>
+        <label class="ff">
+          <span>Marca *</span>
+          <input type="text" name="marca" required maxlength="40"
+                 placeholder="Toyota, Hyundai, Chevrolet...">
+        </label>
+        <label class="ff">
+          <span>Modelo *</span>
+          <input type="text" name="modelo" required maxlength="60"
+                 placeholder="Hilux, Tucson, Spark...">
+        </label>
+      </div>
+      <div class="form-row">
+        <label class="ff">
+          <span>Año (opcional)</span>
+          <input type="number" name="anio" min="1950" max="{% now 'Y' %}"
+                 placeholder="2020">
+        </label>
+        <label class="ff">
+          <span>Motor (opcional)</span>
+          <input type="text" name="motor" maxlength="40"
+                 placeholder="1.6L, 2.5 Diesel...">
+        </label>
+        <label class="ff">
+          <span>Kilometraje aprox (opcional)</span>
+          <input type="number" name="kilometraje" min="0" placeholder="80000">
+        </label>
+      </div>
+      <label class="ff full">
+        <span>Contexto del problema (opcional, ayuda al diagnóstico)</span>
+        <textarea name="contexto_problema" rows="3" maxlength="2000"
+                  placeholder="Ej: hace ruido al frenar desde hace 2 semanas, peor en bajadas..."></textarea>
+      </label>
+
+      <h2>🛡️ Verificación</h2>
+      <p class="form-hint">Para evitar reservas falsas, resolvé el captcha y mandá la cita.</p>
+
+      <div class="captcha-wrap">
+        <p class="captcha-pregunta">{{ fernet_challenge.pregunta }}</p>
+        <input type="hidden" name="captcha_token" value="{{ fernet_challenge.token }}">
+        <div class="captcha-grid">
+          {% for celda in fernet_challenge.celdas %}
+          <label class="captcha-cell">
+            <input type="checkbox" name="captcha_seleccion[]" value="{{ forloop.counter0 }}">
+            <span class="captcha-cell-inner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ celda.svg|safe }}</svg>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if turnstile_site_key %}
+      <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
+      {% else %}
+      <p class="form-hint" style="color:#888"><em>(Turnstile no configurado — modo dev)</em></p>
+      {% endif %}
+
+      <button type="submit" class="btn-confirmar" id="btn-confirmar" disabled>
+        📤 Confirmar reserva
+      </button>
+      <p class="form-hint disclaimer">
+        ⚠️ Los precios mostrados son <strong>referenciales</strong> — el precio final se ajusta
+        después del diagnóstico del vehículo. Te enviaremos un email de confirmación con todos
+        los detalles.
+      </p>
+    </form>
+  </div>
+
+  <aside class="cart" id="cart" aria-live="polite">
+    <h3>🛒 Tu cotización</h3>
+    <div id="cart-items">
+      <p class="cart-empty">Aún no agregaste nada. Tocá el "+" en los items que necesités.</p>
+    </div>
+    <div class="cart-totals" id="cart-totals" hidden>
+      <div class="cart-line"><span>Total referencial</span><strong id="cart-total">$0</strong></div>
+      <div class="cart-line cart-dur"><span>Tiempo estimado</span><span id="cart-dur">—</span></div>
+    </div>
+  </aside>
+</div>
+
+<script id="catalogo-data" type="application/json">
+[
+  {% for it in servicios %}{"id":{{ it.id }},"nombre":"{{ it.nombre|escapejs }}","precio":{{ it.precio_referencia_clp }},"duracion":{{ it.duracion_min }},"tipo":"servicio"}{% if not forloop.last %},{% endif %}{% endfor %}{% if servicios and repuestos %},{% endif %}
+  {% for it in repuestos %}{"id":{{ it.id }},"nombre":"{{ it.nombre|escapejs }}","precio":{{ it.precio_referencia_clp }},"duracion":{{ it.duracion_min }},"tipo":"repuesto"}{% if not forloop.last %},{% endif %}{% endfor %}
+]
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/agendar.js' %}" defer></script>
+{% endblock %}

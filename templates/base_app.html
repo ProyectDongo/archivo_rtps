@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  {% include 'partials/_head.html' %}
+  <title>{% block title %}Archivo Correos{% endblock %} — Pietramonte</title>
+  <meta name="robots" content="noindex,nofollow">
+<meta name="csrf-token" content="{{ csrf_token }}">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/correos.css' %}">
+  <link rel="stylesheet" href="{% static 'css/quill.snow.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% include 'partials/_nav_app.html' %}
+
+  <main class="app-main">
+    {% include 'partials/_messages.html' %}
+    {% block content %}{% endblock %}
+  </main>
+<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Vista de imagen">
+    <button type="button" class="lightbox-close" aria-label="Cerrar (Esc)" title="Cerrar (Esc)">✕</button>
+    <button type="button" class="lightbox-nav lightbox-prev" aria-label="Anterior (←)" title="Anterior (←)" hidden>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button type="button" class="lightbox-nav lightbox-next" aria-label="Siguiente (→)" title="Siguiente (→)" hidden>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <figure class="lightbox-figure">
+      <img class="lightbox-img" alt="">
+      <figcaption class="lightbox-caption">
+        <span class="lightbox-cap-text"></span>
+        <span class="lightbox-counter" hidden></span>
+        <a class="lightbox-download" href="#" download title="Descargar (d)" aria-label="Descargar imagen">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar
+        </a>
+      </figcaption>
+    </figure>
+  </div>
+
+  <div id="compose-fab" class="compose-fab" hidden role="dialog" aria-label="Redactar correo">
+    <header class="compose-fab-head">
+      <span class="compose-fab-title">Mensaje nuevo</span>
+      <span class="compose-fab-status" aria-live="polite"></span>
+      <button type="button" class="compose-fab-btn" data-cf-action="minimize" aria-label="Minimizar" title="Minimizar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button type="button" class="compose-fab-btn" data-cf-action="expand" aria-label="Pantalla completa" title="Pantalla completa">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      </button>
+      <button type="button" class="compose-fab-btn" data-cf-action="close" aria-label="Cerrar (mantiene borrador)" title="Cerrar — el borrador queda guardado">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <form class="compose-fab-form" method="post">
+      <label class="compose-fab-row">
+        <span class="compose-fab-label">Para</span>
+        <input type="text" name="to" autocomplete="off" maxlength="500" required>
+      </label>
+      <label class="compose-fab-row compose-fab-row-cc" hidden>
+        <span class="compose-fab-label">Cc</span>
+        <input type="text" name="cc" autocomplete="off" maxlength="500">
+      </label>
+      <button type="button" class="compose-fab-cc-toggle" data-cf-action="toggle-cc">+ Cc</button>
+      <label class="compose-fab-row">
+        <span class="compose-fab-label">Asunto</span>
+        <input type="text" name="asunto" autocomplete="off" maxlength="500" required>
+      </label>
+      <div class="compose-fab-editor-wrap">
+        <div class="compose-fab-editor" data-placeholder="Escribí tu mensaje…"></div>
+        <input type="hidden" name="cuerpo" class="compose-fab-cuerpo-hidden" maxlength="50000">
+      </div>
+      <div class="compose-fab-attach-list" id="cf-attach-list" hidden></div>
+      <footer class="compose-fab-foot">
+        <button type="submit" class="compose-fab-send">Enviar</button>
+        <button type="button" class="compose-fab-attach-btn" title="Adjuntar archivo (máx 10 MB por archivo, 25 MB total)" aria-label="Adjuntar archivo">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <input type="file" class="compose-fab-file-input" multiple style="display:none" aria-hidden="true">
+        <button type="button" class="compose-fab-discard" data-cf-action="discard" title="Descartar borrador">🗑</button>
+      </footer>
+    </form>
+  </div>
+
+  <div id="adj-viewer" class="adj-viewer" hidden role="dialog" aria-modal="true" aria-label="Vista de adjunto">
+    <div class="adj-viewer-bar">
+      <span class="adj-viewer-name"></span>
+      <span class="adj-viewer-size"></span>
+      <a class="adj-viewer-dl" href="#" download title="Descargar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar
+      </a>
+      <a class="adj-viewer-tab" href="#" target="_blank" rel="noopener" title="Abrir en nueva pestaña">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Pestaña
+      </a>
+      <button type="button" class="adj-viewer-close" aria-label="Cerrar (Esc)" title="Cerrar (Esc)">✕</button>
+    </div>
+    <div class="adj-viewer-body"></div>
+  </div>
+
+  <script src="{% static 'js/portal_helpers.js' %}" defer></script>
+  <script src="{% static 'js/app_nav.js' %}" defer></script>
+  <script src="{% static 'js/lightbox.js' %}" defer></script>
+  <script src="{% static 'js/adj_viewer.js' %}" defer></script>
+  <script src="{% static 'js/quill.js' %}" defer></script>
+  <script src="{% static 'js/compose_floating.js' %}" defer></script>
+  <script src="{% static 'js/theme.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

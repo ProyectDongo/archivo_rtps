@@ -1,0 +1,24 @@
+{% extends 'base_app.html' %}
+{% load correos_tags %}
+
+{% block title %}{{ correo.asunto|truncatechars:50 }}{% endblock %}
+{% block body_class %}page-detalle{% endblock %}
+
+{% block content %}
+<div class="detalle-toolbar">
+  <a href="{% url 'inbox' %}" class="back-link">← Volver a la bandeja</a>
+</div>
+
+<div class="detalle-shell">
+  {% include 'correos/_correo_preview.html' %}
+</div>
+
+<script id="etiquetas-disponibles-data" type="application/json">
+[{% for et in etiquetas_disponibles %}{"id":{{ et.id }},"nombre":"{{ et.nombre|escapejs }}","color":"{{ et.color }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+</script>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/correo_actions.js' %}" defer></script>
+{% endblock %}

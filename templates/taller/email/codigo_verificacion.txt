@@ -1,0 +1,19 @@
+PIETRAMONTE TALLER — Confirmá tu reserva
+==========================================
+
+Hola {{ reserva.cliente_nombre }},
+
+Tu código de verificación para confirmar la reserva del
+{{ reserva.fecha|date:"d/m/Y" }} a las {{ reserva.hora_inicio|time:"H:i" }} es:
+
+   ━━━━━━━━━━━━━━━━━━━━━━
+   {{ codigo }}
+   ━━━━━━━━━━━━━━━━━━━━━━
+
+Vigencia: 15 minutos.
+
+Si vos no agendaste esta reserva, ignorá este correo — la reserva
+se cancela sola si no la confirmás.
+
+——
+Pietramonte Taller · agenda@pietramonte.cl
