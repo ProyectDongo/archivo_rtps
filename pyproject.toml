@@ -23,10 +23,18 @@ ignore = [
     "S101",   # assert allowed in tests
     "S105",   # hardcoded passwords in tests/seeds
     "S106",
+    "S110",   # try/except/pass intencional (audit/logging nunca debe tumbar la op principal)
+    "S112",   # try/except/continue idem — patrón documentado en CLAUDE.md
     "S311",   # random is ok for non-crypto (captcha display only)
+    "S603",   # subprocess input no untrusted (PATH controlado en Docker, args hardcoded)
+    "S324",   # md5 usado para CID lookup, no para seguridad
     "B904",   # raise from in except — too strict for existing code
     "N806",   # uppercase variable names (models use DB_FIELD style)
     "E501",   # line too long — handled per-file, not globally
+    "E701",   # multiple statements on one line — algunas branch chains son legibles compactas
+    "E402",   # module-level import not at top — django.setup() requiere a veces orden
+    "E741",   # ambiguous name 'l' — falso positivo en código preexistente
+    "UP038",  # X | Y en isinstance — Python 3.10+ feature, ergonomía no security
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -34,6 +42,18 @@ ignore = [
 "taller/tests.py"  = ["S", "N"]
 "correos/management/commands/seed_demo.py" = ["S"]
 "correos/management/commands/seed_estructura.py" = ["S"]
+# Backup commands corren dentro del container Docker donde PATH es controlado.
+# pg_dump / tar son binarios estándar del sistema, S607 (partial path) es OK.
+"correos/management/commands/backup_adjuntos_b2.py" = ["S607"]
+"correos/management/commands/hacer_backup.py" = ["S607"]
+# correos_tags.py usa mark_safe sobre HTML pre-sanitizado por bleach (CLAUDE.md
+# documenta este patrón: pre-strip + bleach + render). El XSS se previene en
+# bleach, no acá. S308 sería un falso positivo en este contexto.
+"correos/templatetags/correos_tags.py" = ["S308"]
+# URLs fetched via urllib — los schemes están hardcoded en el código y vienen
+# de feeds gob.cl / Turnstile API. No hay input de usuario en la URL final.
+"taller/anti_bot.py" = ["S310"]
+"taller/management/commands/cargar_feriados.py" = ["S310"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["archivo", "correos", "taller"]

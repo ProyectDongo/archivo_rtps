@@ -66,8 +66,10 @@
                value="{{ to|default:'' }}"
                placeholder="destinatario@empresa.cl"
                required
-               maxlength="500"
-               autocomplete="off">
+               maxlength="2000"
+               autocomplete="off"
+               data-emailchips data-max="30"
+               data-suggest-url="{% url 'contactos' %}">
       </label>
 
       <label class="adv-field" style="display:block;margin-bottom:1rem">
@@ -75,11 +77,13 @@
         <input type="text"
                name="cc"
                value="{{ cc|default:'' }}"
-               placeholder="otro@empresa.cl, mas@empresa.cl"
-               maxlength="500"
-               autocomplete="off">
+               placeholder="copia@empresa.cl"
+               maxlength="2000"
+               autocomplete="off"
+               data-emailchips data-max="30"
+               data-suggest-url="{% url 'contactos' %}">
         <small style="color:#666;font-size:12px;margin-top:4px;display:block">
-          Coma para separar varios. Total To+Cc máximo 10.
+          Enter, Tab o coma para confirmar cada destinatario. Total To+Cc máximo 30.
         </small>
       </label>
 

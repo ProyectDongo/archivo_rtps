@@ -16,7 +16,6 @@ from django.utils import timezone
 
 from correos.models import Adjunto, Buzon, Correo
 
-
 # PDF mínimo válido (visualizable en Chrome/Firefox)
 PDF_DEMO = (
     b'%PDF-1.4\n'

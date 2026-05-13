@@ -24,10 +24,9 @@ import os
 import shutil
 import subprocess
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 logger = logging.getLogger('correos')
@@ -71,7 +70,7 @@ class Command(BaseCommand):
             self.stdout.write('DATABASE_URL es SQLite o no está definida — nada que backupear.')
             return
 
-        timestamp = datetime.now(timezone.utc).strftime('%Y/%m/%d/%H%M%S')
+        timestamp = datetime.now(UTC).strftime('%Y/%m/%d/%H%M%S')
         dump_name = f'{timestamp}.sql.gz'
 
         with tempfile.TemporaryDirectory(prefix='db-backup-') as tmpdir:

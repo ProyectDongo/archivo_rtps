@@ -31,12 +31,10 @@ import base64
 import hashlib
 import json
 import secrets
-import time
-from typing import Iterable
+from collections.abc import Iterable
 
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
-
 
 # ─── Íconos SVG (paths Lucide MIT, viewBox 24×24, stroke 1.8 sin fill) ─────
 # Curados para que sean inconfundibles a 32-40 px. Si agregás más, mantené

@@ -22,7 +22,6 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
-
 # ─── Constantes de operación ───────────────────────────────────────────────
 # El taller atiende lun-vie 9:00 a 18:00 (último auto a las 18:00, no 18:30:
 # tienen 30 min para diagnosticar antes de cierre). Almuerzo 13:00-14:00

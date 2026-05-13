@@ -21,10 +21,9 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
-from django.db.models import Count
 from django.utils import timezone
 
-from correos.models import BuzonGmailLabel, Correo
+from correos.models import BuzonGmailLabel
 
 
 class Command(BaseCommand):
@@ -82,7 +81,7 @@ class Command(BaseCommand):
             self.stdout.write(f'    last_uid        = {sync.last_uid}')
             self.stdout.write(f'    last_sync_at    = {sync.last_sync_at:%Y-%m-%d %H:%M:%S} ({hace_sync} atrás)'
                               if sync.last_sync_at else
-                              f'    last_sync_at    = (nunca corrió)')
+                              '    last_sync_at    = (nunca corrió)')
             self.stdout.write(f'    sincronizados   = {sync.correos_sincronizados} (acumulado histórico)')
             self.stdout.write(f'    correos en DB   = {total_correos}')
             self.stdout.write(f'    últimas 24h     = {ultimas_24h}')

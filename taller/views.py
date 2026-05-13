@@ -19,17 +19,15 @@ loguea ReservaIntento con motivo para forensia.
 """
 from __future__ import annotations
 
-import hashlib
 import logging
-from datetime import date as date_cls, datetime, timedelta
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -39,7 +37,6 @@ from correos.models import hash_ip
 
 from . import anti_bot
 from .models import (
-    BloqueoCalendario,
     ItemCatalogo,
     Reserva,
     ReservaIntento,

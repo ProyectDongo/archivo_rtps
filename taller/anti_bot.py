@@ -78,7 +78,7 @@ def generar_codigo_email(email: str) -> str:
     Genera un código de 6 dígitos atado al email (case-insensitive) y lo guarda
     en cache. Sobreescribe cualquier código anterior del mismo email.
     """
-    code = '{:06d}'.format(secrets.randbelow(10**6))
+    code = f'{secrets.randbelow(10**6):06d}'
     cache.set(EMAIL_VERIFY_PREFIX + email.lower().strip(), code, EMAIL_VERIFY_TTL_SEG)
     return code
 

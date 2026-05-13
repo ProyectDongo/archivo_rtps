@@ -10,9 +10,9 @@ Wrapper sobre django.core.mail que:
 from __future__ import annotations
 
 import logging
-from email.mime.base import MIMEBase
+from collections.abc import Sequence
 from email import encoders
-from typing import Sequence
+from email.mime.base import MIMEBase
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives

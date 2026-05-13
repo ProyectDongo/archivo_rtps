@@ -11,26 +11,47 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import ExtractHour, ExtractIsoWeekDay, TruncDate, TruncMonth
 from django.http import FileResponse, Http404, HttpResponseBadRequest, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
 
-from . import captcha, totp as totp_helpers
+from taller.anti_bot import verify_turnstile
+
+from . import captcha
+from . import totp as totp_helpers
 from .models import (
-    Adjunto, Archivo, ArchivoComparticion, ArchivoVinculo, BorradorAdjunto,
-    BorradorCorreo, Buzon, CategoriaTema, Correo, CorreoEnviado, CorreoLeido,
-    CorreoSnooze, Etiqueta, EventoAuditoria, IntentoLogin, ReenvioCorreo,
-    UserDesktopPrefs, UsuarioPortal, hash_ip,
+    Adjunto,
+    Archivo,
+    ArchivoComparticion,
+    ArchivoVinculo,
+    BorradorAdjunto,
+    BorradorCorreo,
+    Buzon,
+    CategoriaTema,
+    Correo,
+    CorreoEnviado,
+    CorreoLeido,
+    CorreoSnooze,
+    Etiqueta,
+    EventoAuditoria,
+    IntentoLogin,
+    ReenvioCorreo,
+    UsuarioPortal,
+    hash_ip,
 )
 from .throttle import throttle_user
-from taller.anti_bot import verify_turnstile
 
 logger = logging.getLogger('correos.views')
 
 
 # Tiempo máximo entre password OK y completar 2FA (segundos).
 PRE_2FA_TTL = 5 * 60
+
+# "Recordarme" extiende la cookie a 30 días con sliding (SESSION_SAVE_EVERY_REQUEST).
+# Re-pedimos 2FA cada RE_2FA_AFTER_DAYS para frenar cookies robadas en sesiones largas.
+REMEMBER_ME_AGE_DAYS = 30
+RE_2FA_AFTER_DAYS    = 30
 
 # Account lockout (anti brute-force per-usuario)
 LOCKOUT_THRESHOLD     = 5      # fallos consecutivos antes de bloquear
@@ -130,18 +151,34 @@ def portal_login_required(view):
     def wrapper(request, *args, **kwargs):
         if not request.session.get('usuario_email'):
             return redirect('login')
-        # 2FA enforcement: si el usuario nunca activó TOTP, lo mandamos al setup.
-        # No bloqueamos la descarga de PDFs de recovery (evita loop infinito).
+        # Resolver de URL: necesario para chequear si la URL actual está en
+        # whitelist de excepciones (no redirect a setup/verify desde ahí).
+        from django.urls import Resolver404, resolve
+        try:
+            match = resolve(request.path_info)
+            url_name = match.url_name
+        except Resolver404:
+            url_name = ''
+        whitelist = {'setup_2fa', 'verify_2fa', 'logout', 'descargar_recovery_pdf'}
+
         if getattr(settings, 'PORTAL_REQUIRE_2FA', True):
             usuario = _usuario_actual(request)
+            # (a) Usuario nunca configuró TOTP → mandamos al setup.
             if usuario and not usuario.totp_activo:
-                from django.urls import resolve, Resolver404
-                try:
-                    match = resolve(request.path_info)
-                    if match.url_name not in ('setup_2fa', 'verify_2fa', 'logout', 'descargar_recovery_pdf'):
-                        return redirect('setup_2fa')
-                except Resolver404:
+                if url_name not in whitelist:
                     return redirect('setup_2fa')
+            # (b) Sesión activa pero pasaron RE_2FA_AFTER_DAYS desde el último
+            #     2FA → re-pedimos verify para frenar cookies robadas en sesiones
+            #     largas (modo "recordarme"). Sin esta defensa, una cookie
+            #     persistente de 30 días le da al atacante 30 días enteros.
+            elif usuario and usuario.totp_activo:
+                ultima = request.session.get('ultima_2fa_at', 0)
+                if ultima and url_name not in whitelist:
+                    edad = int(time.time()) - int(ultima)
+                    if edad > RE_2FA_AFTER_DAYS * 24 * 60 * 60:
+                        request.session['re_2fa_user_id'] = usuario.id
+                        request.session['re_2fa_at']      = int(time.time())
+                        return redirect('verify_2fa')
         return view(request, *args, **kwargs)
     return wrapper
 
@@ -465,6 +502,9 @@ def login_view(request):
     request.session.cycle_key()
     request.session['pre_2fa_user_id'] = usuario.id
     request.session['pre_2fa_at']      = int(time.time())
+    # "Recordarme" elegido en el form → _promover_sesion lo aplicará tras 2FA OK.
+    recordarme = (request.POST.get('recordarme') or '').lower() in ('1', 'on', 'true', 'yes')
+    request.session['pre_2fa_recordarme'] = recordarme
     _rl_intento(ip_h, exito=True)
     _log_intento(request, ip_h, email, motivo='pwd_ok_2fa_pend', exito=False,
                  tiempo_ms=tiempo_ms)
@@ -506,13 +546,25 @@ def _get_pre_2fa_user(request) -> UsuarioPortal | None:
 
 def _promover_sesion(request, usuario: UsuarioPortal) -> None:
     """Pasa una sesión pre-2FA a sesión completa (lo que antes hacía login_view)."""
-    for k in ('pre_2fa_user_id', 'pre_2fa_at', 'setup_secret'):
+    recordarme = bool(request.session.get('pre_2fa_recordarme'))
+    for k in ('pre_2fa_user_id', 'pre_2fa_at', 'pre_2fa_recordarme', 'setup_secret',
+              're_2fa_user_id', 're_2fa_at'):
         request.session.pop(k, None)
     usuario.ultimo_login = timezone.now()
     usuario.save(update_fields=['ultimo_login'])
     request.session.cycle_key()
     request.session['usuario_email']    = usuario.email
     request.session['usuario_es_admin'] = usuario.es_admin
+    # Marca el momento del último 2FA exitoso (para re-2FA cada RE_2FA_AFTER_DAYS).
+    request.session['ultima_2fa_at']    = int(time.time())
+    # Aplica la duración de cookie según "recordarme":
+    #   - Marcado: 30 días con sliding (SESSION_SAVE_EVERY_REQUEST=True extiende
+    #     con cada acción → si el usuario sigue activo no expira nunca).
+    #   - Sin marcar: respeta SESSION_COOKIE_AGE global (8h).
+    if recordarme:
+        request.session.set_expiry(REMEMBER_ME_AGE_DAYS * 24 * 60 * 60)
+    else:
+        request.session.set_expiry(0)   # 0 = SESSION_COOKIE_AGE default
     primer = usuario.buzones_visibles().first()
     if primer:
         request.session['buzon_actual_id']    = primer.id
@@ -586,14 +638,34 @@ def _render_setup(request, user, secret, status=200):
     }, status=status)
 
 
+def _get_re_2fa_user(request) -> UsuarioPortal | None:
+    """
+    Usuario en flujo de re-verificación: tiene sesión activa (`usuario_email`)
+    pero pasaron RE_2FA_AFTER_DAYS desde el último 2FA OK, y portal_login_required
+    nos mandó a verify_2fa para refrescarlo. Distinto de `_get_pre_2fa_user`
+    (que cubre el flujo post-password antes de la primera 2FA).
+    """
+    if not request.session.get('re_2fa_user_id'):
+        return None
+    return _usuario_actual(request)
+
+
 @never_cache
 @require_http_methods(['GET', 'POST'])
 def verify_2fa_view(request):
     """
-    Verifica el código TOTP (o un recovery code) tras login con password.
-    Misma lógica de rate-limit por IP que login_view.
+    Verifica el código TOTP (o un recovery code).
+
+    Dos flujos:
+      1) Post-login (password OK, falta 2FA): usuario via _get_pre_2fa_user.
+      2) Re-verify en sesión larga: usuario via _get_re_2fa_user (sesión completa,
+         pero ultima_2fa_at vieja). Tras OK, refresca ultima_2fa_at en sesión.
     """
     user = _get_pre_2fa_user(request)
+    es_re_verify = False
+    if not user:
+        user = _get_re_2fa_user(request)
+        es_re_verify = bool(user)
     if not user:
         messages.error(request, 'Tu sesión expiró. Inicia sesión de nuevo.')
         return redirect('login')
@@ -637,6 +709,13 @@ def verify_2fa_view(request):
         _rl_intento(ip_h, exito=True)
         # Reset del contador de lockout per-usuario tras login + 2FA OK
         user.resetear_intentos()
+        if es_re_verify:
+            # Re-verify en sesión larga: solo refrescamos ultima_2fa_at, no
+            # promovemos (la sesión ya está completa). Limpiamos los flags.
+            request.session.pop('re_2fa_user_id', None)
+            request.session.pop('re_2fa_at', None)
+            request.session['ultima_2fa_at'] = int(time.time())
+            return redirect('escritorio')
         _promover_sesion(request, user)
         return redirect('escritorio')
 
@@ -1188,7 +1267,7 @@ def cambiar_password_view(request):
 REENVIO_RL_HORAS    = 24
 REENVIO_LIMIT_USER  = 30
 REENVIO_LIMIT_ADMIN = 100
-REENVIO_MAX_DEST    = 5         # max emails por reenvío
+REENVIO_MAX_DEST    = 30        # max emails por reenvío
 REENVIO_MAX_NOTA    = 2000      # max chars del mensaje extra
 
 
@@ -1210,6 +1289,134 @@ def _parse_destinatarios(raw: str) -> list[str]:
     for e in emails:
         validate_email(e)
     return emails
+
+
+# ─── Autocompletado de contactos ────────────────────────────────────────────
+# Regex compartido entre el endpoint /intranet/contactos/ y los parsers.
+# Acepta "Nombre <email@x.cl>" y "email@x.cl" pelado.
+_EMAIL_REGEX = re.compile(r'([\w.+-]+@[\w-]+\.[\w.-]+)')
+_NAME_EMAIL_REGEX = re.compile(r'^\s*"?([^"<>]+?)"?\s*<\s*([\w.+-]+@[\w-]+\.[\w.-]+)\s*>\s*$')
+
+
+def _split_name_email(raw: str) -> tuple[str, str]:
+    """('Ana López <ana@x.cl>',) → ('Ana López', 'ana@x.cl'). Si no hay nombre, devuelve ('', email)."""
+    if not raw:
+        return ('', '')
+    m = _NAME_EMAIL_REGEX.match(raw)
+    if m:
+        return (m.group(1).strip(), m.group(2).lower())
+    em = _EMAIL_REGEX.search(raw)
+    return ('', em.group(1).lower()) if em else ('', '')
+
+
+@portal_login_required
+@require_http_methods(['GET'])
+@throttle_user('contactos', per_minute=120)
+def contactos_view(request):
+    """
+    Autocompletado de contactos del buzón actual.
+
+    GET /intranet/contactos/?q=<prefix>
+
+    Devuelve top 10 contactos del buzón cuyo nombre o email empieza con `q`,
+    rankeados por frecuencia de aparición en correos recibidos, enviados,
+    respuestas y reenvíos. Solo dentro del buzón actual (no leak entre buzones).
+
+    Respuesta: {"contactos": [{"email": "...", "nombre": "...", "freq": N}, ...]}
+    """
+    from collections import Counter
+
+    q_raw = (request.GET.get('q') or '').strip().lower()
+    if len(q_raw) < 1:
+        return JsonResponse({'contactos': []})
+    # Evita explosiones: prefix muy corto se limita a 2 chars de match útiles
+    if len(q_raw) > 80:
+        q_raw = q_raw[:80]
+
+    usuario = _usuario_actual(request)
+    buzon = _buzon_actual(request, usuario)
+    if not buzon:
+        return JsonResponse({'contactos': []})
+
+    # Cache: cualquier corrección de contactos llega vía nuevo correo IMAP que
+    # tarda al menos 10 min en aparecer (cron del sync). 5 min de TTL es seguro.
+    cache_key = f'contactos:{buzon.id}:{q_raw}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return JsonResponse({'contactos': cached})
+
+    counter: Counter = Counter()
+    nombres: dict[str, str] = {}      # email → mejor nombre encontrado
+
+    def _ingest(raw: str):
+        # Separa por coma o ; — los campos del modelo guardan listas así.
+        for part in (raw or '').replace(';', ',').split(','):
+            nombre, email = _split_name_email(part)
+            if not email:
+                continue
+            # Match por substring en email o nombre (estilo Gmail).
+            if q_raw not in email and (not nombre or q_raw not in nombre.lower()):
+                continue
+            counter[email] += 1
+            # Preserva el nombre más informativo (el primero no vacío gana).
+            if nombre and not nombres.get(email):
+                nombres[email] = nombre
+
+    # 1) Remitentes de correos del buzón (limitado a 2000 más recientes para no escanear todo).
+    remitentes = (
+        Correo.objects.filter(buzon=buzon)
+        .exclude(remitente='')
+        .order_by('-fecha')
+        .values_list('remitente', flat=True)[:2000]
+    )
+    for r in remitentes:
+        _ingest(r)
+
+    # 2) Destinatarios de correos en carpeta "enviados" (legado del .mbox importado).
+    dests = (
+        Correo.objects.filter(buzon=buzon, tipo_carpeta=Correo.Carpeta.ENVIADOS)
+        .exclude(destinatario='')
+        .order_by('-fecha')
+        .values_list('destinatario', flat=True)[:2000]
+    )
+    for d in dests:
+        _ingest(d)
+
+    # 3) Auditoría de envíos desde el portal (más fresca, refleja el uso real).
+    enviados = (
+        CorreoEnviado.objects.filter(buzon=buzon, exito=True)
+        .order_by('-enviado_en')
+        .values_list('destinatarios', 'cc')[:1000]
+    )
+    for to, cc in enviados:
+        _ingest(to)
+        _ingest(cc)
+
+    # 4) Reenvíos (correos archivados forward a externos).
+    reenvios = (
+        ReenvioCorreo.objects.filter(correo_original__buzon=buzon, exito=True)
+        .order_by('-enviado_en')
+        .values_list('destinatarios', flat=True)[:1000]
+    )
+    for d in reenvios:
+        _ingest(d)
+
+    # Top 10 por frecuencia. Excluye el propio email del buzón (no tiene sentido sugerirse a uno mismo).
+    propio = (buzon.email or '').lower()
+    items = []
+    for email, freq in counter.most_common(20):
+        if email == propio:
+            continue
+        items.append({
+            'email': email,
+            'nombre': nombres.get(email, ''),
+            'freq': freq,
+        })
+        if len(items) >= 10:
+            break
+
+    cache.set(cache_key, items, 300)
+    return JsonResponse({'contactos': items})
 
 
 @portal_login_required
@@ -1342,7 +1549,7 @@ def reenviar_correo_view(request, correo_id):
 RESP_RL_HORAS    = 24
 RESP_LIMIT_USER  = 30
 RESP_LIMIT_ADMIN = 100
-RESP_MAX_DEST    = 10        # poco más que reenvío porque reply-all suma varios
+RESP_MAX_DEST    = 30        # To + Cc combinados
 RESP_MAX_BODY    = 50000     # 50 KB de texto plano del usuario
 
 

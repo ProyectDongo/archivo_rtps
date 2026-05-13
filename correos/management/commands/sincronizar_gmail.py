@@ -38,7 +38,6 @@ from django.utils import timezone
 from correos.gmail_sync import ImapError, OverquotaError, fetch_nuevos, listar_labels
 from correos.models import Adjunto, BuzonGmailLabel, Correo
 
-
 # Lock anti-solapamiento: si una corrida de sync se demora más que el
 # intervalo del cron, la siguiente debe salir limpia sin hacer nada en vez
 # de competir con la anterior (que podría provocar duplicación de inserts
@@ -60,7 +59,6 @@ from correos.management.commands.import_mbox import (
     extraer_adjuntos,
     extraer_cuerpos,
 )
-
 
 logger = logging.getLogger('correos.sincronizar_gmail')
 

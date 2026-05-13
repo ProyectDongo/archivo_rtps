@@ -20,7 +20,21 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 
-from .models import AdminTOTP, Adjunto, Archivo, Buzon, BuzonGmailLabel, CategoriaTema, Correo, Etiqueta, EventoAuditoria, IntentoLogin, ReenvioCorreo, UserDesktopPrefs, UsuarioPortal
+from .models import (
+    Adjunto,
+    AdminTOTP,
+    Archivo,
+    Buzon,
+    BuzonGmailLabel,
+    CategoriaTema,
+    Correo,
+    Etiqueta,
+    EventoAuditoria,
+    IntentoLogin,
+    ReenvioCorreo,
+    UserDesktopPrefs,
+    UsuarioPortal,
+)
 
 logger = logging.getLogger('correos.admin')
 
@@ -438,8 +452,9 @@ class BuzonGmailLabelAdmin(admin.ModelAdmin):
 
     @admin.action(description='Sincronizar AHORA (sincroniza los seleccionados)')
     def sincronizar_ahora(self, request, queryset):
-        from django.core.management import call_command
         from io import StringIO
+
+        from django.core.management import call_command
         nombres = list(queryset.values_list('label_name', flat=True))
         if not nombres:
             return

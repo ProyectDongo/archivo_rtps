@@ -21,7 +21,6 @@ from django.db import transaction
 
 from taller.models import BloqueoCalendario, ItemCatalogo, Reserva, ReservaIntento
 
-
 # Mapping grupo → modelos y permisos
 # 'view' / 'add' / 'change' / 'delete' siguen la convención de Django.
 GRUPOS = {
@@ -95,5 +94,5 @@ class Command(BaseCommand):
             self.stdout.write(f'  {verbo}: {nombre} ({len(permisos)} permisos) — {conf["descripcion"]}')
 
         self.stdout.write(self.style.SUCCESS(
-            f'\nGrupos sincronizados. Asigná usuarios desde /admin-.../auth/user/'
+            '\nGrupos sincronizados. Asigná usuarios desde /admin-.../auth/user/'
         ))

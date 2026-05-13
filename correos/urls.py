@@ -42,6 +42,7 @@ urlpatterns = [
     path('intranet/buzon/etiqueta-nueva/',               views.crear_etiqueta_view,   name='crear_etiqueta'),
     path('intranet/buzon/firma/',                        views.firma_view,            name='firma'),
     path('intranet/correos/bulk/',                       views.bulk_acciones_view,    name='bulk_acciones'),
+    path('intranet/contactos/',                          views.contactos_view,        name='contactos'),
     path('intranet/redactar/',                           views.compose_view,          name='compose'),
     path('intranet/borradores/',                         views.borradores_view,           name='borradores'),
     path('intranet/borradores/<int:borrador_id>/',       views.borrador_detalle_view,     name='borrador_detalle'),

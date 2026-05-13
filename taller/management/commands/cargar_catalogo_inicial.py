@@ -16,7 +16,6 @@ from django.db import transaction
 
 from taller.models import ItemCatalogo
 
-
 # ─── Catálogo de muestra ───────────────────────────────────────────────────
 # Estos items pretenden cubrir el espectro de un taller mecánico chileno
 # para autos personales y camionetas/4x4 (mercado minería). Precios al alza

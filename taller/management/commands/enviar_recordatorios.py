@@ -30,7 +30,6 @@ from django.utils import timezone
 
 from taller.models import Reserva
 
-
 PENDIENTE_EMAIL_TTL_MIN = 30      # pendientes > 30 min se cancelan solos
 
 
@@ -139,7 +138,6 @@ class Command(BaseCommand):
             f'Tu cita en RSP es en 1 hora ({r.hora_inicio:%H:%M})'
         )
 
-        from taller.models import hash_token
         # Buscamos el token plano? No lo tenemos — solo el hash. El cliente
         # ya lo recibió en su email original. Acá mandamos el link a la URL
         # /agendar/r/<token>/ usando el hash NO sirve.

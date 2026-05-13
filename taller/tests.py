@@ -13,11 +13,11 @@ No cubre el flujo end-to-end de envío de emails (eso necesita SMTP mockeado
 
     python manage.py test taller
 """
-from datetime import date, datetime, time, timedelta
+from datetime import date, time, timedelta
 
-from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
-from django.test import Client, TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -186,7 +186,7 @@ class VistasPublicasTest(TestCase):
         self.assertTrue(len(data['slots']) > 0)
 
     def test_disponibilidad_finde_devuelve_no_laboral(self):
-        sabado = date(2026, 5, 9)
+        # 2026-05-09 es sábado
         resp = self.client.get(reverse('disponibilidad'), {'fecha': '2026-05-09'})
         data = resp.json()
         self.assertFalse(data['laboral'])
@@ -367,8 +367,9 @@ class VerificarEmailTests(TestCase):
 
 class EnviarRecordatoriosCommandTests(TestCase):
     def test_dry_run_no_modifica_bd(self):
-        from django.core.management import call_command
         from io import StringIO
+
+        from django.core.management import call_command
         d = _lunes_proximo()
         Reserva.objects.create(
             token_hash=hash_token(generar_token_publico()),
@@ -388,9 +389,10 @@ class EnviarRecordatoriosCommandTests(TestCase):
         self.assertIsNone(r.reminder_1h_enviado_en)
 
     def test_cleanup_only_cancela_pendientes_vencidos(self):
-        from django.core.management import call_command
-        from io import StringIO
         from datetime import timedelta
+        from io import StringIO
+
+        from django.core.management import call_command
         from django.utils import timezone
         # Reserva pendiente_email creada hace 40 min (vencida por el TTL de 30 min)
         r = Reserva.objects.create(

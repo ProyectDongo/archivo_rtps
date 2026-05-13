@@ -86,8 +86,8 @@ else:
     }
 
 # ─── Auth ───────────────────────────────────────────────────────────────────
-AUTH_USER_MODEL = 'auth.User'
-
+# Nota: AUTH_USER_MODEL queda en el default 'auth.User'. El portal de correos
+# usa su propio modelo UsuarioPortal (no Django auth), por eso no se redefine.
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -119,7 +119,11 @@ MEDIA_ROOT = BASE_DIR / 'data' / 'adjuntos'
 
 # ─── Sesiones ───────────────────────────────────────────────────────────────
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 60 * 60 * 8   # 8 horas
+# Sesión default 8h. Con "Recordarme" en login: 30 días vía set_expiry (ver
+# correos.views._promover_sesion). SAVE_EVERY_REQUEST=True hace sliding: cada
+# acción extiende la sesión, así si el usuario está activo no expira.
+SESSION_COOKIE_AGE = 60 * 60 * 8
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 

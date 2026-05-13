@@ -62,15 +62,15 @@ DISPOSABLE_DOMAINS = frozenset({
     'tempr.email', 'tempinbox.xyz', 'edu.sa.com', 'gettempmail.net',
     'mailpoof.com', 'inboxbear.com', 'flashmail.org', 'zikmail.com',
     'snapmail.cc', 'pakistmail.com', 'oneoffemail.com',
-    'mailtothis.com', 'tempemailfree.com', 'mvrht.com',
+    'tempemailfree.com', 'mvrht.com',
     'hidemail.de', 'tempinboxes.com', 'fakeinbox.io',
 
     # ─── Tier 5: catch-all de variantes Mailinator ────────────────────
     'binkmail.com', 'bobmail.info', 'chammy.info', 'devnullmail.com',
     'letthemeatspam.com', 'mailinater.com', 'mailinator.net',
     'mailinator.org', 'mailinator.us', 'reallymymail.com',
-    'safersignup.de', 'sendspamhere.com', 'sogetthis.com', 'spambooger.com',
-    'streetwisemail.com', 'suremail.info', 'tradermail.info',
+    'safersignup.de', 'spambooger.com',
+    'streetwisemail.com', 'suremail.info',
 })
 
 

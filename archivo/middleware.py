@@ -5,12 +5,11 @@ Middleware de seguridad:
   - AdminLoginRateLimitMiddleware: limita intentos fallidos al admin Django
     (8 fallos / 15 min / IP → 429 con Retry-After).
 """
-import time
 import hashlib
 
+from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
-
 
 # ─── CSP ───────────────────────────────────────────────────────────────────
 
@@ -45,7 +44,6 @@ class CSPMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        from django.conf import settings
         admin_path = '/' + settings.ADMIN_URL_PATH
         # No sobreescribir si la vista ya puso su propio CSP (ej: adjunto inline).
         if 'Content-Security-Policy' not in response:
@@ -73,7 +71,6 @@ class AdminLoginRateLimitMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        from django.conf import settings
         admin_login = '/' + settings.ADMIN_URL_PATH + 'login/'
 
         if request.path == admin_login and request.method == 'POST':

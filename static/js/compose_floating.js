@@ -9,11 +9,30 @@
   const form = fab.querySelector('.compose-fab-form');
   const status = fab.querySelector('.compose-fab-status');
   const titleEl = fab.querySelector('.compose-fab-title');
+
+  // Asegura que los chips widgets estén inicializados antes de leer .value.
+  // (defer ordering ya nos da esto, pero llamamos por las dudas si el orden
+  //  cambia en el futuro o se invoca dinámicamente.)
+  if (window.EmailChips && typeof window.EmailChips.init === 'function') {
+    window.EmailChips.init(form);
+  }
+
   const inputs = {
     to:     form.querySelector('[name="to"]'),
     cc:     form.querySelector('[name="cc"]'),
     asunto: form.querySelector('[name="asunto"]'),
   };
+
+  // Helpers: setear/leer el valor de un input que puede o no ser un chips widget.
+  function setRecipientValue(input, csv) {
+    const a = window.EmailChips && window.EmailChips.api(input);
+    if (a) a.setValue(csv || '');
+    else input.value = csv || '';
+  }
+  function getRecipientFocusEl(input) {
+    const a = window.EmailChips && window.EmailChips.api(input);
+    return a ? a.getVisible() : input;
+  }
   const cuerpoHidden = form.querySelector('.compose-fab-cuerpo-hidden');
   const ccRow = fab.querySelector('.compose-fab-row-cc');
   const ccToggle = fab.querySelector('.compose-fab-cc-toggle');
@@ -120,8 +139,8 @@
 
   // Re-arma el form con valores arbitrarios (al abrir o resumir un borrador).
   function poblar(data) {
-    inputs.to.value     = (data && data.to)     || '';
-    inputs.cc.value     = (data && data.cc)     || '';
+    setRecipientValue(inputs.to, (data && data.to)     || '');
+    setRecipientValue(inputs.cc, (data && data.cc)     || '');
     inputs.asunto.value = (data && data.asunto) || '';
     const cuerpoData = (data && data.cuerpo) || '';
     if (quill) {
@@ -195,7 +214,9 @@
       }
 
       setEstado('normal');
-      const focusEl = (opts.focus === 'cuerpo') ? inputs.cuerpo : inputs.to;
+      const focusEl = (opts.focus === 'cuerpo')
+        ? (quill ? { focus: function () { quill.focus(); } } : inputs.asunto)
+        : getRecipientFocusEl(inputs.to);
       setTimeout(() => focusEl.focus(), 50);
     },
     minimize() { setEstado('minimized'); },

@@ -56,12 +56,14 @@
         <input type="text"
                name="destinatarios"
                value="{{ destinatarios|default:'' }}"
-               placeholder="cliente@empresa.cl, supervisor@empresa.cl"
+               placeholder="cliente@empresa.cl"
                required
-               maxlength="500"
-               autocomplete="off">
+               maxlength="2000"
+               autocomplete="off"
+               data-emailchips data-max="30"
+               data-suggest-url="{% url 'contactos' %}">
         <small style="color:#666;font-size:12px;margin-top:4px;display:block">
-          Coma para separar varios. Máximo 5 destinatarios por reenvío.
+          Presioná Enter, Tab, coma o punto-y-coma para agregar cada destinatario. Máximo 30 por reenvío.
         </small>
       </label>
 

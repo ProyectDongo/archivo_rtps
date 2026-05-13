@@ -19,7 +19,6 @@ import qrcode
 import qrcode.image.svg
 from django.contrib.auth.hashers import check_password, make_password
 
-
 # Alfabeto sin caracteres ambiguos visualmente (sin 0/O, 1/I/L, etc.)
 _RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 

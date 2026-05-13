@@ -32,7 +32,6 @@ from contextlib import contextmanager
 
 from django.conf import settings
 
-
 logger = logging.getLogger('correos.gmail_sync')
 
 

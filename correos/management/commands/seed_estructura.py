@@ -20,10 +20,10 @@ Si algún usuario YA existe, no se le toca el password (solo se ajusta el M2M).
 """
 import secrets
 import string
+
 from django.core.management.base import BaseCommand
 
 from correos.models import Buzon, UsuarioPortal
-
 
 # Buzones reales
 BUZONES = [

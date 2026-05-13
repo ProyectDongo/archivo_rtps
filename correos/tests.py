@@ -23,12 +23,18 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.test import Client, TestCase, override_settings
-from django.urls import reverse
 from django.utils import timezone
 
 from .models import (
-    Adjunto, BorradorCorreo, Buzon, Correo, CorreoLeido, CorreoSnooze,
-    Etiqueta, IntentoLogin, UsuarioPortal,
+    Adjunto,
+    BorradorCorreo,
+    Buzon,
+    Correo,
+    CorreoLeido,
+    CorreoSnooze,
+    Etiqueta,
+    IntentoLogin,
+    UsuarioPortal,
 )
 
 
@@ -1282,7 +1288,9 @@ class Enforcement2FATests(TestCase):
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
 })
-class SnoozeTests(TestCase):
+class SnoozeViewTests(TestCase):
+    """Suite complementaria de snooze (variante simplificada sin _PortalMixin).
+    Antes shadowaba a SnoozeTests por colisión de nombres y hacía perder 9 tests."""
     def setUp(self):
         cache.clear()
         self.u, self.b = _make_user_con_buzon()
@@ -1332,7 +1340,9 @@ class SnoozeTests(TestCase):
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
 })
-class BulkAccionesTests(TestCase):
+class BulkAccionesViewTests(TestCase):
+    """Suite complementaria de bulk actions (variante simplificada sin _PortalMixin).
+    Antes shadowaba a BulkAccionesTests por colisión de nombres y hacía perder 9 tests."""
     def setUp(self):
         cache.clear()
         self.u, self.b = _make_user_con_buzon()
@@ -1453,3 +1463,291 @@ class ArchivosModuloTests(TestCase):
         f = SimpleUploadedFile('x.txt', b'x', content_type='text/plain')
         r = c_anonimo.post('/intranet/archivos/subir/', {'archivo': f})
         self.assertEqual(r.status_code, 302)
+
+
+# ─── endpoint de contactos (autocompletado de destinatarios) ───────────────
+
+@override_settings(STORAGES={
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class ContactosEndpointTests(TestCase):
+    """
+    Cubre /intranet/contactos/?q=... — autocompletado basado en historial real
+    del buzón. Verifica match por email y por nombre, aislamiento entre buzones,
+    ranking por frecuencia, exclusión del propio email, y endpoints auth.
+    """
+
+    def setUp(self):
+        cache.clear()
+        self.u, self.b = _make_user_con_buzon(
+            email='vendedor@gmail.com',
+            buzon_email='ventas@rtriosanpedro.cl',
+        )
+        # Otro buzón para verificar aislamiento
+        self.b_otro = Buzon.objects.create(email='cobranza@rtriosanpedro.cl')
+        # Historial del buzón propio: 3 mensajes de ana, 1 de juan
+        for _ in range(3):
+            Correo.objects.create(
+                buzon=self.b, remitente='Ana López <ana@cliente.cl>', asunto='x',
+            )
+        Correo.objects.create(
+            buzon=self.b, remitente='Juan Pérez <juan@cliente.cl>', asunto='y',
+        )
+        # Contacto que solo existe en OTRO buzón — no debe aparecer en sugerencias
+        Correo.objects.create(
+            buzon=self.b_otro, remitente='Secret <secreto@otro.cl>', asunto='z',
+        )
+        self.c = Client(HTTP_HOST='localhost')
+        _session_login(self.c, self.u, self.b)
+
+    def test_sin_login_redirige(self):
+        c_anon = Client(HTTP_HOST='localhost')
+        r = c_anon.get('/intranet/contactos/?q=ana')
+        self.assertIn(r.status_code, (301, 302))
+
+    def test_q_vacio_devuelve_lista_vacia(self):
+        r = self.c.get('/intranet/contactos/?q=')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(json.loads(r.content)['contactos'], [])
+
+    def test_match_por_email_devuelve_resultado(self):
+        r = self.c.get('/intranet/contactos/?q=ana')
+        data = json.loads(r.content)
+        emails = [c['email'] for c in data['contactos']]
+        self.assertIn('ana@cliente.cl', emails)
+
+    def test_match_por_nombre_funciona(self):
+        r = self.c.get('/intranet/contactos/?q=lópez')
+        data = json.loads(r.content)
+        emails = [c['email'] for c in data['contactos']]
+        self.assertIn('ana@cliente.cl', emails)
+
+    def test_aislamiento_entre_buzones(self):
+        """Un contacto que solo existe en otro buzón no debe leak al buzón actual."""
+        r = self.c.get('/intranet/contactos/?q=secreto')
+        data = json.loads(r.content)
+        emails = [c['email'] for c in data['contactos']]
+        self.assertNotIn('secreto@otro.cl', emails)
+
+    def test_excluye_propio_email_del_buzon(self):
+        Correo.objects.create(
+            buzon=self.b, remitente='Yo <ventas@rtriosanpedro.cl>', asunto='self',
+        )
+        r = self.c.get('/intranet/contactos/?q=ventas')
+        data = json.loads(r.content)
+        emails = [c['email'] for c in data['contactos']]
+        self.assertNotIn('ventas@rtriosanpedro.cl', emails)
+
+    def test_ranking_por_frecuencia(self):
+        """Ana (3 correos) debe rankearse antes que Juan (1 correo)."""
+        r = self.c.get('/intranet/contactos/?q=cliente')
+        data = json.loads(r.content)
+        emails = [c['email'] for c in data['contactos']]
+        self.assertEqual(emails[0], 'ana@cliente.cl')
+        # Frecuencia exposed para debugging
+        ana = next(c for c in data['contactos'] if c['email'] == 'ana@cliente.cl')
+        juan = next(c for c in data['contactos'] if c['email'] == 'juan@cliente.cl')
+        self.assertGreater(ana['freq'], juan['freq'])
+
+    def test_top_10_max(self):
+        # Crear 12 contactos distintos
+        for i in range(12):
+            Correo.objects.create(
+                buzon=self.b, remitente=f'contacto{i}@bulk.cl', asunto='x',
+            )
+        r = self.c.get('/intranet/contactos/?q=bulk')
+        data = json.loads(r.content)
+        self.assertLessEqual(len(data['contactos']), 10)
+
+    def test_devuelve_nombre_cuando_existe(self):
+        r = self.c.get('/intranet/contactos/?q=ana')
+        data = json.loads(r.content)
+        ana = next(c for c in data['contactos'] if c['email'] == 'ana@cliente.cl')
+        self.assertEqual(ana['nombre'], 'Ana López')
+
+    def test_match_en_correo_enviado_tambien(self):
+        from correos.models import CorreoEnviado
+        CorreoEnviado.objects.create(
+            buzon=self.b, usuario=self.u,
+            destinatarios='nuevo@destino.cl', cc='',
+            asunto='test', exito=True,
+        )
+        cache.clear()
+        r = self.c.get('/intranet/contactos/?q=destino')
+        emails = [c['email'] for c in json.loads(r.content)['contactos']]
+        self.assertIn('nuevo@destino.cl', emails)
+
+
+# ─── límite 30 destinatarios ───────────────────────────────────────────────
+
+class LimiteDestinatariosTests(TestCase):
+    """Verifica que _parse_destinatarios honra el nuevo límite de 30."""
+
+    def test_30_destinatarios_pasa(self):
+        from django.core.exceptions import ValidationError
+
+        from correos.views import _parse_destinatarios
+        raw = ', '.join(f'u{i}@x.cl' for i in range(30))
+        try:
+            result = _parse_destinatarios(raw)
+        except ValidationError:
+            self.fail('30 destinatarios debería ser válido')
+        self.assertEqual(len(result), 30)
+
+    def test_31_destinatarios_rechazado(self):
+        from django.core.exceptions import ValidationError
+
+        from correos.views import _parse_destinatarios
+        raw = ', '.join(f'u{i}@x.cl' for i in range(31))
+        with self.assertRaises(ValidationError):
+            _parse_destinatarios(raw)
+
+    def test_separador_punto_y_coma_acepta(self):
+        from correos.views import _parse_destinatarios
+        result = _parse_destinatarios('a@x.cl; b@x.cl; c@x.cl')
+        self.assertEqual(result, ['a@x.cl', 'b@x.cl', 'c@x.cl'])
+
+    def test_separador_mixto_coma_y_punto_y_coma(self):
+        from correos.views import _parse_destinatarios
+        result = _parse_destinatarios('a@x.cl, b@x.cl; c@x.cl')
+        self.assertEqual(result, ['a@x.cl', 'b@x.cl', 'c@x.cl'])
+
+
+# ─── Bypass admin 2FA — regresión ──────────────────────────────────────────
+
+class AdminTOTPBypassTests(TestCase):
+    """
+    Regresión del bypass crítico: con solo password admin, un atacante iba a
+    /admin/2fa/setup/, hacía POST action=generar → reset del secret → POST
+    action=activar con su propio código → tenía sesión admin con SU 2FA.
+    El fix añade enforcement: si totp_activo y no admin_2fa_ok → redirect a verify.
+    """
+    def setUp(self):
+        cache.clear()
+        from correos import totp as totp_helpers
+        from correos.models import AdminTOTP
+        self.admin = User.objects.create_superuser(
+            username='admin1', email='admin@test.cl', password='AdminPass.2026!',
+        )
+        # Admin ya configuró 2FA en una sesión previa
+        self.profile = AdminTOTP.objects.create(
+            user=self.admin,
+            totp_secret=totp_helpers.generar_secret(),
+            totp_activo=True,
+        )
+        self.c = Client(HTTP_HOST='localhost')
+
+    def _get_admin_base(self):
+        from django.conf import settings
+        return '/' + settings.ADMIN_URL_PATH
+
+    def test_setup_con_2fa_activo_y_sin_verify_redirige(self):
+        """Sin admin_2fa_ok en sesión, /2fa/setup/ debe redirect a /2fa/verify/."""
+        self.c.force_login(self.admin)
+        admin_base = self._get_admin_base()
+        r = self.c.get(admin_base + '2fa/setup/')
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('2fa/verify/', r['Location'])
+
+    def test_setup_con_2fa_ok_en_sesion_permite_regenerar(self):
+        """Tras pasar verify (admin_2fa_ok=True), sí debe permitir setup."""
+        self.c.force_login(self.admin)
+        s = self.c.session
+        s['admin_2fa_ok'] = True
+        s.save()
+        admin_base = self._get_admin_base()
+        r = self.c.get(admin_base + '2fa/setup/')
+        self.assertEqual(r.status_code, 200)
+
+    def test_post_generar_sin_verify_no_resetea_secret(self):
+        """POST action=generar a /2fa/setup/ sin admin_2fa_ok no debe cambiar el secret."""
+        self.c.force_login(self.admin)
+        admin_base = self._get_admin_base()
+        secret_original = self.profile.totp_secret
+        self.c.post(admin_base + '2fa/setup/', {'action': 'generar'})
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.totp_secret, secret_original)
+        self.assertTrue(self.profile.totp_activo)
+
+    def test_admin_sin_2fa_es_redirigido_a_setup_no_pasa_directo(self):
+        """Admin sin 2FA configurado no debe entrar al panel sin haber pasado por setup."""
+        admin_sin_2fa = User.objects.create_superuser(
+            username='admin2', email='admin2@test.cl', password='AdminPass.2026!',
+        )
+        self.c.force_login(admin_sin_2fa)
+        admin_base = self._get_admin_base()
+        r = self.c.get(admin_base, follow=False)
+        # Debe redirigir a /2fa/setup/, no pasar directo al admin
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('2fa/setup/', r['Location'])
+
+
+# ─── Recordarme + Re-2FA cada 30 días ──────────────────────────────────────
+
+@override_settings(STORAGES={
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class RecordarmeYReVerifyTests(TestCase):
+    """
+    Cubre:
+      - Sin checkbox 'recordarme': sesión a SESSION_COOKIE_AGE (8h default).
+      - Con checkbox: sesión extendida a 30 días.
+      - Tras RE_2FA_AFTER_DAYS sin verify: portal_login_required redirige a verify_2fa.
+    """
+
+    def setUp(self):
+        cache.clear()
+        self.u, self.b = _make_user_con_buzon(totp_activo=True)
+        self.c = Client(HTTP_HOST='localhost')
+
+    def test_sesion_default_es_8h(self):
+        _session_login(self.c, self.u, self.b)
+        edad = self.c.session.get_expiry_age()
+        self.assertEqual(edad, 60 * 60 * 8)
+
+    def test_promover_sesion_con_recordarme_es_30_dias(self):
+        from correos.views import REMEMBER_ME_AGE_DAYS, _promover_sesion
+        s = self.c.session
+        s['pre_2fa_user_id'] = self.u.id
+        s['pre_2fa_at'] = int(time.time())
+        s['pre_2fa_recordarme'] = True
+        s.save()
+        req = type('R', (), {'session': self.c.session})()
+        _promover_sesion(req, self.u)
+        edad = req.session.get_expiry_age()
+        self.assertEqual(edad, REMEMBER_ME_AGE_DAYS * 24 * 60 * 60)
+
+    def test_promover_sesion_sin_recordarme_es_default(self):
+        from correos.views import _promover_sesion
+        s = self.c.session
+        s['pre_2fa_user_id'] = self.u.id
+        s['pre_2fa_at'] = int(time.time())
+        s['pre_2fa_recordarme'] = False
+        s.save()
+        req = type('R', (), {'session': self.c.session})()
+        _promover_sesion(req, self.u)
+        # Default = SESSION_COOKIE_AGE 8h
+        self.assertEqual(req.session.get_expiry_age(), 60 * 60 * 8)
+
+    def test_re_2fa_despues_de_30_dias_redirige(self):
+        """ultima_2fa_at > RE_2FA_AFTER_DAYS días atrás → portal_login_required redirige."""
+        from correos.views import RE_2FA_AFTER_DAYS
+        _session_login(self.c, self.u, self.b)
+        s = self.c.session
+        s['ultima_2fa_at'] = int(time.time()) - (RE_2FA_AFTER_DAYS + 1) * 24 * 60 * 60
+        s.save()
+        r = self.c.get('/intranet/escritorio/')
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('2fa/verify', r['Location'])
+
+    def test_re_2fa_dentro_de_30_dias_no_redirige_a_verify(self):
+        """ultima_2fa_at reciente → no redirige a verify."""
+        _session_login(self.c, self.u, self.b)
+        s = self.c.session
+        s['ultima_2fa_at'] = int(time.time()) - 60   # hace 1 minuto
+        s.save()
+        r = self.c.get('/intranet/escritorio/')
+        if r.status_code == 302:
+            self.assertNotIn('2fa/verify', r['Location'])

@@ -28,20 +28,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install \
-            Django \
-            python-dotenv \
-            whitenoise \
-            chardet \
-            dj-database-url \
-            pyotp \
-            "qrcode[pil]" \
-            reportlab \
-            cryptography \
-            Pillow \
-            "bleach[css]" \
-            redis \
-            ruff
+          # Single source of truth: requirements.txt. Si se agrega algo allá,
+          # CI lo recoge automáticamente. ruff se instala aparte (es solo de CI).
+          pip install -r requirements.txt
+          pip install ruff==0.7.4
 
       - name: Lint (ruff)
         run: ruff check .

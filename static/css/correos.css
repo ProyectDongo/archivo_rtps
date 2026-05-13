@@ -308,6 +308,22 @@
 }
 .pass-toggle:hover { color: var(--gd); background: var(--off); }
 
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 10px;
+  font-size: 13px;
+  color: var(--gm);
+  cursor: pointer;
+  user-select: none;
+}
+.login-remember input[type="checkbox"] {
+  width: 16px; height: 16px;
+  cursor: pointer;
+  accent-color: var(--r);
+}
+
 .btn-acceder {
   width: 100%;
   padding: 15px;
@@ -5070,3 +5086,168 @@ a.correo-row {
   background: rgba(255, 255, 255, .06);
   color: #8a929b;
 }
+
+/* ==========================================================================
+   Email chips widget — convierte inputs de destinatarios en chips clickeables
+   con autocompletado. Reemplaza coma/punto-y-coma como separadores invisibles
+   con etiquetas visuales que el usuario puede ver y borrar individualmente.
+   ========================================================================== */
+.ec-wrap {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 4px 70px 4px 8px;     /* deja espacio para el contador */
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  background: var(--w);
+  font-family: var(--f);
+  font-size: 14px;
+  cursor: text;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.ec-wrap:focus-within {
+  border-color: var(--r);
+  box-shadow: 0 0 0 3px rgba(30, 125, 50, .12);
+}
+.ec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 10px;
+  background: var(--rl);
+  border: 1px solid #c8e0cd;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--rd);
+  max-width: 100%;
+}
+.ec-chip-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+.ec-chip-x {
+  border: 0;
+  background: transparent;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  color: var(--rd);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ec-chip-x:hover {
+  background: rgba(30, 125, 50, .15);
+}
+.ec-input {
+  flex: 1 1 120px;
+  min-width: 120px;
+  border: 0;
+  outline: 0;
+  padding: 4px 2px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+.ec-input.is-invalid {
+  color: #b91c1c;
+  animation: ec-shake .25s var(--ease);
+}
+@keyframes ec-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-3px); }
+  75%      { transform: translateX(3px); }
+}
+.ec-counter {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--gl);
+  pointer-events: none;
+  user-select: none;
+}
+.ec-counter.is-full { color: var(--rd); font-weight: 600; }
+.ec-counter.is-over { color: #b91c1c; font-weight: 700; }
+
+.ec-suggest {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--w);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  box-shadow: var(--shl);
+  z-index: 30;
+}
+.ec-suggest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--off2);
+}
+.ec-suggest-row:last-child { border-bottom: 0; }
+.ec-suggest-row:hover,
+.ec-suggest-row.is-active {
+  background: var(--rl);
+}
+.ec-suggest-name {
+  font-weight: 500;
+  color: var(--gd);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ec-suggest-email {
+  font-size: 12px;
+  color: var(--gl);
+  white-space: nowrap;
+}
+
+/* Dark theme */
+[data-theme="dark"] .ec-wrap {
+  background: var(--inbox-bg, #1a1f22);
+  border-color: rgba(255, 255, 255, .12);
+  color: #e6e6e6;
+}
+[data-theme="dark"] .ec-chip {
+  background: rgba(46, 160, 67, .18);
+  border-color: rgba(46, 160, 67, .35);
+  color: #b8e6c1;
+}
+[data-theme="dark"] .ec-chip-x {
+  color: #b8e6c1;
+}
+[data-theme="dark"] .ec-chip-x:hover {
+  background: rgba(46, 160, 67, .25);
+}
+[data-theme="dark"] .ec-suggest {
+  background: #232a2f;
+  border-color: rgba(255, 255, 255, .12);
+}
+[data-theme="dark"] .ec-suggest-row {
+  border-bottom-color: rgba(255, 255, 255, .06);
+}
+[data-theme="dark"] .ec-suggest-row:hover,
+[data-theme="dark"] .ec-suggest-row.is-active {
+  background: rgba(46, 160, 67, .15);
+}
+[data-theme="dark"] .ec-suggest-name { color: #e6e6e6; }
+[data-theme="dark"] .ec-suggest-email { color: #94a3a8; }
+[data-theme="dark"] .ec-counter { color: #94a3a8; }

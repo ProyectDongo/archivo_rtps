@@ -8,10 +8,11 @@ URL raíz — Archivo RSP.
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
+
+from taller import admin_views as taller_admin
 
 from . import admin_2fa
-from taller import admin_views as taller_admin
 
 urlpatterns = [
     # Taller admin (staff-only) — VA ANTES del admin.site.urls para que

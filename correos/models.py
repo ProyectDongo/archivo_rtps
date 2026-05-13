@@ -250,6 +250,7 @@ class UsuarioPortal(models.Model):
         `duracion_min` minutos. Devuelve True si esta llamada disparó el bloqueo.
         """
         from datetime import timedelta
+
         from django.utils import timezone
 
         self.intentos_fallidos = (self.intentos_fallidos or 0) + 1

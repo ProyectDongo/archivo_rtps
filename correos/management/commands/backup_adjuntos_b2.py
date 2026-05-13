@@ -39,7 +39,6 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-
 REMOTE_NAME = "b2pm"
 DEST_PREFIX = "adjuntos"
 ARCHIVE_PREFIX = "adjuntos-archive"

@@ -35,9 +35,11 @@ class Admin2FAMiddleware:
     Bloquea acceso al admin a usuarios staff que ya están autenticados en
     Django pero aún no completaron el segundo factor (TOTP).
 
-    - Solo aplica si el usuario tiene AdminTOTP con totp_activo=True.
-    - Si no tiene 2FA configurado, deja pasar (para que puedan hacer el setup).
-    - Exenta las rutas /2fa/ del propio admin 2FA para evitar loop.
+    - Si el admin tiene AdminTOTP con totp_activo=True: requiere code en cada sesión.
+    - Si NO tiene AdminTOTP o totp_activo=False: lo manda a setup obligatoriamente.
+      (Antes lo dejaba pasar sin 2FA — agujero conocido que permitía operar el
+       admin de prod sin haber configurado 2FA nunca.)
+    - Exenta las rutas /2fa/ del propio admin 2FA + login + logout para evitar loop.
     """
     def __init__(self, get_response):
         self.get_response = get_response
@@ -54,19 +56,29 @@ class Admin2FAMiddleware:
                 admin_login    = admin_base + 'login/'
                 admin_logout   = admin_base + 'logout/'
 
-                if not (
+                exenta = (
                     request.path.startswith(admin_2fa_base)
                     or request.path == admin_login
                     or request.path == admin_logout
-                ):
-                    if not request.session.get('admin_2fa_ok'):
-                        try:
-                            totp_profile = user.totp
-                            if totp_profile.totp_activo:
-                                return redirect(admin_2fa_base + 'verify/')
-                        except Exception:
-                            # AdminTOTP no existe → no hay 2FA configurado → dejar pasar
-                            pass
+                )
+                if not exenta and not request.session.get('admin_2fa_ok'):
+                    # ¿Tiene 2FA activo?
+                    from correos.models import AdminTOTP
+                    try:
+                        totp_profile = user.totp
+                        tiene_2fa = bool(totp_profile.totp_activo)
+                    except AdminTOTP.DoesNotExist:
+                        tiene_2fa = False
+                    except Exception:
+                        logger.warning('Error verificando AdminTOTP', exc_info=True)
+                        tiene_2fa = False
+
+                    if tiene_2fa:
+                        return redirect(admin_2fa_base + 'verify/')
+                    # Sin 2FA → enforcement obligatorio: lo mandamos al setup.
+                    # No hay forma de evitar configurar 2FA (antes sí: el admin
+                    # entraba directamente al panel sin nunca activar 2FA).
+                    return redirect(admin_2fa_base + 'setup/')
 
         return self.get_response(request)
 
@@ -77,14 +89,24 @@ class Admin2FAMiddleware:
 def setup_view(request):
     """Muestra QR y permite activar TOTP para el admin."""
     from django.conf import settings
-    from correos.models import AdminTOTP
+
     from correos import totp as totp_helpers
+    from correos.models import AdminTOTP
 
     if not (request.user.is_active and request.user.is_staff):
         return HttpResponseForbidden()
 
     admin_base = '/' + settings.ADMIN_URL_PATH
     profile, _ = AdminTOTP.objects.get_or_create(user=request.user)
+
+    # SEGURIDAD: si el admin YA tiene 2FA activo, no permitimos regenerar el
+    # secret sin haber pasado primero por verify_view. Sino, cualquiera con
+    # password OK podía ir a /2fa/setup/, POST action=generar → resetear el
+    # 2FA → POST action=activar con su propio secret → bypass completo del
+    # 2FA preexistente. Solo se permite regenerar tras admin_2fa_ok=True en
+    # sesión (es decir, tras pasar verify con el code actual o recovery).
+    if profile.totp_activo and not request.session.get('admin_2fa_ok'):
+        return redirect(admin_base + '2fa/verify/')
 
     error = None
     if request.method == 'POST':
@@ -126,8 +148,9 @@ def setup_view(request):
 def verify_view(request):
     """Verifica TOTP o recovery code antes de dar acceso al admin."""
     from django.conf import settings
-    from correos.models import AdminTOTP
+
     from correos import totp as totp_helpers
+    from correos.models import AdminTOTP
 
     if not (request.user.is_active and request.user.is_staff):
         return HttpResponseForbidden()
@@ -212,7 +235,7 @@ def recovery_confirm_view(request):
 def recovery_pdf_view(request):
     """Descarga PDF con los recovery codes."""
     from django.conf import settings
-    from correos.models import AdminTOTP
+
 
     if not (request.user.is_active and request.user.is_staff):
         return HttpResponseForbidden()

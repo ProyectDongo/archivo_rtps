@@ -55,11 +55,15 @@
     <form class="compose-fab-form" method="post">
       <label class="compose-fab-row">
         <span class="compose-fab-label">Para</span>
-        <input type="text" name="to" autocomplete="off" maxlength="500" required>
+        <input type="text" name="to" autocomplete="off" maxlength="500" required
+               data-emailchips data-max="30" data-suggest-url="{% url 'contactos' %}"
+               placeholder="ej: cliente@empresa.cl">
       </label>
       <label class="compose-fab-row compose-fab-row-cc" hidden>
         <span class="compose-fab-label">Cc</span>
-        <input type="text" name="cc" autocomplete="off" maxlength="500">
+        <input type="text" name="cc" autocomplete="off" maxlength="500"
+               data-emailchips data-max="30" data-suggest-url="{% url 'contactos' %}"
+               placeholder="ej: copia@empresa.cl">
       </label>
       <button type="button" class="compose-fab-cc-toggle" data-cf-action="toggle-cc">+ Cc</button>
       <label class="compose-fab-row">
@@ -104,6 +108,7 @@
   <script src="{% static 'js/lightbox.js' %}" defer></script>
   <script src="{% static 'js/adj_viewer.js' %}" defer></script>
   <script src="{% static 'js/quill.js' %}" defer></script>
+  <script src="{% static 'js/email_chips.js' %}" defer></script>
   <script src="{% static 'js/compose_floating.js' %}" defer></script>
   <script src="{% static 'js/theme.js' %}" defer></script>
   {% block extra_js %}{% endblock %}

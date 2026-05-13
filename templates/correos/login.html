@@ -81,6 +81,11 @@
         </div>
       </div>
 
+      <label class="login-remember">
+        <input type="checkbox" name="recordarme" value="1">
+        <span>Recordarme en este dispositivo (30 días)</span>
+      </label>
+
       <input type="hidden" name="page_loaded_at" id="page-loaded-at" value="{{ page_loaded_at }}">
       {% if turnstile_site_key %}
       <div class="cf-turnstile-wrap">
