@@ -44,7 +44,7 @@ class Command(BaseCommand):
                             help='Solo corre la limpieza de pendientes vencidas, sin mandar reminders.')
 
     def handle(self, *args, **options):
-        from archivo_pietramonte.email_utils import safe_send
+        from archivo.email_utils import safe_send
 
         dry            = options['dry_run']
         cleanup_only   = options['cleanup_only']
@@ -134,9 +134,9 @@ class Command(BaseCommand):
 
         template = f'taller/email/reminder_{tipo}'
         asunto = (
-            f'Recordatorio: tu cita en Pietramonte mañana a las {r.hora_inicio:%H:%M}'
+            f'Recordatorio: tu cita en RSP mañana a las {r.hora_inicio:%H:%M}'
             if tipo == '24h' else
-            f'Tu cita en Pietramonte es en 1 hora ({r.hora_inicio:%H:%M})'
+            f'Tu cita en RSP es en 1 hora ({r.hora_inicio:%H:%M})'
         )
 
         from taller.models import hash_token

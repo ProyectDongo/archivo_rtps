@@ -132,7 +132,7 @@
   const cancelBtn = document.getElementById('new-tag-cancel');
 
   if (btnNew && dlg) {
-    let colorElegido = '#C80C0F';
+    let colorElegido = '#1e7d32';
     btnNew.addEventListener('click', function () {
       dlg.hidden = !dlg.hidden;
       if (!dlg.hidden) nameInput.focus();

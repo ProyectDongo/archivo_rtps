@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='firma_web',
             field=models.CharField(
                 max_length=120, blank=True, default='',
-                help_text='URL del sitio web (ej. www.pietramonte.cl). Opcional.',
+                help_text='URL del sitio web (ej. www.rtriosanpedro.cl). Opcional.',
             ),
         ),
     ]

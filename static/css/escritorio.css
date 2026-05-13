@@ -5,8 +5,8 @@
    ============================================================ */
 
 .page-escritorio {
-  --esc-brand: #C80C0F;
-  --esc-brand-soft: rgba(200, 12, 15, .10);
+  --esc-brand: #1e7d32;
+  --esc-brand-soft: rgba(30, 125, 50, .10);
   --esc-text: #1d1d1f;
   --esc-text-dim: #515154;
   --esc-text-muted: #86868b;
@@ -555,7 +555,7 @@
   overflow: hidden;
   background: var(--esc-border);
 }
-.esc-perfil-fill-r { background: #C80C0F; height: 100%; }
+.esc-perfil-fill-r { background: #1e7d32; height: 100%; }
 .esc-perfil-fill-e { background: #2563eb; height: 100%; }
 .esc-perfil-fill-o { background: #94a3b8; height: 100%; }
 
@@ -599,7 +599,7 @@
 }
 .esc-rem-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2563eb, #C80C0F);
+  background: linear-gradient(90deg, #2563eb, #1e7d32);
   border-radius: 3px;
 }
 .esc-rem-count {

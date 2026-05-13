@@ -1,4 +1,4 @@
-⏰ RECORDATORIO — Tu cita en Pietramonte es MAÑANA
+⏰ RECORDATORIO — Tu cita en RSP es MAÑANA
 ==================================================
 
 Hola {{ reserva.cliente_nombre }},
@@ -14,4 +14,4 @@ Tu cita está agendada para:
 Si surgió un imprevisto, respondé a este correo lo antes posible.
 
 —
-Pietramonte Taller · agenda@pietramonte.cl
+RSP Taller · info@rtriosanpedro.cl

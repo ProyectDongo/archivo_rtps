@@ -2,8 +2,8 @@
 Importa archivos .mbox a la base de datos, extrayendo también los adjuntos.
 
 Uso:
-    python manage.py import_mbox aledezma@pietramonte.cl --archivo=/ruta/Inbox
-    python manage.py import_mbox aledezma@pietramonte.cl --carpeta=/ruta/carpeta/
+    python manage.py import_mbox gerencia@rtriosanpedro.cl --archivo=/ruta/Inbox
+    python manage.py import_mbox gerencia@rtriosanpedro.cl --carpeta=/ruta/carpeta/
 
 Por seguridad, los adjuntos se guardan en MEDIA_ROOT/adjuntos/<año>/<mes>/...
 con nombre único, fuera del directorio del repositorio.

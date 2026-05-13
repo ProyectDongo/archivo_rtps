@@ -5,12 +5,12 @@ Complementa backup_adjuntos_b2 (que cubre MEDIA_ROOT). Este command cubre la DB.
 
 Cron sugerido (diario a las 3:15, 15 min después del backup de adjuntos):
     15 3 * * * docker exec $CONT python manage.py hacer_backup \
-        >> /var/log/pietramonte-backup-db.log 2>&1
+        >> /var/log/rsp-backup-db.log 2>&1
 
 Env vars (mismas que backup_adjuntos_b2):
     B2_KEY_ID            keyID de la Application Key Backblaze
     B2_APPLICATION_KEY   applicationKey
-    B2_BUCKET_NAME       nombre del bucket (ej. pietramonte-backups)
+    B2_BUCKET_NAME       nombre del bucket (ej. rsp-backups)
 
 Uso manual:
     python manage.py hacer_backup              # backup real

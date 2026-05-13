@@ -13,7 +13,7 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 
-# Paleta para avatares — colores derivados del logo Pietramonte (rojo + grafitos).
+# Paleta para avatares — variada (verde RSP + grafitos + otros).
 _AVATAR_COLORS = [
     ('#C80C0F', '#ffffff'),  # rojo
     ('#394348', '#ffffff'),  # grafito medio

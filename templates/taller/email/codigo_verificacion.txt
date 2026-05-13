@@ -1,4 +1,4 @@
-PIETRAMONTE TALLER — Confirmá tu reserva
+RSP REVISIONES — Confirmá tu reserva
 ==========================================
 
 Hola {{ reserva.cliente_nombre }},
@@ -16,4 +16,4 @@ Si vos no agendaste esta reserva, ignorá este correo — la reserva
 se cancela sola si no la confirmás.
 
 ——
-Pietramonte Taller · agenda@pietramonte.cl
+RSP Revisiones · info@rtriosanpedro.cl

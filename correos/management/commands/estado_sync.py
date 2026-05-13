@@ -14,7 +14,7 @@ Para cada BuzonGmailLabel:
 Uso:
     python manage.py estado_sync           # todos los buzones
     python manage.py estado_sync --solo-errores
-    python manage.py estado_sync --buzon cpietrasanta@pietramonte.cl
+    python manage.py estado_sync --buzon inspector1@rtriosanpedro.cl
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         parser.add_argument('--solo-errores', action='store_true',
                             help='Solo mostrar buzones con error_msg no vacío.')
         parser.add_argument('--buzon', type=str,
-                            help='Filtrar por email del buzón (ej. cpietrasanta@pietramonte.cl).')
+                            help='Filtrar por email del buzón (ej. inspector1@rtriosanpedro.cl).')
 
     def handle(self, *args, **opts):
         ahora = timezone.now()

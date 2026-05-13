@@ -130,11 +130,11 @@
             <line x1="0" y1="80"  x2="720" y2="80"  stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 4"/>
             <line x1="0" y1="40"  x2="720" y2="40"  stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 4"/>
             <polyline
-              fill="none" stroke="#C80C0F" stroke-width="2.5"
+              fill="none" stroke="#1e7d32" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round"
               points="{{ volumen_mensual.points_str }}"/>
             {% for s in volumen_mensual.serie %}
-            <circle cx="{{ s.x_svg }}" cy="{{ s.y_svg }}" r="3" fill="#C80C0F">
+            <circle cx="{{ s.x_svg }}" cy="{{ s.y_svg }}" r="3" fill="#1e7d32">
               <title>{{ s.label }}: {{ s.c }} correos</title>
             </circle>
             {% endfor %}

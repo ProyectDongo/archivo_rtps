@@ -5,7 +5,7 @@ Diseñado para correr por cron nocturno desde el HOST (Hetzner), igual que
 `enviar_recordatorios` y `cargar_feriados` (ver DEPLOY.md §11.5):
 
     30 3 * * * docker exec $CONT python manage.py backup_adjuntos_b2 \
-        >> /var/log/pietramonte-backup-adjuntos.log 2>&1
+        >> /var/log/rsp-backup-adjuntos.log 2>&1
 
 Estrategia: `rclone sync` con `--backup-dir` versionado por fecha.
 - Archivos nuevos/modificados: se suben.
@@ -17,7 +17,7 @@ Estrategia: `rclone sync` con `--backup-dir` versionado por fecha.
 Env vars requeridas (configuradas en Coolify):
     B2_KEY_ID              keyID de la Application Key Backblaze
     B2_APPLICATION_KEY     applicationKey
-    B2_BUCKET_NAME         nombre del bucket (ej. pietramonte-backups)
+    B2_BUCKET_NAME         nombre del bucket (ej. rsp-backups)
     B2_REGION              opcional, p.ej. us-west-002 (solo informativo)
     B2_ENDPOINT            opcional, solo si usás S3 endpoint en vez de B2 nativo
 

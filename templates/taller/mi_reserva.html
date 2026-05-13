@@ -1,7 +1,7 @@
 {% extends 'base_app.html' %}
 {% load static %}
 
-{% block title %}Mi reserva — Pietramonte Taller{% endblock %}
+{% block title %}Mi reserva — RSP Revisiones{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/taller.css' %}">
@@ -44,7 +44,7 @@
   </div>
   {% endif %}
 
-  <h1>Tu reserva en Pietramonte Taller</h1>
+  <h1>Tu reserva en RSP Revisiones</h1>
 
   <div class="reserva-resumen">
     <div class="rr-row"><span class="rr-l">📅 Día</span><strong>{{ reserva.fecha|date:"l d \d\e F \d\e Y" }}</strong></div>
@@ -98,7 +98,7 @@
 
   <p class="form-hint">
     📞 También recibirás una llamada {% if reserva.estado != 'cancelada_cliente' and reserva.estado != 'cancelada_taller' %}24h antes y 1h antes{% endif %} para confirmar.
-    Si tenés dudas, escribinos a <a href="mailto:agenda@pietramonte.cl">agenda@pietramonte.cl</a>.
+    Si tenés dudas, escribinos a <a href="mailto:info@rtriosanpedro.cl">info@rtriosanpedro.cl</a>.
   </p>
 </div>
 {% endblock %}

@@ -75,11 +75,11 @@
   white-space: nowrap;
 }
 .cookie-btn-primary {
-  background: #C80C0F;
+  background: #1e7d32;
   color: #fff;
-  border-color: #C80C0F;
+  border-color: #1e7d32;
 }
-.cookie-btn-primary:hover { background: #a00a0c; border-color: #a00a0c; }
+.cookie-btn-primary:hover { background: #155724; border-color: #155724; }
 .cookie-btn-secondary {
   background: transparent;
   color: rgba(255,255,255,.85);

@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────
- * Pietramonte Taller — estilos del agendamiento público.
+ * RSP Revisiones — estilos del agendamiento público.
  * Reusa variables de correos.css (--r, --rl, --gd, --gm, --w, --sh).
  * ───────────────────────────────────────────────────────────────── */
 
@@ -165,7 +165,7 @@
   transition: all .15s ease;
 }
 .cat-add-btn:hover {
-  background: #a00a0c;
+  background: #155724;
   transform: scale(1.1);
 }
 .cat-add-btn.is-added {
@@ -369,7 +369,7 @@
   font-family: inherit;
   transition: all .15s ease;
 }
-.btn-confirmar:hover:not(:disabled) { background: #a00a0c; transform: translateY(-1px); }
+.btn-confirmar:hover:not(:disabled) { background: #155724; transform: translateY(-1px); }
 .btn-confirmar:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ─── Página verificar email ────────────────────────────── */

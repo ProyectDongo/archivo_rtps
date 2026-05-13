@@ -3385,7 +3385,7 @@
 }
 
 /* Nav app: en mobile achicar para que no se desborde el texto del email
-   del usuario ni el badge admin. El brand (logo + texto Pietramonte) es
+   del usuario ni el badge admin. El brand (logo + texto RSP) es
    redundante con el header de la página — escondemos el texto. */
 @media (max-width: 600px) {
   .app-brand-text { display: none; }
@@ -5022,7 +5022,7 @@ a.correo-row {
   margin: 0 0 10px;
   border-radius: 7px;
   font-size: 12px;
-  color: #C80C0F;
+  color: #1e7d32;
   text-decoration: none;
   font-weight: 500;
   transition: background .12s ease;

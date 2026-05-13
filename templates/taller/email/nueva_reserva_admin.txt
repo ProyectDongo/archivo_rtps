@@ -1,4 +1,4 @@
-🚗 NUEVA RESERVA AGENDADA — Pietramonte
+🚗 NUEVA RESERVA AGENDADA — RSP
 ========================================
 
 📅 {{ reserva.fecha|date:"l d \d\e F" }} · 🕒 {{ reserva.hora_inicio|time:"H:i" }} hrs

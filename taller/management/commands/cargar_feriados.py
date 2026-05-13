@@ -60,7 +60,7 @@ def _fetch_feriados_anio(anio: int) -> list[dict]:
     url = f'{API_BASE}/{anio}'
     req = Request(url, headers={
         'Accept': 'application/json',
-        'User-Agent': 'PietramonteArchivo/1.0',
+        'User-Agent': 'ArchivoRSP/1.0',
     })
 
     # 1er intento: TLS normal

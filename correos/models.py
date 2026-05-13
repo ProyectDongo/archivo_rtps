@@ -24,13 +24,13 @@ class Buzon(models.Model):
                                                help_text='Si está desactivada, no se agrega firma al enviar.')
     firma_nombre         = models.CharField(max_length=120, blank=True, default='',
                                             help_text='Nombre que aparece en la firma. Si vacío, solo se muestra el logo y el email.')
-    firma_cargo          = models.CharField(max_length=120, blank=True, default='Pietramonte Automotriz',
-                                            help_text='Empresa o cargo (ej. "Pietramonte Automotriz").')
+    firma_cargo          = models.CharField(max_length=120, blank=True, default='Río San Pedro RT',
+                                            help_text='Empresa o cargo (ej. "Río San Pedro RT").')
     firma_telefono       = models.CharField(max_length=40, blank=True, default='')
     firma_email_visible  = models.EmailField(blank=True, default='',
                                              help_text='Email mostrado en la firma. Si vacío, usa el email del buzón.')
     firma_web            = models.CharField(max_length=120, blank=True, default='',
-                                            help_text='URL del sitio web (ej. www.pietramonte.cl). Opcional.')
+                                            help_text='URL del sitio web (ej. www.rtriosanpedro.cl). Opcional.')
 
     def __str__(self):
         return self.email

@@ -61,7 +61,7 @@ def _enviar_alerta_admin(asunto: str, body: str, key_throttle: str) -> None:
         if not admin_to:
             return
         send_mail(
-            subject=f'[Pietramonte · Seguridad] {asunto}',
+            subject=f'[RSP · Seguridad] {asunto}',
             message=body,
             from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
             recipient_list=[admin_to],
@@ -689,7 +689,7 @@ def descargar_recovery_pdf_view(request):
     from django.http import HttpResponse
     resp = HttpResponse(pdf_bytes, content_type='application/pdf')
     resp['Content-Disposition'] = (
-        'attachment; filename="recovery_codes_pietramonte.pdf"'
+        'attachment; filename="recovery_codes_rsp.pdf"'
     )
     resp['X-Content-Type-Options'] = 'nosniff'
     return resp
@@ -1209,7 +1209,7 @@ def reenviar_correo_view(request, correo_id):
     """
     from django.core.exceptions import ValidationError
 
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     usuario = _usuario_actual(request)
     if not usuario:
@@ -1342,7 +1342,7 @@ def _brand_email_ctx() -> dict:
     return {
         'brand_logo_url':    getattr(settings, 'FIRMA_LOGO_URL', ''),
         'brand_color':       getattr(settings, 'BRAND_PRIMARY_COLOR', '#C80C0F'),
-        'brand_company_name': getattr(settings, 'BRAND_COMPANY_NAME', 'Pietramonte Automotriz'),
+        'brand_company_name': getattr(settings, 'BRAND_COMPANY_NAME', 'Río San Pedro RT'),
     }
 
 
@@ -1403,7 +1403,7 @@ def responder_correo_view(request, correo_id):
 
     from django.core.exceptions import ValidationError
 
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     usuario = _usuario_actual(request)
     if not usuario:
@@ -1485,7 +1485,7 @@ def responder_correo_view(request, correo_id):
         asunto = 'Re: (sin asunto)'
 
     # ─── Threading headers ─────────────────────────────────────────────
-    new_msg_id = make_msgid(domain='pietramonte.cl')
+    new_msg_id = make_msgid(domain='rtriosanpedro.cl')
     headers = {'Message-ID': new_msg_id}
     if correo.mensaje_id:
         # In-Reply-To y References apuntan al Message-ID del correo original.
@@ -2256,7 +2256,7 @@ def borrador_enviar_view(request, borrador_id):
 
     from django.core.exceptions import ValidationError
 
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     usuario = _usuario_actual(request)
     if not usuario:
@@ -2304,7 +2304,7 @@ def borrador_enviar_view(request, borrador_id):
     if not cuerpo.strip():
         return JsonResponse({'ok': False, 'error': 'El mensaje no puede estar vacío.'}, status=400)
 
-    new_msg_id = make_msgid(domain='pietramonte.cl')
+    new_msg_id = make_msgid(domain='rtriosanpedro.cl')
     headers = {'Message-ID': new_msg_id}
     if b.correo_original and b.correo_original.mensaje_id and b.modo in (
         BorradorCorreo.Modo.RESPONDER, BorradorCorreo.Modo.RESPONDER_TODOS
@@ -2417,7 +2417,7 @@ def compose_view(request):
 
     from django.core.exceptions import ValidationError
 
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     usuario = _usuario_actual(request)
     if not usuario:
@@ -2559,7 +2559,7 @@ def compose_view(request):
         adjuntos_payload.append((arc_full.nombre, content, mime))
         archivos_para_persistir.append((arc_full.nombre, content, mime))
 
-    new_msg_id = make_msgid(domain='pietramonte.cl')
+    new_msg_id = make_msgid(domain='rtriosanpedro.cl')
     headers = {'Message-ID': new_msg_id}
 
     resultado = safe_send(
@@ -3070,7 +3070,7 @@ def _esc_pie_carpetas(usuario, buzones_visibles):
 
 def _esc_top_remitentes_externos(usuario, buzones_visibles, top=10):
     """
-    Top N remitentes que NO son @pietramonte.cl. Útil para ver quién
+    Top N remitentes que NO son @rtriosanpedro.cl. Útil para ver quién
     desde afuera te escribe más (clientes recurrentes, bancos, etc).
     """
     cache_key = f'esc:remits:{usuario.id}:{top}'
@@ -3078,7 +3078,7 @@ def _esc_top_remitentes_externos(usuario, buzones_visibles, top=10):
     if cached:
         return cached
 
-    dominio_propio = '@pietramonte.cl'
+    dominio_propio = '@rtriosanpedro.cl'
     raw = list(
         Correo.objects
         .filter(buzon__in=buzones_visibles, tipo_carpeta='inbox')

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Landing público — Pietramonte Automotriz
+   Landing público — RT Río San Pedro
    Depende de: base.css (variables, reset, .rv*)
    ========================================================================== */
 
@@ -615,7 +615,7 @@ footer {
 
 /* ─── Banner Agendar online ──────────────────────────────── */
 .banner-agendar {
-  background: linear-gradient(135deg, #C80C0F 0%, #8B0608 100%);
+  background: linear-gradient(135deg, #1e7d32 0%, #0d3d18 100%);
   color: #fff;
   padding: 28px 20px;
   position: relative;
@@ -681,7 +681,7 @@ footer {
   align-items: center;
   gap: 10px;
   background: #fff;
-  color: #C80C0F;
+  color: #1e7d32;
   padding: 14px 28px;
   border-radius: 999px;
   font-weight: 700;

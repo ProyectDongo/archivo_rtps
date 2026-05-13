@@ -148,7 +148,7 @@ def confirmar_reserva_view(request):
     Recibe el form completo, valida en capas, crea Reserva pendiente_email,
     manda código de 6 dígitos al email del cliente y redirige a /verificar/.
     """
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     ip_h = hash_ip(_get_ip(request))
 
@@ -364,7 +364,7 @@ def verificar_email_view(request):
         }, status=400)
 
     # ─── Código OK → confirmar ─────────────────────────────────────────
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     reserva.estado = Reserva.Estado.CONFIRMADA_EMAIL
     reserva.confirmada_email_en = timezone.now()
@@ -408,7 +408,7 @@ def verificar_email_view(request):
 @never_cache
 @require_POST
 def reenviar_codigo_view(request):
-    from archivo_pietramonte.email_utils import safe_send
+    from archivo.email_utils import safe_send
 
     token = request.session.get('agendar_token')
     if not token:

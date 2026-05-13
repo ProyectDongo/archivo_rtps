@@ -32,8 +32,8 @@ class Migration(migrations.Migration):
             model_name='buzon',
             name='firma_cargo',
             field=models.CharField(
-                max_length=120, blank=True, default='Pietramonte Automotriz',
-                help_text='Empresa o cargo (ej. "Pietramonte Automotriz").',
+                max_length=120, blank=True, default='Río San Pedro RT',
+                help_text='Empresa o cargo (ej. "Río San Pedro RT").',
             ),
         ),
         migrations.AddField(

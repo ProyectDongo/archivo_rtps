@@ -26,8 +26,8 @@
   --mac-text: #1d1d1f;
   --mac-text-dim: #515154;
   --mac-text-muted: #86868b;
-  --mac-brand: #C80C0F;
-  --mac-brand-soft: rgba(200, 12, 15, .10);
+  --mac-brand: #1e7d32;
+  --mac-brand-soft: rgba(30, 125, 50, .10);
   --mac-glass: rgba(245, 245, 247, .82);
   --mac-glass-border: rgba(0, 0, 0, .06);
   --mac-glass-blur: saturate(180%) blur(20px);

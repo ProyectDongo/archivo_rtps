@@ -91,7 +91,7 @@ def consumir_recovery_code(
     return False, codes_hash
 
 
-def url_otpauth(secret: str, email: str, issuer: str = 'Pietramonte Archivo') -> str:
+def url_otpauth(secret: str, email: str, issuer: str = 'RSP Archivo') -> str:
     """
     URL provisioning estándar otpauth:// que las apps de TOTP entienden.
     Issuer aparece en la app del usuario.
@@ -111,7 +111,7 @@ def qr_svg(url: str) -> str:
     return buf.getvalue().decode('utf-8')
 
 
-def pdf_recovery_codes(codes: list[str], identidad: str, app_url: str = 'archivo.pietramonte.cl') -> bytes:
+def pdf_recovery_codes(codes: list[str], identidad: str, app_url: str = 'rtriosanpedro.cl') -> bytes:
     """
     Genera un PDF A4 con los recovery codes para que el usuario imprima
     o guarde offline. Sin imágenes (todo vector). Pure Python (reportlab).
@@ -127,9 +127,9 @@ def pdf_recovery_codes(codes: list[str], identidad: str, app_url: str = 'archivo
     width, height = A4
 
     # ─── Cabecera ────────────────────────────────────────────────────────
-    c.setFillColorRGB(0.78, 0.05, 0.06)  # #C80C0F
+    c.setFillColorRGB(0.12, 0.49, 0.20)  # #1e7d32
     c.setFont('Helvetica-Bold', 18)
-    c.drawString(2 * cm, height - 2 * cm, 'PIETRAMONTE')
+    c.drawString(2 * cm, height - 2 * cm, 'RSP')
     c.setFillColorRGB(0.10, 0.10, 0.10)
     c.setFont('Helvetica-Bold', 14)
     c.drawString(2 * cm, height - 2.7 * cm, 'Códigos de recuperación 2FA')
@@ -175,7 +175,7 @@ def pdf_recovery_codes(codes: list[str], identidad: str, app_url: str = 'archivo
     # ─── Pie ─────────────────────────────────────────────────────────────
     c.setFillColorRGB(0.50, 0.50, 0.50)
     c.setFont('Helvetica', 8)
-    c.drawCentredString(width / 2, 1.5 * cm, f'Bóveda Pietramonte · {app_url}')
+    c.drawCentredString(width / 2, 1.5 * cm, f'Archivo RSP · {app_url}')
 
     c.showPage()
     c.save()

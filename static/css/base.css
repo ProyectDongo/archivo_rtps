@@ -3,10 +3,10 @@
    ========================================================================== */
 
 :root {
-  /* Paleta corporativa Pietramonte */
-  --r:    #C80C0F;          /* rojo principal */
-  --rd:   #a00a0c;          /* rojo oscuro hover */
-  --rl:   #fef0f0;          /* rojo claro fondo error */
+  /* Paleta corporativa RSP — Río San Pedro */
+  --r:    #1e7d32;          /* verde principal */
+  --rd:   #155724;          /* verde oscuro hover */
+  --rl:   #eaf5ed;          /* verde claro fondo */
 
   --gd:   #1a1f22;          /* grafito oscuro */
   --gm:   #394348;          /* grafito medio */

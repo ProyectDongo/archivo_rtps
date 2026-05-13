@@ -52,7 +52,7 @@
       {% csrf_token %}
 
       <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Destinatario(s) <span style="color:#C80C0F">*</span></span>
+        <span class="adv-label">Destinatario(s) <span style="color:#1e7d32">*</span></span>
         <input type="text"
                name="destinatarios"
                value="{{ destinatarios|default:'' }}"
@@ -80,7 +80,7 @@
       <div class="reenvio-rate" style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px">
         ℹ️ Reenvíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
         {% if restantes == 0 %}
-        — <span style="color:#C80C0F;font-weight:600">llegaste al límite</span>.
+        — <span style="color:#1e7d32;font-weight:600">llegaste al límite</span>.
         {% else %}
         — te quedan <strong>{{ restantes }}</strong>.
         {% endif %}
@@ -134,7 +134,7 @@
 .reenvio-form input:focus,
 .reenvio-form textarea:focus {
   outline: none;
-  border-color: #C80C0F;
+  border-color: #1e7d32;
   box-shadow: 0 0 0 3px rgba(200,12,15,.12);
 }
 </style>

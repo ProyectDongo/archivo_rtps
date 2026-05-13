@@ -1,4 +1,4 @@
-{% load correos_tags %}PIETRAMONTE — Correo reenviado
+{% load correos_tags %}RSP — Correo reenviado
 ================================
 
 {% if mensaje_extra %}{{ mensaje_extra }}
@@ -18,5 +18,5 @@ Asunto:  {{ correo.asunto|default:"(sin asunto)" }}
 {{ correo.cuerpo_texto|limpiar_cid_brackets|default:"(este correo no tiene cuerpo de texto plano)" }}
 
 ----------------------------------
-Bóveda Pietramonte
+Archivo RSP
 Reenviado vía portal interno · Respuestas → {{ reenviado_por }}

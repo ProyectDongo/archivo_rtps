@@ -7,14 +7,14 @@ Ejecuta:
     python manage.py seed_estructura --password-default=ClaveTemp.2026!
 
 Lo que crea:
-  - 7 buzones @pietramonte.cl (vacíos, listos para importar correos reales)
+  - 7 buzones @rtriosanpedro.cl (vacíos, listos para importar correos reales)
   - 5 usuarios del portal con sus accesos M2M:
 
       soporte.dongo@gmail.com         → admin (ve todos)
-      pventas.pietramonte@gmail.com   → aledezma, contacto
-      vfinanzas.pietramonte@gmail.com → cobranza, cpietrasanta, vpietrasanta
-      ral.pietramonte@gmail.com       → ralbornoz
-      lvalverde.pietramonte@gmail.com → lvalverde
+      pventas.rsp@gmail.com           → aledezma, contacto
+      vfinanzas.rsp@gmail.com         → cobranza, inspector1, inspector2
+      ral.rsp@gmail.com               → inspeccion
+      lvalverde.rsp@gmail.com         → secretaria
 
 Si algún usuario YA existe, no se le toca el password (solo se ajusta el M2M).
 """
@@ -27,22 +27,22 @@ from correos.models import Buzon, UsuarioPortal
 
 # Buzones reales
 BUZONES = [
-    'aledezma@pietramonte.cl',
-    'cobranza@pietramonte.cl',
-    'contacto@pietramonte.cl',
-    'cpietrasanta@pietramonte.cl',
-    'vpietrasanta@pietramonte.cl',
-    'ralbornoz@pietramonte.cl',
-    'lvalverde@pietramonte.cl',
+    'gerencia@rtriosanpedro.cl',
+    'cobranza@rtriosanpedro.cl',
+    'contacto@rtriosanpedro.cl',
+    'inspector1@rtriosanpedro.cl',
+    'inspector2@rtriosanpedro.cl',
+    'inspeccion@rtriosanpedro.cl',
+    'secretaria@rtriosanpedro.cl',
 ]
 
 # Mapeo gmail-empleado -> buzones que ve
 ASIGNACIONES = {
-    'soporte.dongo@gmail.com':         {'es_admin': True,  'buzones': []},
-    'pventas.pietramonte@gmail.com':   {'es_admin': False, 'buzones': ['aledezma@pietramonte.cl', 'contacto@pietramonte.cl']},
-    'vfinanzas.pietramonte@gmail.com': {'es_admin': False, 'buzones': ['cobranza@pietramonte.cl', 'cpietrasanta@pietramonte.cl', 'vpietrasanta@pietramonte.cl']},
-    'ral.pietramonte@gmail.com':       {'es_admin': False, 'buzones': ['ralbornoz@pietramonte.cl']},
-    'lvalverde.pietramonte@gmail.com': {'es_admin': False, 'buzones': ['lvalverde@pietramonte.cl']},
+    'soporte.dongo@gmail.com':   {'es_admin': True,  'buzones': []},
+    'pventas.rsp@gmail.com':     {'es_admin': False, 'buzones': ['gerencia@rtriosanpedro.cl', 'contacto@rtriosanpedro.cl']},
+    'vfinanzas.rsp@gmail.com':   {'es_admin': False, 'buzones': ['cobranza@rtriosanpedro.cl', 'inspector1@rtriosanpedro.cl', 'inspector2@rtriosanpedro.cl']},
+    'ral.rsp@gmail.com':         {'es_admin': False, 'buzones': ['inspeccion@rtriosanpedro.cl']},
+    'lvalverde.rsp@gmail.com':   {'es_admin': False, 'buzones': ['secretaria@rtriosanpedro.cl']},
 }
 
 

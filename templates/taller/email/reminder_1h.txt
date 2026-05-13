@@ -1,4 +1,4 @@
-🚨 TU CITA ES EN 1 HORA — Pietramonte
+🚨 TU CITA ES EN 1 HORA — RSP
 ======================================
 
 Hola {{ reserva.cliente_nombre }},
@@ -12,4 +12,4 @@ Vehículo: {{ reserva.marca }} {{ reserva.modelo }} · {{ reserva.patente }}
 Si tuviste un imprevisto, llamá al taller o respondé a este correo.
 
 —
-Pietramonte Taller · agenda@pietramonte.cl
+RSP Taller · info@rtriosanpedro.cl

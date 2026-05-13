@@ -60,7 +60,7 @@
       <input type="hidden" name="modo" value="{{ modo }}">
 
       <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Para <span style="color:#C80C0F">*</span></span>
+        <span class="adv-label">Para <span style="color:#1e7d32">*</span></span>
         <input type="text"
                name="to"
                value="{{ to|default:'' }}"
@@ -84,7 +84,7 @@
       </label>
 
       <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Asunto <span style="color:#C80C0F">*</span></span>
+        <span class="adv-label">Asunto <span style="color:#1e7d32">*</span></span>
         <input type="text"
                name="asunto"
                value="{{ asunto|default:'' }}"
@@ -108,7 +108,7 @@
       <div class="reenvio-rate" style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px">
         ℹ️ Envíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
         {% if restantes == 0 %}
-        — <span style="color:#C80C0F;font-weight:600">llegaste al límite</span>.
+        — <span style="color:#1e7d32;font-weight:600">llegaste al límite</span>.
         {% else %}
         — te quedan <strong>{{ restantes }}</strong>.
         {% endif %}

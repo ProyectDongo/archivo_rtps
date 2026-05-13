@@ -49,7 +49,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 #   - line: largo total del request line (URL incluida)
 #   - field-size: tamaño de cada header
 #   - fields: cantidad de headers
-CMD ["python", "-m", "gunicorn", "archivo_pietramonte.wsgi:application", \
+CMD ["python", "-m", "gunicorn", "archivo.wsgi:application", \
      "--bind", "0.0.0.0:8000", \
      "--workers", "3", \
      "--threads", "2", \

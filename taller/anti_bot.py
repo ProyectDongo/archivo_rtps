@@ -27,7 +27,7 @@ from django.core.cache import cache
 
 from .disposable_domains import es_email_desechable
 
-logger = logging.getLogger('archivo_pietramonte.anti_bot')
+logger = logging.getLogger('archivo.anti_bot')
 
 
 # ─── Cloudflare Turnstile ──────────────────────────────────────────────────

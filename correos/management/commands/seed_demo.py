@@ -25,7 +25,7 @@ PDF_DEMO = (
     b'3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]'
     b'/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n'
     b'4 0 obj<</Length 62>>stream\n'
-    b'BT /F1 22 Tf 80 720 Td (Cotizacion Pietramonte - DEMO) Tj ET\n'
+    b'BT /F1 22 Tf 80 720 Td (Cotizacion RSP - DEMO) Tj ET\n'
     b'endstream endobj\n'
     b'5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n'
     b'xref\n0 6\n'
@@ -48,9 +48,9 @@ REMITENTES = [
     'Banco Estado <noreply@bancoestado.cl>',
     'SII Notificaciones <notificaciones@sii.cl>',
     'AFP Modelo <contacto@afpmodelo.cl>',
-    'Carlos Pietrasanta <cpietrasanta@pietramonte.cl>',
-    'Vania Pietrasanta <vpietrasanta@pietramonte.cl>',
-    'Roberto Albornoz <ralbornoz@pietramonte.cl>',
+    'Carlos López <inspector1@rtriosanpedro.cl>',
+    'Vania Rojas <inspector2@rtriosanpedro.cl>',
+    'Roberto Silva <inspeccion@rtriosanpedro.cl>',
     'Juan Pérez <juan.perez@gmail.com>',
     'María González <mgonzalez@empresa.cl>',
     'TransBank <noreply@transbank.cl>',

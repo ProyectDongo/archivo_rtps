@@ -1,7 +1,7 @@
 {% extends 'base_public.html' %}
 {% load static %}
 
-{% block title %}Configurar 2FA — Pietramonte{% endblock %}
+{% block title %}Configurar 2FA — RSP{% endblock %}
 
 {% block extra_head %}
 <meta name="robots" content="noindex,nofollow">
@@ -15,7 +15,7 @@
   .twofa-step{margin:18px 0;padding-left:28px;position:relative}
   .twofa-step::before{content:counter(s);counter-increment:s;
                       position:absolute;left:0;top:0;width:22px;height:22px;
-                      background:#C80C0F;color:#fff;border-radius:50%;
+                      background:#1e7d32;color:#fff;border-radius:50%;
                       display:flex;align-items:center;justify-content:center;
                       font-size:13px;font-weight:700}
   .twofa-list{counter-reset:s;list-style:none;padding:0;margin:0}
@@ -29,13 +29,13 @@
   .twofa-input{width:100%;padding:14px;font-size:22px;letter-spacing:6px;
                text-align:center;border:1px solid #ccc;border-radius:8px;
                font-family:ui-monospace,Menlo,Consolas,monospace}
-  .twofa-input:focus{outline:none;border-color:#C80C0F;box-shadow:0 0 0 3px rgba(200,12,15,.1)}
+  .twofa-input:focus{outline:none;border-color:#1e7d32;box-shadow:0 0 0 3px rgba(30,125,50,.1)}
   .app-btns{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
   .app-btn{flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
            padding:10px 14px;border:1px solid #ccc;border-radius:8px;
            text-decoration:none;color:#1a1a1a;background:#fff;font-size:13px;
            transition:border-color .15s, transform .15s}
-  .app-btn:hover{border-color:#C80C0F;transform:translateY(-1px)}
+  .app-btn:hover{border-color:#1e7d32;transform:translateY(-1px)}
   .app-btn-icon{font-size:22px;line-height:1}
   .app-btn-os{font-size:11px;color:#777;display:block}
   .app-btn-text{font-weight:600}
@@ -81,7 +81,7 @@
           <summary style="cursor:pointer;color:#666;font-size:13px">¿No podés escanear? Ingresá el código a mano</summary>
           <div class="twofa-secret">{{ secret }}</div>
           <p style="font-size:12px;color:#777;margin:8px 0 0">
-            Cuenta: <strong>{{ user_email }}</strong> · Emisor: <strong>Pietramonte Archivo</strong>
+            Cuenta: <strong>{{ user_email }}</strong> · Emisor: <strong>RSP Archivo</strong>
           </p>
         </details>
       </li>

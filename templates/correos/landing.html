@@ -1,26 +1,25 @@
 {% extends 'base_public.html' %}
 {% load static %}
 
-{% block title %}Pietramonte Automotriz — Taller en Copiapó{% endblock %}
+{% block title %}RT Río San Pedro — Revisiones Técnicas Vehiculares{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/landing.css' %}">
-<link rel="preload" as="image" href="{% static 'img/bg/hero.jpg' %}">
 {% endblock %}
 
 {% block body %}
 
 <div class="tb">
-  <span class="tb-txt">Taller Automotriz · Copiapó, Atacama · +569 9876 1234</span>
+  <span class="tb-txt">Planta de Revisión Técnica · +56 9 3304 5056</span>
   <div class="tb-meta">
     <span>Lun–Sáb</span>
-    <span>09:30 – 16:30</span>
+    <span>08:00 – 18:00</span>
   </div>
 </div>
 
 <nav>
   <a href="#" aria-label="Inicio">
-    <img class="nav-logo" src="{% static 'img/logo.jpg' %}" alt="Pietramonte Automotriz">
+    <img class="nav-logo" src="https://rtriosanpedro.cl/images/logo_wide.png" alt="RT Río San Pedro">
   </a>
   <div class="nav-links">
     <a class="nl" href="#servicios">Servicios</a>
@@ -54,11 +53,11 @@
   <div class="hero-l">
     <div class="h-kicker fx-zoom">
       <span class="h-kicker-dot"></span>
-      <span class="h-kicker-t">Taller automotriz · Copiapó</span>
+      <span class="h-kicker-t">Planta de revisión técnica · Chile</span>
     </div>
     <div class="h-rule rv d1"></div>
-    <h1 class="hero-h1 fx-blur d1">Tu vehículo<br>en las <span class="acc">mejores</span><br>manos</h1>
-    <p class="hero-sub rv d3">Servicio técnico integral con más de 10 años en la Región de Atacama. Diagnóstico computarizado, mecánica general y repuestos con garantía.</p>
+    <h1 class="hero-h1 fx-blur d1">Revisión técnica<br>con <span class="acc">transparencia</span><br>y excelencia</h1>
+    <p class="hero-sub rv d3">Servicio eficiente y eficaz de revisiones técnicas vehiculares, verificación de gases y pre-revisiones, en concordancia con las normas del Ministerio de Transportes y Telecomunicaciones.</p>
     <div class="hero-btns rv d4">
       <a class="btn-p" href="{% url 'agendar' %}">Agendar online →</a>
       <button type="button" class="btn-g" data-scroll-to="servicios">Ver servicios</button>
@@ -66,11 +65,11 @@
   </div>
   <div class="hero-r fx-zoom d2">
     <div class="hero-frame">
-      <img class="hero-insig" src="{% static 'img/insignia.jpg' %}" alt="Insignia Pietramonte">
+      <img class="hero-insig" src="https://rtriosanpedro.cl/images/logo_wide.png" alt="RT Río San Pedro" style="background:#fff;padding:16px;border-radius:12px;">
     </div>
     <div class="hero-metrics rv d3">
-      <div class="hm"><div class="hm-n">+10</div><div class="hm-l">Años</div></div>
-      <div class="hm"><div class="hm-n">+500</div><div class="hm-l">Clientes</div></div>
+      <div class="hm"><div class="hm-n">ISO</div><div class="hm-l">9001 cert.</div></div>
+      <div class="hm"><div class="hm-n">A+B</div><div class="hm-l">Clases</div></div>
       <div class="hm"><div class="hm-n">6</div><div class="hm-l">Días/sem</div></div>
     </div>
   </div>
@@ -79,9 +78,9 @@
 <section class="banner-agendar">
   <div class="banner-inner">
     <div class="banner-text">
-      <div class="banner-kicker">📅 Reservá tu cita en 1 minuto · sin llamar</div>
-      <h2 class="banner-h">Agendá tu hora <em>aquí</em></h2>
-      <p class="banner-sub">Elegí el servicio o repuesto, picá día y hora, y te confirmamos por email + llamada. Disponible 24/7.</p>
+      <div class="banner-kicker">📅 Agenda tu revisión en 1 minuto · sin llamar</div>
+      <h2 class="banner-h">Reserva tu hora <em>aquí</em></h2>
+      <p class="banner-sub">Elige la revisión, selecciona día y hora, y te confirmamos por email. Disponible 24/7.</p>
     </div>
     <a class="banner-cta" href="{% url 'agendar' %}">
       Agendar online
@@ -94,18 +93,18 @@
 
 <div class="ticker" aria-hidden="true">
   <div class="tk-track">
-    <div class="ti"><span class="ti-dot"></span>Mecánica general</div>
-    <div class="ti"><span class="ti-dot"></span>Diagnóstico computarizado</div>
-    <div class="ti"><span class="ti-dot"></span>Car Wash</div>
-    <div class="ti"><span class="ti-dot"></span>Neumáticos y frenos</div>
-    <div class="ti"><span class="ti-dot"></span>Aire acondicionado</div>
-    <div class="ti"><span class="ti-dot"></span>Repuestos originales</div>
-    <div class="ti"><span class="ti-dot"></span>Mecánica general</div>
-    <div class="ti"><span class="ti-dot"></span>Diagnóstico computarizado</div>
-    <div class="ti"><span class="ti-dot"></span>Car Wash</div>
-    <div class="ti"><span class="ti-dot"></span>Neumáticos y frenos</div>
-    <div class="ti"><span class="ti-dot"></span>Aire acondicionado</div>
-    <div class="ti"><span class="ti-dot"></span>Repuestos originales</div>
+    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase A</div>
+    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase B</div>
+    <div class="ti"><span class="ti-dot"></span>Verificación de Gases</div>
+    <div class="ti"><span class="ti-dot"></span>Pre-Revisión</div>
+    <div class="ti"><span class="ti-dot"></span>Revisión GNC / GLP</div>
+    <div class="ti"><span class="ti-dot"></span>Verificación de Polarizados</div>
+    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase A</div>
+    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase B</div>
+    <div class="ti"><span class="ti-dot"></span>Verificación de Gases</div>
+    <div class="ti"><span class="ti-dot"></span>Pre-Revisión</div>
+    <div class="ti"><span class="ti-dot"></span>Revisión GNC / GLP</div>
+    <div class="ti"><span class="ti-dot"></span>Verificación de Polarizados</div>
   </div>
 </div>
 
@@ -115,74 +114,74 @@
   <div class="sv-grid">
     <div class="sv fx-zoom d1">
       <div class="sv-num">01</div>
-      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      <div class="sv-name">Mecánica general</div>
-      <p class="sv-desc">Revisión, diagnóstico y reparación integral con personal técnico certificado.</p>
+      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <div class="sv-name">Revisión Técnica Clase A</div>
+      <p class="sv-desc">Inspección oficial para vehículos de carga pesada, buses y maquinaria especial.</p>
       <ul class="sv-list">
-        <li>Cambio de aceite y filtros</li>
-        <li>Sistema de frenos completo</li>
-        <li>Motor y transmisión</li>
-        <li>Suspensión y tren delantero</li>
+        <li>Camiones y semirremolques</li>
+        <li>Buses y minibuses</li>
+        <li>Maquinaria con GNC/GLP</li>
+        <li>Vehículos de transporte público</li>
       </ul>
     </div>
     <div class="sv fx-zoom d2">
       <div class="sv-num">02</div>
-      <svg class="sv-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      <div class="sv-name">Diagnóstico computarizado</div>
-      <p class="sv-desc">Detección electrónica de fallas con equipamiento de última generación.</p>
+      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3"/><rect x="9" y="11" width="14" height="10" rx="2"/><circle cx="12" cy="20" r="1"/><circle cx="20" cy="20" r="1"/></svg>
+      <div class="sv-name">Revisión Técnica Clase B</div>
+      <p class="sv-desc">Inspección oficial para automóviles, motocicletas y remolques livianos.</p>
       <ul class="sv-list">
-        <li>Scanner OBD profesional</li>
-        <li>Lectura de códigos de falla</li>
-        <li>Calibración de sensores</li>
-        <li>Revisión eléctrica completa</li>
+        <li>Automóviles particulares</li>
+        <li>Motocicletas y triciclos</li>
+        <li>Remolques y casas rodantes</li>
+        <li>Vehículos todo terreno</li>
       </ul>
     </div>
     <div class="sv fx-zoom d3">
       <div class="sv-num">03</div>
       <svg class="sv-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      <div class="sv-name">Car Wash</div>
-      <p class="sv-desc">Lavado y detallado profesional para devolver el brillo original a tu vehículo.</p>
+      <div class="sv-name">Verificación de Gases</div>
+      <p class="sv-desc">Análisis de emisiones contaminantes según norma ambiental vigente del MTT.</p>
       <ul class="sv-list">
-        <li>Lavado exterior completo</li>
-        <li>Limpieza interior profunda</li>
-        <li>Pulido y encerado</li>
-        <li>Tratamiento de pintura</li>
+        <li>Medición CO, HC, NOx</li>
+        <li>Opacímetro para diésel</li>
+        <li>Catalizador y sistema escape</li>
+        <li>Informe oficial certificado</li>
       </ul>
     </div>
     <div class="sv fx-zoom d1">
       <div class="sv-num">04</div>
-      <svg class="sv-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-      <div class="sv-name">Neumáticos y frenos</div>
-      <p class="sv-desc">Venta, instalación y balanceo. Reparación completa del sistema de frenos.</p>
+      <svg class="sv-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg>
+      <div class="sv-name">Pre-Revisión</div>
+      <p class="sv-desc">Diagnóstico previo a la inspección oficial para detectar fallas anticipadamente.</p>
       <ul class="sv-list">
-        <li>Todas las marcas</li>
-        <li>Alineación y balanceo</li>
-        <li>Cambio pastillas y discos</li>
-        <li>Revisión líquido de frenos</li>
+        <li>Revisión de frenos y suspensión</li>
+        <li>Luces y señalización</li>
+        <li>Dirección y neumáticos</li>
+        <li>Informe de observaciones</li>
       </ul>
     </div>
     <div class="sv fx-zoom d2">
       <div class="sv-num">05</div>
       <svg class="sv-icon" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/></svg>
-      <div class="sv-name">Aire acondicionado</div>
-      <p class="sv-desc">Mantención, carga y reparación del sistema de climatización.</p>
+      <div class="sv-name">Revisión GNC / GLP</div>
+      <p class="sv-desc">Inspección especializada para vehículos que operan con gas natural o licuado.</p>
       <ul class="sv-list">
-        <li>Carga de gas refrigerante</li>
-        <li>Limpieza de evaporador</li>
-        <li>Cambio de compresor</li>
-        <li>Sellado de fugas</li>
+        <li>Verificación de cilindros y válvulas</li>
+        <li>Estanqueidad del sistema</li>
+        <li>Habilitación según normativa MTT</li>
+        <li>Certificado de aprobación</li>
       </ul>
     </div>
     <div class="sv fx-zoom d3">
       <div class="sv-num">06</div>
-      <svg class="sv-icon" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-      <div class="sv-name">Repuestos y accesorios</div>
-      <p class="sv-desc">Repuestos originales y alternativos de calidad para todas las marcas.</p>
+      <svg class="sv-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <div class="sv-name">Verificación de Polarizados</div>
+      <p class="sv-desc">Control del porcentaje de transmisión lumínica de vidrios según Decreto 54.</p>
       <ul class="sv-list">
-        <li>Filtros, correas y bujías</li>
-        <li>Repuestos OEM garantizados</li>
-        <li>Aceites y lubricantes</li>
-        <li>Accesorios y equipamiento</li>
+        <li>Medición con luxómetro calibrado</li>
+        <li>Parabrisas y ventanas laterales</li>
+        <li>Luneta trasera</li>
+        <li>Certificado si cumple norma</li>
       </ul>
     </div>
   </div>
@@ -191,17 +190,18 @@
 <section class="sec bg-nosotros" id="nosotros">
   <div class="nos-grid">
     <div class="nos-img-box rvl">
-      <img class="nos-img" src="{% static 'img/insignia.jpg' %}" alt="Insignia Pietramonte">
+      <img class="nos-img" src="https://rtriosanpedro.cl/images/logo_wide.png" alt="RT Río San Pedro" style="background:#fff;padding:20px;border-radius:12px;">
     </div>
     <div class="rvr">
       <div class="sec-tag tight"><div class="sec-bar"></div><span class="sec-tag-t">Quiénes somos</span></div>
-      <h2 class="sec-h2 fx-blur tight-h"><em>Sobre</em> Pietramonte</h2>
-      <p class="nos-txt">Más de una década atendiendo a la Región de Atacama con servicio técnico de calidad, diagnóstico honesto y repuestos garantizados. Nuestra prioridad es que tu vehículo vuelva a la ruta seguro.</p>
+      <h2 class="sec-h2 fx-blur tight-h"><em>Sobre</em> Río San Pedro</h2>
+      <p class="nos-txt"><strong>Misión:</strong> Otorgar un servicio eficiente y eficaz en materia de revisiones técnicas y verificación de contaminantes, en concordancia con las normas fijadas por el Ministerio de Transportes y Telecomunicaciones, entregando información clara y correcta del estado del vehículo.</p>
+      <p class="nos-txt" style="margin-top:12px"><strong>Visión:</strong> Ser reconocida como una de las mejores empresas de servicios de revisiones técnicas vehiculares, alcanzando la excelencia en el servicio y atención del cliente en Chile.</p>
       <div class="nos-vals">
-        <div class="nv fx-tilt d1"><div class="nv-t">Calidad</div><div class="nv-d">Repuestos y mano de obra garantizados en cada trabajo</div></div>
-        <div class="nv fx-tilt d2"><div class="nv-t">Confianza</div><div class="nv-d">Diagnóstico honesto, sin sorpresas al cobro</div></div>
-        <div class="nv fx-tilt d3"><div class="nv-t">Experiencia</div><div class="nv-d">Más de 10 años en la Región de Atacama</div></div>
-        <div class="nv fx-tilt d4"><div class="nv-t">Rapidez</div><div class="nv-d">Tiempos de entrega comprometidos y cumplidos</div></div>
+        <div class="nv fx-tilt d1"><div class="nv-t">Transparencia</div><div class="nv-d">Información clara y objetiva sobre el estado de cada vehículo</div></div>
+        <div class="nv fx-tilt d2"><div class="nv-t">Cumplimiento</div><div class="nv-d">Normas del MTT aplicadas con rigor técnico y responsabilidad</div></div>
+        <div class="nv fx-tilt d3"><div class="nv-t">Excelencia</div><div class="nv-d">Estándares ISO 9001 para una atención de calidad certificada</div></div>
+        <div class="nv fx-tilt d4"><div class="nv-t">Seguridad vial</div><div class="nv-d">Contribuimos a reducir accidentes y contaminación en Chile</div></div>
       </div>
     </div>
   </div>
@@ -212,7 +212,7 @@
     <div class="rvl">
       <div class="sec-tag tight"><div class="sec-bar"></div><span class="sec-tag-t">Atención</span></div>
       <h2 class="sec-h2 fx-blur tight-h">Horario de <em>atención</em></h2>
-      <p class="hor-sub">Disponibles de lunes a sábado. Le recomendamos agendar hora online para garantizar atención inmediata sin esperas.</p>
+      <p class="hor-sub">Disponibles de lunes a sábado. Recomendamos agendar hora online para garantizar atención inmediata sin esperas.</p>
       <a class="btn-p" href="{% url 'agendar' %}">Agendar online →</a>
     </div>
     <div class="hor-card fx-tilt d2">
@@ -222,17 +222,17 @@
       </div>
       <div class="hor-row">
         <span class="hor-dia">Lunes — Viernes</span>
-        <span class="hor-hora">09:30 — 16:30<span class="hor-badge">Abierto</span></span>
+        <span class="hor-hora">08:00 — 18:00<span class="hor-badge">Abierto</span></span>
       </div>
       <div class="hor-row">
         <span class="hor-dia">Sábado</span>
-        <span class="hor-hora">09:30 — 13:30<span class="hor-badge">Abierto</span></span>
+        <span class="hor-hora">08:00 — 14:00<span class="hor-badge">Abierto</span></span>
       </div>
       <div class="hor-row">
         <span class="hor-dia">Domingo</span>
         <span class="hor-hora hor-closed">Cerrado</span>
       </div>
-      <div class="hor-addr">Av. Copayapu 123, Copiapó, Región de Atacama</div>
+      <div class="hor-addr">Región de Atacama, Chile</div>
     </div>
   </div>
 </section>
@@ -248,20 +248,20 @@
         <h2 class="cont-h2 fx-blur">¿Necesitas una <em>revisión?</em></h2>
       </div>
       <div class="rvr">
-        <p class="cont-sub">Contáctanos por cualquiera de los medios disponibles. Nuestro equipo responderá a la brevedad para coordinar la atención de tu vehículo.</p>
-        <a class="btn-p" href="tel:+56998761234">Llamar ahora</a>
+        <p class="cont-sub">Contáctanos por cualquiera de los medios disponibles. Nuestro equipo responderá a la brevedad para coordinar tu revisión técnica.</p>
+        <a class="btn-p" href="tel:+56933045056">Llamar ahora</a>
       </div>
     </div>
     <div class="cont-cards rv d2">
-      <div class="cc"><div class="cc-l">Teléfono</div><div class="cc-v">+569 9876 1234</div></div>
-      <div class="cc"><div class="cc-l">Email</div><div class="cc-v">info@pietramonte.cl</div></div>
-      <div class="cc"><div class="cc-l">Dirección</div><div class="cc-v">Av. Copayapu 123, Copiapó</div></div>
+      <div class="cc"><div class="cc-l">Teléfono</div><div class="cc-v">+56 9 3304 5056</div></div>
+      <div class="cc"><div class="cc-l">Email</div><div class="cc-v">info@rtriosanpedro.cl</div></div>
+      <div class="cc"><div class="cc-l">Sugerencias</div><div class="cc-v">syr.rtriosanpedro.cl</div></div>
     </div>
   </div>
 </section>
 
 <footer>
-  <img class="f-logo" src="{% static 'img/logo.jpg' %}" alt="Pietramonte Automotriz">
+  <img class="f-logo" src="https://rtriosanpedro.cl/images/logo_wide.png" alt="RT Río San Pedro" style="height:40px;width:auto;filter:brightness(0) invert(1);">
   <div class="f-links">
     <a class="fl" href="#servicios">Servicios</a>
     <a class="fl" href="#nosotros">Nosotros</a>
@@ -269,7 +269,7 @@
     <a class="fl" href="#contacto">Contacto</a>
     <a class="fl" href="{% url 'privacidad' %}">Privacidad</a>
   </div>
-  <span class="f-copy">© {% now "Y" %} Pietramonte Automotriz — Copiapó</span>
+  <span class="f-copy">© {% now "Y" %} Planta de Revisión Técnica Río San Pedro</span>
 </footer>
 {% endblock %}
 
