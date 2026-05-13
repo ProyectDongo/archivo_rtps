@@ -47,10 +47,12 @@ class CSPMiddleware:
         response = self.get_response(request)
         from django.conf import settings
         admin_path = '/' + settings.ADMIN_URL_PATH
-        if request.path.startswith(admin_path):
-            response['Content-Security-Policy'] = _CSP_ADMIN
-        else:
-            response['Content-Security-Policy'] = _CSP_STRICT
+        # No sobreescribir si la vista ya puso su propio CSP (ej: adjunto inline).
+        if 'Content-Security-Policy' not in response:
+            if request.path.startswith(admin_path):
+                response['Content-Security-Policy'] = _CSP_ADMIN
+            else:
+                response['Content-Security-Policy'] = _CSP_STRICT
         return response
 
 

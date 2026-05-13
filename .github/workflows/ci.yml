@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests + Lint
+    runs-on: ubuntu-latest
+
+    env:
+      DJANGO_SETTINGS_MODULE: archivo.settings
+      SECRET_KEY: ci-secret-key-not-for-production
+      DEBUG: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            Django \
+            python-dotenv \
+            whitenoise \
+            chardet \
+            dj-database-url \
+            pyotp \
+            "qrcode[pil]" \
+            reportlab \
+            cryptography \
+            Pillow \
+            "bleach[css]" \
+            redis \
+            ruff
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Django system check
+        run: python manage.py check
+
+      - name: Run migrations
+        run: python manage.py migrate --run-syncdb
+
+      - name: Run tests (correos)
+        run: python manage.py test correos --verbosity=2
+
+      - name: Run tests (taller)
+        run: python manage.py test taller --verbosity=2

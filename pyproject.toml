@@ -1,0 +1,39 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 110
+exclude = [
+    "correos/migrations",
+    "taller/migrations",
+    ".git",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (undefined names, unused imports)
+    "I",   # isort
+    "B",   # flake8-bugbear (common bugs)
+    "UP",  # pyupgrade (modernize syntax)
+    "S",   # flake8-bandit (security)
+    "N",   # pep8-naming
+]
+ignore = [
+    "S101",   # assert allowed in tests
+    "S105",   # hardcoded passwords in tests/seeds
+    "S106",
+    "S311",   # random is ok for non-crypto (captcha display only)
+    "B904",   # raise from in except — too strict for existing code
+    "N806",   # uppercase variable names (models use DB_FIELD style)
+    "E501",   # line too long — handled per-file, not globally
+]
+
+[tool.ruff.lint.per-file-ignores]
+"correos/tests.py" = ["S", "N"]
+"taller/tests.py"  = ["S", "N"]
+"correos/management/commands/seed_demo.py" = ["S"]
+"correos/management/commands/seed_estructura.py" = ["S"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["archivo", "correos", "taller"]

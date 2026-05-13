@@ -11,8 +11,14 @@ from django.contrib import admin
 from django.urls import path, include
 
 from . import admin_2fa
+from taller import admin_views as taller_admin
 
 urlpatterns = [
+    # Taller admin (staff-only) — VA ANTES del admin.site.urls para que
+    # Django no capture /admin-*/agenda/ dentro del admin de Django.
+    path(settings.ADMIN_URL_PATH + 'agenda/', taller_admin.panel_agenda_view, name='taller_admin_agenda'),
+    path(settings.ADMIN_URL_PATH + 'agenda/confirmar/<int:reserva_id>/', taller_admin.confirmar_llamada_view, name='taller_admin_confirmar'),
+
     # Admin Django (ruta ofuscada)
     path(settings.ADMIN_URL_PATH, admin.site.urls),
 

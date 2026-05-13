@@ -1207,3 +1207,249 @@ class FirmaTests(_PortalMixin, TestCase):
         c = Client(HTTP_HOST='localhost')
         r = c.get('/intranet/buzon/firma/')
         self.assertIn(r.status_code, (302, 301))
+
+
+# ─── helpers reutilizables ────────────────────────────────────────────────────
+
+def _make_user_con_buzon(email='test@gmail.com', buzon_email='info@rtriosanpedro.cl',
+                          totp_activo=True):
+    """Crea UsuarioPortal + Buzon y devuelve (usuario, buzon)."""
+    buzon = Buzon.objects.create(email=buzon_email)
+    u = UsuarioPortal(email=email, activo=True, totp_activo=totp_activo)
+    u.set_password('PassTest.2026!')
+    u.save()
+    u.buzones.add(buzon)
+    return u, buzon
+
+
+def _session_login(client, usuario, buzon):
+    """Inyecta sesión sin pasar por el formulario de login."""
+    s = client.session
+    s['usuario_email'] = usuario.email
+    s['buzon_actual_id'] = buzon.id
+    s['buzon_actual_email'] = buzon.email
+    s.save()
+
+
+# ─── healthcheck ──────────────────────────────────────────────────────────────
+
+class HealthzTests(TestCase):
+    def test_healthz_responde_200(self):
+        r = Client().get('/healthz')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.content, b'ok')
+
+    def test_healthz_no_requiere_sesion(self):
+        r = Client().get('/healthz')
+        self.assertNotEqual(r.status_code, 302)
+
+
+# ─── 2FA enforcement ─────────────────────────────────────────────────────────
+
+@override_settings(
+    PORTAL_REQUIRE_2FA=True,
+    STORAGES={
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    },
+)
+class Enforcement2FATests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.u, self.b = _make_user_con_buzon(totp_activo=False)
+        self.c = Client(HTTP_HOST='localhost')
+        _session_login(self.c, self.u, self.b)
+
+    def test_sin_2fa_inbox_redirige_a_setup(self):
+        r = self.c.get('/intranet/bandeja/')
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('2fa', r['Location'])
+
+    def test_setup_2fa_accessible_sin_2fa_activo(self):
+        r = self.c.get('/intranet/2fa/setup/')
+        self.assertEqual(r.status_code, 200)
+
+    def test_con_2fa_activo_inbox_pasa(self):
+        self.u.totp_activo = True
+        self.u.save()
+        r = self.c.get('/intranet/bandeja/')
+        self.assertEqual(r.status_code, 200)
+
+
+# ─── snooze ───────────────────────────────────────────────────────────────────
+
+@override_settings(STORAGES={
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class SnoozeTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.u, self.b = _make_user_con_buzon()
+        self.correo = Correo.objects.create(buzon=self.b, asunto='snooze me')
+        self.c = Client(HTTP_HOST='localhost')
+        _session_login(self.c, self.u, self.b)
+
+    def test_snooze_con_preset(self):
+        r = self.c.post(f'/intranet/correo/{self.correo.id}/snooze/', {'preset': 'manana'})
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertTrue(data['ok'])
+        self.assertTrue(CorreoSnooze.objects.filter(usuario=self.u, correo=self.correo).exists())
+
+    def test_snooze_con_until_custom(self):
+        from django.utils import timezone
+        futuro = (timezone.now() + timezone.timedelta(hours=3)).strftime('%Y-%m-%dT%H:%M')
+        r = self.c.post(f'/intranet/correo/{self.correo.id}/snooze/', {'until': futuro})
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()['ok'])
+
+    def test_snooze_en_pasado_devuelve_400(self):
+        r = self.c.post(f'/intranet/correo/{self.correo.id}/snooze/',
+                        {'until': '2000-01-01T00:00'})
+        self.assertEqual(r.status_code, 400)
+
+    def test_unsnooze_elimina(self):
+        CorreoSnooze.objects.create(
+            usuario=self.u, correo=self.correo,
+            until_at=timezone.now() + timezone.timedelta(hours=2),
+        )
+        r = self.c.post(f'/intranet/correo/{self.correo.id}/unsnooze/')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()['eliminado'])
+        self.assertFalse(CorreoSnooze.objects.filter(usuario=self.u, correo=self.correo).exists())
+
+    def test_snooze_correo_ajeno_404(self):
+        b2 = Buzon.objects.create(email='otro@rtriosanpedro.cl')
+        correo_ajeno = Correo.objects.create(buzon=b2, asunto='ajeno')
+        r = self.c.post(f'/intranet/correo/{correo_ajeno.id}/snooze/', {'preset': 'manana'})
+        self.assertEqual(r.status_code, 404)
+
+
+# ─── bulk actions ─────────────────────────────────────────────────────────────
+
+@override_settings(STORAGES={
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class BulkAccionesTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.u, self.b = _make_user_con_buzon()
+        self.c1 = Correo.objects.create(buzon=self.b, asunto='uno')
+        self.c2 = Correo.objects.create(buzon=self.b, asunto='dos')
+        self.c = Client(HTTP_HOST='localhost')
+        _session_login(self.c, self.u, self.b)
+
+    def _post_bulk(self, accion, ids, **extra):
+        payload = {'accion': accion, 'ids': ','.join(str(i) for i in ids)}
+        payload.update(extra)
+        return self.c.post('/intranet/correos/bulk/', payload)
+
+    def test_bulk_destacar(self):
+        r = self._post_bulk('destacar', [self.c1.id, self.c2.id])
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(Correo.objects.get(id=self.c1.id).destacado)
+        self.assertTrue(Correo.objects.get(id=self.c2.id).destacado)
+
+    def test_bulk_no_destacar(self):
+        Correo.objects.filter(id__in=[self.c1.id]).update(destacado=True)
+        r = self._post_bulk('no_destacar', [self.c1.id])
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(Correo.objects.get(id=self.c1.id).destacado)
+
+    def test_bulk_leer_crea_correo_leido(self):
+        r = self._post_bulk('leer', [self.c1.id])
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(CorreoLeido.objects.filter(usuario=self.u, correo=self.c1).exists())
+
+    def test_bulk_no_leer_borra_correo_leido(self):
+        CorreoLeido.objects.create(usuario=self.u, correo=self.c1)
+        r = self._post_bulk('no_leer', [self.c1.id])
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(CorreoLeido.objects.filter(usuario=self.u, correo=self.c1).exists())
+
+    def test_bulk_accion_invalida_400(self):
+        r = self._post_bulk('borrar_todo', [self.c1.id])
+        self.assertEqual(r.status_code, 400)
+
+    def test_bulk_correo_ajeno_ignorado(self):
+        b2 = Buzon.objects.create(email='ajeno@rtriosanpedro.cl')
+        c_ajeno = Correo.objects.create(buzon=b2, asunto='ajeno')
+        r = self._post_bulk('destacar', [c_ajeno.id])
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(Correo.objects.get(id=c_ajeno.id).destacado)
+
+
+# ─── módulo archivos ──────────────────────────────────────────────────────────
+
+@override_settings(STORAGES={
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class ArchivosModuloTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.u, self.b = _make_user_con_buzon()
+        self.c = Client(HTTP_HOST='localhost')
+        _session_login(self.c, self.u, self.b)
+
+    def _subir(self, contenido=b'contenido de prueba', nombre='test.txt', tipo='documento'):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        f = SimpleUploadedFile(nombre, contenido, content_type='text/plain')
+        return self.c.post('/intranet/archivos/subir/', {
+            'archivo': f,
+            'nombre': nombre,
+            'tipo': tipo,
+        })
+
+    def test_lista_archivos_devuelve_200(self):
+        r = self.c.get('/intranet/archivos/')
+        self.assertEqual(r.status_code, 200)
+
+    def test_subir_archivo_redirige_y_crea_objeto(self):
+        from correos.models import Archivo
+        r = self._subir()
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Archivo.objects.filter(nombre='test.txt').exists())
+
+    def test_descargar_archivo_propio_200(self):
+        from correos.models import Archivo
+        self._subir()
+        arc = Archivo.objects.get(nombre='test.txt')
+        r = self.c.get(f'/intranet/archivos/{arc.id}/descargar/')
+        self.assertEqual(r.status_code, 200)
+
+    def test_borrar_archivo_soft_delete(self):
+        from correos.models import Archivo
+        self._subir()
+        arc = Archivo.objects.get(nombre='test.txt')
+        r = self.c.post(f'/intranet/archivos/{arc.id}/borrar/')
+        self.assertIn(r.status_code, (200, 302))
+        arc.refresh_from_db()
+        self.assertIsNotNone(arc.eliminado_en)
+
+    def test_lista_papelera_contiene_borrado(self):
+        from correos.models import Archivo
+        self._subir()
+        arc = Archivo.objects.get(nombre='test.txt')
+        self.c.post(f'/intranet/archivos/{arc.id}/borrar/')
+        r = self.c.get('/intranet/papelera/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'test.txt')
+
+    def test_restaurar_archivo_limpia_borrado_en(self):
+        from correos.models import Archivo
+        self._subir()
+        arc = Archivo.objects.get(nombre='test.txt')
+        self.c.post(f'/intranet/archivos/{arc.id}/borrar/')
+        self.c.post(f'/intranet/papelera/{arc.id}/restaurar/')
+        arc.refresh_from_db()
+        self.assertIsNone(arc.eliminado_en)
+
+    def test_sin_sesion_upload_redirige(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        c_anonimo = Client(HTTP_HOST='localhost')
+        f = SimpleUploadedFile('x.txt', b'x', content_type='text/plain')
+        r = c_anonimo.post('/intranet/archivos/subir/', {'archivo': f})
+        self.assertEqual(r.status_code, 302)

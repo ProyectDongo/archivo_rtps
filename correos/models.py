@@ -6,7 +6,7 @@ from django.db import models
 
 def hash_ip(ip: str) -> str:
     """Hash de IP para no guardar PII en claro. Sal incluida en el código."""
-    return hashlib.sha256(('pm-archivo::' + (ip or '')).encode('utf-8')).hexdigest()[:32]
+    return hashlib.sha256(('rsp::' + (ip or '')).encode('utf-8')).hexdigest()[:32]
 
 
 class Buzon(models.Model):

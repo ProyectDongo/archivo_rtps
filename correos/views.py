@@ -130,6 +130,18 @@ def portal_login_required(view):
     def wrapper(request, *args, **kwargs):
         if not request.session.get('usuario_email'):
             return redirect('login')
+        # 2FA enforcement: si el usuario nunca activó TOTP, lo mandamos al setup.
+        # No bloqueamos la descarga de PDFs de recovery (evita loop infinito).
+        if getattr(settings, 'PORTAL_REQUIRE_2FA', True):
+            usuario = _usuario_actual(request)
+            if usuario and not usuario.totp_activo:
+                from django.urls import resolve, Resolver404
+                try:
+                    match = resolve(request.path_info)
+                    if match.url_name not in ('setup_2fa', 'verify_2fa', 'logout', 'descargar_recovery_pdf'):
+                        return redirect('setup_2fa')
+                except Resolver404:
+                    return redirect('setup_2fa')
         return view(request, *args, **kwargs)
     return wrapper
 
@@ -516,6 +528,9 @@ def setup_2fa_view(request):
     recovery codes y promueve la sesión.
     """
     user = _get_pre_2fa_user(request)
+    if not user:
+        # Fallback: enforcement path → usuario ya tiene sesión completa pero sin 2FA activo
+        user = _usuario_actual(request)
     if not user:
         messages.error(request, 'Tu sesión expiró. Inicia sesión de nuevo.')
         return redirect('login')

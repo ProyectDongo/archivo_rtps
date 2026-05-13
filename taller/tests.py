@@ -196,6 +196,8 @@ class VistasPublicasTest(TestCase):
 # ─── Panel admin: requiere staff + permiso ────────────────────────────────
 class PanelAdminTest(TestCase):
     def setUp(self):
+        from django.conf import settings
+        self.admin_url = f'/{settings.ADMIN_URL_PATH}agenda/'
         self.user_normal = User.objects.create_user('normal', password='x')
         self.user_staff  = User.objects.create_user('staff',  password='x', is_staff=True)
         self.user_super  = User.objects.create_superuser('super', password='x')
@@ -206,22 +208,20 @@ class PanelAdminTest(TestCase):
         )
 
     def test_no_logueado_redirige(self):
-        resp = self.client.get('/admin-pm-staff/agenda/')
-        # staff_member_required redirige a login (302)
+        resp = self.client.get(self.admin_url)
         self.assertEqual(resp.status_code, 302)
 
     def test_user_no_staff_redirige(self):
         self.client.login(username='normal', password='x')
-        resp = self.client.get('/admin-pm-staff/agenda/')
+        resp = self.client.get(self.admin_url)
         self.assertEqual(resp.status_code, 302)
 
     def test_staff_con_permiso_pasa(self):
-        # Marcamos también la sesión como 2FA-OK para bypass del middleware
         self.client.login(username='staff', password='x')
         session = self.client.session
         session['admin_2fa_ok'] = True
         session.save()
-        resp = self.client.get('/admin-pm-staff/agenda/')
+        resp = self.client.get(self.admin_url)
         self.assertEqual(resp.status_code, 200)
 
 
@@ -264,3 +264,148 @@ class SlotUniqueTest(TestCase):
             estado=Reserva.Estado.CONFIRMADA_EMAIL,
         )
         self.assertEqual(Reserva.objects.filter(fecha=d, hora_inicio=time(10, 0)).count(), 2)
+
+
+# ─── ver_reserva y cancelar_reserva ──────────────────────────────────────────
+
+class VerYCancelarReservaTests(TestCase):
+    def _crear_reserva(self, estado=Reserva.Estado.CONFIRMADA_EMAIL, delta_dias=5):
+        self.token = generar_token_publico()
+        fecha = _lunes_proximo() + timedelta(days=delta_dias)
+        self.reserva = Reserva.objects.create(
+            token_hash=hash_token(self.token),
+            cliente_nombre='Juan Test',
+            cliente_email='juan@test.com',
+            cliente_telefono='+56911111111',
+            patente='TEST12',
+            marca='Toyota', modelo='Hilux',
+            fecha=fecha,
+            hora_inicio=time(10, 0),
+            estado=estado,
+        )
+
+    def test_ver_reserva_devuelve_200(self):
+        self._crear_reserva()
+        r = self.client.get(reverse('ver_reserva', kwargs={'token': self.token}))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Juan Test')
+
+    def test_ver_reserva_token_invalido_404(self):
+        r = self.client.get(reverse('ver_reserva', kwargs={'token': 'token-falso-xyz'}))
+        self.assertEqual(r.status_code, 404)
+
+    def test_cancelar_reserva_activa(self):
+        self._crear_reserva()
+        r = self.client.post(
+            reverse('cancelar_reserva', kwargs={'token': self.token}),
+            {'motivo': 'cambié de opinión'},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.reserva.refresh_from_db()
+        self.assertEqual(self.reserva.estado, Reserva.Estado.CANCELADA_CLIENTE)
+        self.assertEqual(self.reserva.cancelada_por, 'cliente')
+
+    def test_cancelar_reserva_ya_cancelada_no_rompe(self):
+        self._crear_reserva(estado=Reserva.Estado.CANCELADA_CLIENTE)
+        r = self.client.post(
+            reverse('cancelar_reserva', kwargs={'token': self.token}),
+            {'motivo': ''},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.reserva.refresh_from_db()
+        self.assertEqual(self.reserva.estado, Reserva.Estado.CANCELADA_CLIENTE)
+
+
+# ─── verificar_email_view ─────────────────────────────────────────────────────
+
+class VerificarEmailTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.token = generar_token_publico()
+        d = _lunes_proximo()
+        self.reserva = Reserva.objects.create(
+            token_hash=hash_token(self.token),
+            cliente_nombre='María', cliente_email='maria@test.com',
+            cliente_telefono='+56922222222',
+            patente='MARI12', marca='Honda', modelo='Civic',
+            fecha=d, hora_inicio=time(11, 0),
+            estado=Reserva.Estado.PENDIENTE_EMAIL,
+        )
+        s = self.client.session
+        s['agendar_token'] = self.token
+        s.save()
+
+    def test_get_verificar_devuelve_200(self):
+        r = self.client.get(reverse('verificar_email'))
+        self.assertEqual(r.status_code, 200)
+
+    def test_codigo_incorrecto_devuelve_400(self):
+        anti_bot.generar_codigo_email('maria@test.com')
+        r = self.client.post(reverse('verificar_email'), {'codigo': '000000'})
+        self.assertEqual(r.status_code, 400)
+        self.reserva.refresh_from_db()
+        self.assertEqual(self.reserva.estado, Reserva.Estado.PENDIENTE_EMAIL)
+
+    def test_codigo_correcto_confirma_reserva(self):
+        from unittest.mock import patch
+        codigo = anti_bot.generar_codigo_email('maria@test.com')
+        with patch('archivo.email_utils.safe_send', return_value={'ok': True}):
+            r = self.client.post(reverse('verificar_email'), {'codigo': codigo})
+        self.assertEqual(r.status_code, 302)
+        self.reserva.refresh_from_db()
+        self.assertEqual(self.reserva.estado, Reserva.Estado.CONFIRMADA_EMAIL)
+
+    def test_sin_token_en_sesion_redirige_a_agendar(self):
+        s = self.client.session
+        del s['agendar_token']
+        s.save()
+        r = self.client.get(reverse('verificar_email'))
+        self.assertRedirects(r, reverse('agendar'), fetch_redirect_response=False)
+
+
+# ─── comando enviar_recordatorios (dry-run) ───────────────────────────────────
+
+class EnviarRecordatoriosCommandTests(TestCase):
+    def test_dry_run_no_modifica_bd(self):
+        from django.core.management import call_command
+        from io import StringIO
+        d = _lunes_proximo()
+        Reserva.objects.create(
+            token_hash=hash_token(generar_token_publico()),
+            cliente_nombre='Test', cliente_email='t@test.com',
+            cliente_telefono='+56933333333',
+            patente='DRYR12', marca='Ford', modelo='Escape',
+            fecha=d, hora_inicio=time(9, 0),
+            estado=Reserva.Estado.CONFIRMADA_EMAIL,
+        )
+        out = StringIO()
+        call_command('enviar_recordatorios', '--dry-run', stdout=out)
+        output = out.getvalue()
+        self.assertIn('[DRY]', output)
+        # En dry-run nada cambia en BD — ningún reminder_*_enviado_en se setea
+        r = Reserva.objects.get(patente='DRYR12')
+        self.assertIsNone(r.reminder_24h_enviado_en)
+        self.assertIsNone(r.reminder_1h_enviado_en)
+
+    def test_cleanup_only_cancela_pendientes_vencidos(self):
+        from django.core.management import call_command
+        from io import StringIO
+        from datetime import timedelta
+        from django.utils import timezone
+        # Reserva pendiente_email creada hace 40 min (vencida por el TTL de 30 min)
+        r = Reserva.objects.create(
+            token_hash=hash_token(generar_token_publico()),
+            cliente_nombre='Venc', cliente_email='v@test.com',
+            cliente_telefono='+56944444444',
+            patente='VENC12', marca='VW', modelo='Golf',
+            fecha=_lunes_proximo(), hora_inicio=time(14, 0),
+            estado=Reserva.Estado.PENDIENTE_EMAIL,
+        )
+        # Forzar fecha de creación a 40 min atrás
+        Reserva.objects.filter(id=r.id).update(
+            creada_en=timezone.now() - timedelta(minutes=40)
+        )
+        out = StringIO()
+        call_command('enviar_recordatorios', '--cleanup-only', stdout=out)
+        r.refresh_from_db()
+        self.assertEqual(r.estado, Reserva.Estado.CANCELADA_CLIENTE)

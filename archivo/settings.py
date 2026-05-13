@@ -174,6 +174,10 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 500
 ADMIN_URL_PATH = os.environ.get('ADMIN_URL_PATH', 'admin-rsp-staff') + '/'
 
 # ─── Portal personalizado ────────────────────────────────────────────────────
+# 2FA obligatorio en el portal de correos. False solo en dev sin configurar 2FA.
+# En producción (Coolify) setear PORTAL_REQUIRE_2FA=true via env.
+PORTAL_REQUIRE_2FA = os.environ.get('PORTAL_REQUIRE_2FA', 'false' if DEBUG else 'true').lower() in ('1', 'true', 'yes')
+
 PORTAL_ADMIN_EMAIL       = os.environ.get('PORTAL_ADMIN_EMAIL', '')
 ADMIN_NOTIFY_AGENDA      = [e.strip() for e in os.environ.get('ADMIN_NOTIFY_AGENDA', '').split(',') if e.strip()]
 ADMIN_NOTIFY_COTIZACIONES = [e.strip() for e in os.environ.get('ADMIN_NOTIFY_COTIZACIONES', '').split(',') if e.strip()]
