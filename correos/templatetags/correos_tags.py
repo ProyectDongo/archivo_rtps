@@ -887,7 +887,6 @@ def correo_iframe(correo):
         f'<iframe class="email-iframe" srcdoc="{srcdoc}" '
         f'sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin" '
         f'frameborder="0" scrolling="no" '
-        f'onload="window._resizeEmailIframe(this)" '
         f'style="width:100%;border:none;display:block;min-height:60px">'
         f'</iframe>'
     )

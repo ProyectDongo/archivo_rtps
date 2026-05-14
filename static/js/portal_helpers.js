@@ -50,11 +50,19 @@ window.PM = window.PM || {};
   }, true);
 })();
 
-// Auto-resize iframe de email (llamado por onload del iframe)
-window._resizeEmailIframe = function (iframe) {
+// Auto-resize iframes de email — capture=true captura load de iframes (no burbujean).
+// Sin onload= inline → CSP safe.
+function _resizeEmailIframe(iframe) {
   try {
     var doc = iframe.contentDocument || iframe.contentWindow.document;
     var h = doc.documentElement.scrollHeight || doc.body.scrollHeight;
     iframe.style.height = Math.max(h + 16, 60) + 'px';
   } catch (e) {}
-};
+}
+window._resizeEmailIframe = _resizeEmailIframe;
+
+document.addEventListener('load', function (e) {
+  if (e.target && e.target.classList && e.target.classList.contains('email-iframe')) {
+    _resizeEmailIframe(e.target);
+  }
+}, true);
