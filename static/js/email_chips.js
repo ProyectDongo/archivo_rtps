@@ -84,6 +84,7 @@
 
     // Reemplaza el input original por el wrap
     origInput.style.display = 'none';
+    origInput.removeAttribute('required');
     origInput.parentNode.insertBefore(wrap, origInput);
     // Movemos el original adentro para preservar `value` inicial y removal
     wrap.appendChild(origInput);
