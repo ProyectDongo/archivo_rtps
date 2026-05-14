@@ -1394,7 +1394,7 @@ def contactos_view(request):
 
     # 4) Reenvíos (correos archivados forward a externos).
     reenvios = (
-        ReenvioCorreo.objects.filter(correo_original__buzon=buzon, exito=True)
+        ReenvioCorreo.objects.filter(correo__buzon=buzon, exito=True)
         .order_by('-enviado_en')
         .values_list('destinatarios', flat=True)[:1000]
     )
