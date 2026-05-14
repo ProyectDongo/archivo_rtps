@@ -130,6 +130,8 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 # ─── Seguridad ──────────────────────────────────────────────────────────────
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
+_csrf_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_raw.split(',') if o.strip()]
 
 # ─── Email / SMTP ───────────────────────────────────────────────────────────
 EMAIL_BACKEND = os.environ.get(
