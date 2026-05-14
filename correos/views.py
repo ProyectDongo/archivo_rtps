@@ -1858,9 +1858,12 @@ def adjunto_view(request, adjunto_id):
         # nativo de PDF / players HTML5 funcionen, sin permitir scripts ni
         # recursos externos.
         response['X-Frame-Options'] = 'SAMEORIGIN'
+        # script-src 'self' necesario para el visor de PDF nativo de Chrome
         response['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'none'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: blob:; "
             "object-src 'self'; "
             "frame-ancestors 'self'"
         )
