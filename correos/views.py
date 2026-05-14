@@ -7,6 +7,7 @@ from functools import wraps
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import ExtractHour, ExtractIsoWeekDay, TruncDate, TruncMonth
@@ -2585,9 +2586,19 @@ def borrador_enviar_view(request, borrador_id):
                 asunto=asunto[:1000],
                 fecha=timezone.now(),
                 cuerpo_texto=cuerpo,
-                tiene_adjunto=False,
+                tiene_adjunto=bool(adjuntos_draft),
             )
             CorreoLeido.objects.get_or_create(usuario=usuario, correo=sent_correo)
+            # Guardar adjuntos en DB para que aparezcan en la vista de enviados
+            for nombre, contenido, mime in adjuntos_draft:
+                adj = Adjunto(
+                    correo=sent_correo,
+                    nombre_original=nombre,
+                    mime_type=mime[:200],
+                    tamano_bytes=len(contenido),
+                )
+                adj.archivo.save(nombre, ContentFile(contenido), save=False)
+                adj.save()
         except Exception:
             logger.warning(
                 'Borrador-enviar: SMTP OK pero fallo al guardar Correo (usuario=%s, msg_id=%s)',
