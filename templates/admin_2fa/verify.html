@@ -32,7 +32,7 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="logo">PIETRAMONTE · ADMIN</div>
+    <div class="logo">RSP · ADMIN</div>
     {% if modo == 'recovery' %}
       <h1>Código de recuperación</h1>
       <p class="lead">Ingresá uno de los códigos que guardaste. Cada código sirve solo una vez.</p>
@@ -41,8 +41,8 @@
       <p class="lead">Ingresá el código de 6 dígitos de tu app de autenticación.</p>
     {% endif %}
 
-    {% if messages %}
-      {% for m in messages %}<div class="err">{{ m }}</div>{% endfor %}
+    {% if error %}
+      <div class="err">{{ error }}</div>
     {% endif %}
 
     <form method="post" autocomplete="off">

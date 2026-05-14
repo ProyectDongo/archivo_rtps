@@ -6,7 +6,7 @@ Guía paso a paso para llevar el archivo a producción.
 **Acceso público:** Cloudflare Tunnel (cero puertos abiertos al internet).
 **Stack:** Docker Compose orquestado por Coolify.
 
-> **Antes de empezar:** Ten a mano la IP del servidor, tus claves SSH, y acceso al panel de Cloudflare donde está `pietramonte.cl`.
+> **Antes de empezar:** Ten a mano la IP del servidor, tus claves SSH, y acceso al panel de Cloudflare donde está `rtriosanpedro.cl`.
 
 ---
 
@@ -97,23 +97,23 @@ Crea cuenta de admin de Coolify (te lo pide al primer login).
 curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 sudo dpkg -i cloudflared.deb
 cloudflared tunnel login         # abre URL, autorizas en navegador
-cloudflared tunnel create archivo-pietramonte
+cloudflared tunnel create archivo-rsp
 ```
 
 Apunta el dominio en Cloudflare:
 ```bash
-cloudflared tunnel route dns archivo-pietramonte archivo.pietramonte.cl
+cloudflared tunnel route dns archivo-rsp archivo.rtriosanpedro.cl
 ```
 
 Crea `/etc/cloudflared/config.yml`:
 ```yaml
-tunnel: archivo-pietramonte
+tunnel: archivo-rsp
 credentials-file: /home/pietra/.cloudflared/<TUNNEL-UUID>.json
 
 ingress:
-  - hostname: archivo.pietramonte.cl
+  - hostname: archivo.rtriosanpedro.cl
     service: http://localhost:8001       # ← este es el puerto que expone nuestro Compose
-  - hostname: coolify.pietramonte.cl     # OPCIONAL: panel de Coolify
+  - hostname: coolify.rtriosanpedro.cl     # OPCIONAL: panel de Coolify
     service: http://localhost:8000
   - service: http_status:404
 ```
@@ -134,7 +134,7 @@ Verifica logs: `sudo journalctl -u cloudflared -n 30`.
 ### 5.1. Subir tu repo a GitHub
 Si todavía no está, en tu PC:
 ```bash
-git remote add origin git@github.com:tu-usuario/archivo_pietramonte.git
+git remote add origin git@github.com:tu-usuario/archivo_rsp.git
 git push -u origin main
 ```
 
@@ -148,7 +148,7 @@ git push -u origin main
 1. **+ New Resource** → **Application** → **Public Repository** (o **Private** con tu PAT).
 2. URL del repo, rama `main`.
 3. **Build Pack: Dockerfile** (Coolify detecta el `Dockerfile` automáticamente).
-4. **Domains**: `archivo.pietramonte.cl`.
+4. **Domains**: `archivo.rtriosanpedro.cl`.
 5. **Port**: `8000` (lo que expone el contenedor; Coolify lo proxea internamente; el Tunnel apunta a Coolify).
 6. **Environment variables**: copia el contenido de `.env.production.example` y rellena los valores reales (en Coolify, "Bulk add").
 
@@ -214,7 +214,7 @@ docker cp ~/imports/aledezma/Inbox <container-id>:/app/data/mbox/aledezma_inbox
 
 Y ya en la terminal del contenedor:
 ```bash
-python manage.py import_mbox aledezma@pietramonte.cl --archivo=/app/data/mbox/aledezma_inbox
+python manage.py import_mbox aledezma@rtriosanpedro.cl --archivo=/app/data/mbox/aledezma_inbox
 ```
 
 Repite por cada buzón. Los adjuntos se extraen automáticamente a `/app/data/adjuntos/`.
@@ -224,13 +224,13 @@ Repite por cada buzón. Los adjuntos se extraen automáticamente a `/app/data/ad
 ## 7. Verificar (2 min)
 
 Desde tu PC, navega:
-- `https://archivo.pietramonte.cl/` → landing público
-- `https://archivo.pietramonte.cl/intranet/` → login del portal
-- `https://archivo.pietramonte.cl/admin-pm-<TU-SUFIJO>/` → admin Django
+- `https://archivo.rtriosanpedro.cl/` → landing público
+- `https://archivo.rtriosanpedro.cl/intranet/` → login del portal
+- `https://archivo.rtriosanpedro.cl/admin-pm-<TU-SUFIJO>/` → admin Django
 
 Verifica el healthcheck (en Coolify debe estar verde):
 ```bash
-curl https://archivo.pietramonte.cl/healthz
+curl https://archivo.rtriosanpedro.cl/healthz
 # → ok
 ```
 
@@ -265,7 +265,7 @@ Si tus adjuntos pasan eso, el sync corta a mitad con
 ```env
 B2_KEY_ID=REEMPLAZAR
 B2_APPLICATION_KEY=REEMPLAZAR
-B2_BUCKET_NAME=pietramonte-backups
+B2_BUCKET_NAME=rsp-backups
 B2_REGION=us-west-002        # opcional, informativo
 B2_ENDPOINT=https://s3.us-west-002.backblazeb2.com   # opcional, no se usa con backend b2 nativo
 ```
@@ -330,7 +330,7 @@ set -e
 BACKUP_DIR=/var/backups/pietra
 mkdir -p "$BACKUP_DIR"
 DATE=$(date +%Y%m%d-%H%M)
-docker exec pietramonte_archivo sqlite3 /app/data/db.sqlite3 ".backup /app/data/backup-$DATE.sqlite3"
+docker exec rsp_archivo sqlite3 /app/data/db.sqlite3 ".backup /app/data/backup-$DATE.sqlite3"
 tar -czf "$BACKUP_DIR/pietra-$DATE.tar.gz" \
     -C /opt/coolify/<.../data> \
     db.sqlite3 adjuntos/
@@ -354,19 +354,19 @@ Sincroniza `/var/backups/pietra` a Backblaze B2 o S3 con `rclone`. Costo aprox $
 
 ```bash
 # Ver logs del contenedor
-docker logs -f pietramonte_archivo
+docker logs -f rsp_archivo
 
 # Reiniciar
 docker compose -f /opt/coolify/.../docker-compose.yml restart
 
 # Crear nuevo usuario portal
-docker exec -it pietramonte_archivo python manage.py crear_usuario nuevo@gmail.com
+docker exec -it rsp_archivo python manage.py crear_usuario nuevo@gmail.com
 
 # Importar nuevo .mbox
-docker exec -it pietramonte_archivo python manage.py import_mbox correo@pietramonte.cl --archivo=/app/data/mbox/archivo
+docker exec -it rsp_archivo python manage.py import_mbox correo@rtriosanpedro.cl --archivo=/app/data/mbox/archivo
 
 # Cantidad de correos por buzón
-docker exec pietramonte_archivo python manage.py shell -c "from correos.models import Buzon; [print(b.email, b.correos.count()) for b in Buzon.objects.all()]"
+docker exec rsp_archivo python manage.py shell -c "from correos.models import Buzon; [print(b.email, b.correos.count()) for b in Buzon.objects.all()]"
 ```
 
 ---
@@ -391,7 +391,7 @@ Cada nuevo proyecto repite el flujo:
 | Síntoma | Causa probable | Fix |
 |---|---|---|
 | 502 desde Cloudflare | Coolify no está corriendo o Tunnel mal configurado | `docker ps`, `journalctl -u cloudflared` |
-| 400 Bad Request "DisallowedHost" | `archivo.pietramonte.cl` no está en `ALLOWED_HOSTS` | Edita `.env` → redeploy |
+| 400 Bad Request "DisallowedHost" | `archivo.rtriosanpedro.cl` no está en `ALLOWED_HOSTS` | Edita `.env` → redeploy |
 | 500 al cargar `/intranet/` | `SECRET_KEY` mal formado o falta | Genera uno nuevo y redeploy |
 | Static no cargan (404 en CSS) | `collectstatic` no corrió | Rebuild en Coolify |
 | Login no acepta nadie | El usuario no existe o está marcado inactivo en `UsuarioPortal` | Crea/activa desde `/admin-…/correos/usuarioportal/` |
@@ -461,7 +461,7 @@ A partir del commit `8bfcc2e` + migración 0022:
 ```cron
 # Sync Gmail cada 15 min — frecuencia conservadora respetando límites
 # de IMAP Gmail (~2500 conexiones/día, ~7-9 GB bandwidth/día por cuenta).
-*/15 * * * * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py sincronizar_gmail --quiet >> /var/log/pietramonte-gmail-sync.log 2>&1
+*/15 * * * * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py sincronizar_gmail --quiet >> /var/log/rsp-gmail-sync.log 2>&1
 ```
 
 Con `--max-labels=5` default (en el código), cada tick procesa 5 labels.
@@ -482,7 +482,7 @@ docker exec $CONT python manage.py inspeccionar_correo <id>
 
 # Forzar 1 label saltando lock + overquota flag (PELIGROSO si Gmail no desbloqueó)
 docker exec -it $CONT python manage.py sincronizar_gmail \
-    --label "cpietrasanta@pietramonte.cl" --ignore-lock --ignore-overquota
+    --label "cpietrasanta@rtriosanpedro.cl" --ignore-lock --ignore-overquota
 ```
 
 ---
@@ -494,13 +494,13 @@ rebuild). Editá el crontab con `crontab -e`:
 
 ```cron
 # Reminders 24h/1h + cleanup de pendientes vencidas. Cada 5 min.
-*/5 * * * * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py enviar_recordatorios >> /var/log/pietramonte-recordatorios.log 2>&1
+*/5 * * * * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py enviar_recordatorios >> /var/log/rsp-recordatorios.log 2>&1
 
 # Carga feriados oficiales del año actual + siguiente. 1ro de enero, 4 AM.
-0 4 1 1 * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py cargar_feriados >> /var/log/pietramonte-feriados.log 2>&1
+0 4 1 1 * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py cargar_feriados >> /var/log/rsp-feriados.log 2>&1
 
 # Backup nocturno de adjuntos a Backblaze B2. 01:00 AM (después del pg_dump de Coolify).
-0 1 * * * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py backup_adjuntos_b2 >> /var/log/pietramonte-backup-adjuntos.log 2>&1
+0 1 * * * docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python manage.py backup_adjuntos_b2 >> /var/log/rsp-backup-adjuntos.log 2>&1
 ```
 
 Setup inicial (después del primer deploy con la app `taller` activa):
@@ -515,7 +515,7 @@ docker exec $(docker ps --format '{{.Names}}' | grep o1rd | head -1) python mana
 Verificación del cron a la hora siguiente de configurarlo:
 
 ```bash
-tail -20 /var/log/pietramonte-recordatorios.log
+tail -20 /var/log/rsp-recordatorios.log
 ```
 
 
@@ -546,7 +546,7 @@ miramos cuando hay que responder "¿qué tenemos contra X?".
 | **Password hashing** | PBKDF2-SHA256 600.000 iteraciones (Django default 5.x) | `AUTH_PASSWORD_VALIDATORS` |
 | **Validadores password** | Min 10 chars, anti-similarity con email, anti-common, anti-numeric | `settings.AUTH_PASSWORD_VALIDATORS` |
 | **2FA portal** | TOTP obligatorio + anti-replay (último código rechazado) + recovery codes hash PBKDF2 | `correos/totp.py`, `views.verify_2fa_view` |
-| **2FA admin** | TOTP separado + `AdminTOTP` model + middleware bloquea admin sin 2FA | `archivo_pietramonte/admin_2fa.py` |
+| **2FA admin** | TOTP separado + `AdminTOTP` model + middleware bloquea admin sin 2FA | `archivo_rsp/admin_2fa.py` |
 | **Adjuntos auth** | Ownership check por buzón + Http404 (NO 403) anti-enumeración | `views.adjunto_view` |
 | **Adjuntos CSP** | CSP locked per-response, sandbox, nosniff, inline solo para tipos seguros (PDF/img) | `views.adjunto_view`, `views.adjunto_por_cid_view` |
 | **CID inline** | Solo imágenes (mime image/*), scope al correo origen | `views.adjunto_por_cid_view` |
@@ -623,7 +623,7 @@ on-prem. Decenas de miles de servidores comprometidos.
 
 | Si cambiás… | Actualizá |
 |---|---|
-| `archivo_pietramonte/middleware.py` | Tabla "Controles activos" → fila correspondiente |
+| `archivo_rsp/middleware.py` | Tabla "Controles activos" → fila correspondiente |
 | `correos/views.login_view` o flujo 2FA | Filas anti-timing / 2FA / rate-limit |
 | `correos/captcha.py`, `correos/totp.py` | Filas Captcha / 2FA |
 | `correos/adjunto_view` o `adjunto_por_cid_view` | Filas Adjuntos |

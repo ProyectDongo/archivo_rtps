@@ -58,7 +58,7 @@ class LoginFlowTests(TestCase):
         self.user.save()
         # En multi-buzón: el usuario debe tener al menos 1 buzón asignado
         # (o ser admin). Le damos uno explícitamente.
-        b = Buzon.objects.create(email='empleado.bandeja@pietramonte.cl')
+        b = Buzon.objects.create(email='empleado.bandeja@rtriosanpedro.cl')
         self.user.buzones.add(b)
 
         self.c = Client(HTTP_HOST='localhost', enforce_csrf_checks=True)
@@ -100,7 +100,7 @@ class LoginFlowTests(TestCase):
         # Post-2FA redirige al escritorio (landing del portal)
         self.assertIn(r2['Location'], ('/intranet/escritorio/', '/intranet/bandeja/'))
         self.assertEqual(self.c.session.get('usuario_email'), 'empleado@gmail.com')
-        self.assertEqual(self.c.session.get('buzon_actual_email'), 'empleado.bandeja@pietramonte.cl')
+        self.assertEqual(self.c.session.get('buzon_actual_email'), 'empleado.bandeja@rtriosanpedro.cl')
         self.assertTrue(IntentoLogin.objects.filter(motivo='totp_ok').exists())
 
     def test_usuario_sin_buzones_no_entra(self):
@@ -186,7 +186,7 @@ class LogoutTests(TestCase):
         u = UsuarioPortal(email='empleado@gmail.com', activo=True)
         u.set_password('PassMuy.Larga2026!')
         u.save()
-        b = Buzon.objects.create(email='empleado.bandeja@pietramonte.cl')
+        b = Buzon.objects.create(email='empleado.bandeja@rtriosanpedro.cl')
         u.buzones.add(b)
         # Login forzado vía sesión
         self.c = Client(HTTP_HOST='localhost')
@@ -217,8 +217,8 @@ class AdjuntoAuthTests(TestCase):
     """
     def setUp(self):
         cache.clear()
-        self.b1 = Buzon.objects.create(email='alice@pietramonte.cl')
-        self.b2 = Buzon.objects.create(email='bob@pietramonte.cl')
+        self.b1 = Buzon.objects.create(email='alice@rtriosanpedro.cl')
+        self.b2 = Buzon.objects.create(email='bob@rtriosanpedro.cl')
 
         # Usuarios con acceso solo a SU buzón
         self.u_alice = UsuarioPortal(email='alice@gmail.com', activo=True)
@@ -338,7 +338,7 @@ class CambiarPasswordTests(TestCase):
         self.user = UsuarioPortal(email='empleado@gmail.com', activo=True)
         self.user.set_password('PassActual.2026!')
         self.user.save()
-        b = Buzon.objects.create(email='empleado.bandeja@pietramonte.cl')
+        b = Buzon.objects.create(email='empleado.bandeja@rtriosanpedro.cl')
         self.user.buzones.add(b)
         self.c = Client(HTTP_HOST='localhost')
         s = self.c.session
@@ -405,9 +405,9 @@ class MultiBuzonTests(TestCase):
     def setUp(self):
         cache.clear()
         # 3 buzones
-        self.b1 = Buzon.objects.create(email='aledezma@pietramonte.cl')
-        self.b2 = Buzon.objects.create(email='contacto@pietramonte.cl')
-        self.b3 = Buzon.objects.create(email='cobranza@pietramonte.cl')
+        self.b1 = Buzon.objects.create(email='aledezma@rtriosanpedro.cl')
+        self.b2 = Buzon.objects.create(email='contacto@rtriosanpedro.cl')
+        self.b3 = Buzon.objects.create(email='cobranza@rtriosanpedro.cl')
         Correo.objects.create(buzon=self.b1, asunto='para aledezma')
         c2 = Correo.objects.create(buzon=self.b2, asunto='para contacto')
         c3 = Correo.objects.create(buzon=self.b3, asunto='para cobranza')
@@ -438,12 +438,12 @@ class MultiBuzonTests(TestCase):
 
     def test_buzones_visibles_no_admin(self):
         self.assertEqual(set(self.u_multi.buzones_visibles().values_list('email', flat=True)),
-                         {'aledezma@pietramonte.cl', 'contacto@pietramonte.cl'})
+                         {'aledezma@rtriosanpedro.cl', 'contacto@rtriosanpedro.cl'})
 
     def test_buzones_visibles_admin(self):
         emails = set(self.u_admin.buzones_visibles().values_list('email', flat=True))
-        self.assertIn('aledezma@pietramonte.cl', emails)
-        self.assertIn('cobranza@pietramonte.cl', emails)
+        self.assertIn('aledezma@rtriosanpedro.cl', emails)
+        self.assertIn('cobranza@rtriosanpedro.cl', emails)
         self.assertEqual(len(emails), 3)
 
     def test_inbox_muestra_selector_si_hay_varios(self):
@@ -452,9 +452,9 @@ class MultiBuzonTests(TestCase):
         self.assertEqual(r.status_code, 200)
         html = r.content.decode()
         self.assertIn('buzon-selector', html)
-        self.assertIn('aledezma@pietramonte.cl', html)
-        self.assertIn('contacto@pietramonte.cl', html)
-        self.assertNotIn('cobranza@pietramonte.cl', html)
+        self.assertIn('aledezma@rtriosanpedro.cl', html)
+        self.assertIn('contacto@rtriosanpedro.cl', html)
+        self.assertNotIn('cobranza@rtriosanpedro.cl', html)
 
     def test_cambiar_buzon_a_uno_propio_ok(self):
         c = self._login(self.u_multi)
@@ -493,7 +493,7 @@ class MultiBuzonTests(TestCase):
         r = c.get('/intranet/bandeja/')
         html = r.content.decode()
         for email in ['aledezma', 'contacto', 'cobranza']:
-            self.assertIn(email + '@pietramonte.cl', html)
+            self.assertIn(email + '@rtriosanpedro.cl', html)
 
 
 @override_settings(STORAGES={
@@ -507,8 +507,8 @@ class OrganizacionInboxTests(TestCase):
     """
     def setUp(self):
         cache.clear()
-        self.b = Buzon.objects.create(email='aledezma@pietramonte.cl')
-        self.b_otro = Buzon.objects.create(email='cobranza@pietramonte.cl')
+        self.b = Buzon.objects.create(email='aledezma@rtriosanpedro.cl')
+        self.b_otro = Buzon.objects.create(email='cobranza@rtriosanpedro.cl')
 
         self.u = UsuarioPortal(email='alice@gmail.com', activo=True)
         self.u.set_password('PassMuy.Larga2026!')
@@ -695,7 +695,7 @@ class CidResolutionTests(TestCase):
         cache.clear()
 
         # Buzón de alice + un correo con HTML que referencia un cid
-        self.b_alice = Buzon.objects.create(email='alice.bandeja@pietramonte.cl')
+        self.b_alice = Buzon.objects.create(email='alice.bandeja@rtriosanpedro.cl')
         self.u_alice = UsuarioPortal(email='alice@gmail.com', activo=True)
         self.u_alice.set_password('PassMuy.Larga2026!')
         self.u_alice.save()
@@ -724,7 +724,7 @@ class CidResolutionTests(TestCase):
         self.adj_inline.save()
 
         # Buzón ajeno con un cid igual — para test de isolation
-        self.b_bob = Buzon.objects.create(email='bob.bandeja@pietramonte.cl')
+        self.b_bob = Buzon.objects.create(email='bob.bandeja@rtriosanpedro.cl')
         self.u_bob = UsuarioPortal(email='bob@gmail.com', activo=True)
         self.u_bob.set_password('PassMuy.Larga2026!')
         self.u_bob.save()
@@ -886,8 +886,8 @@ class _PortalMixin:
 
     def _setup(self):
         cache.clear()
-        self.buzon = Buzon.objects.create(email='alice@pietramonte.cl')
-        self.buzon_otro = Buzon.objects.create(email='otro@pietramonte.cl')
+        self.buzon = Buzon.objects.create(email='alice@rtriosanpedro.cl')
+        self.buzon_otro = Buzon.objects.create(email='otro@rtriosanpedro.cl')
 
         self.usuario = UsuarioPortal(email='alice@gmail.com', activo=True)
         self.usuario.set_password('PassMuy.Larga2026!')
@@ -1173,8 +1173,8 @@ class FirmaTests(_PortalMixin, TestCase):
             'firma_nombre': 'Alice Díaz',
             'firma_cargo': 'Gerente',
             'firma_telefono': '+56 9 1234 5678',
-            'firma_web': 'www.pietramonte.cl',
-            'firma_email_visible': 'alice@pietramonte.cl',
+            'firma_web': 'www.rtriosanpedro.cl',
+            'firma_email_visible': 'alice@rtriosanpedro.cl',
         })
         self.assertIn(r.status_code, (200, 302))
         self.buzon.refresh_from_db()

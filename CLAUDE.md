@@ -9,8 +9,8 @@ Guía rápida para asistentes IA y colaboradores. Para deploy paso-a-paso ver
 - **DB**: Postgres en producción (gestionado por Coolify); SQLite solo en
   dev local sin `DATABASE_URL`.
 - **Estáticos**: WhiteNoise + ManifestStaticFilesStorage.
-- **SMTP outbound**: Resend (vía `EMAIL_HOST=smtp.resend.com`). DKIM firma
-  como `pietramonte.cl`. Si querés revertir a Gmail, cambiá `EMAIL_HOST_*`.
+- **SMTP outbound**: Google Workspace (vía `EMAIL_HOST=smtp.gmail.com`). DKIM firma
+  como `rtriosanpedro.cl`. Si querés revertir a Gmail, cambiá `EMAIL_HOST_*`.
 - **IMAP inbound**: Gmail (`imap.gmail.com`) vía `GMAIL_IMAP_USER` /
   `GMAIL_IMAP_PASSWORD` (App Password). El sync corre como management
   command `sincronizar_gmail`, idealmente por cron `*/10`.
@@ -18,14 +18,14 @@ Guía rápida para asistentes IA y colaboradores. Para deploy paso-a-paso ver
 - **Reverse proxy**: Cloudflare Tunnel (sin nginx propio). El servicio Django
   escucha 8000 dentro del contenedor; tunnel termina TLS afuera.
 - **Hosting**: Coolify en Hetzner CPX21. Ver
-  [memoria de endpoints](../.claude/projects/c--archivo-pietramonte/memory/reference_pietramonte_endpoints.md)
+  [memoria de endpoints](../.claude/projects/c--archivo-rtps/memory/reference_rsp_endpoints.md)
   para URLs y SSH.
 
 ## Apps Django
 
 | App | Qué es |
 |---|---|
-| `archivo_pietramonte/` | Settings, URLs raíz, middleware (CSP + rate-limit admin), email_utils helper |
+| `archivo/` | Settings, URLs raíz, middleware (CSP + rate-limit admin), email_utils helper |
 | `correos/` | Núcleo: modelos, views, templates, gmail_sync, throttle, totp, captcha. Todo lo del portal de correos vive acá |
 | `taller/` | App separada: agenda online de servicios automotrices (público + admin). Tiene su propio modelo y URLs |
 
@@ -80,14 +80,14 @@ Sin deuda CSS conocida pendiente.
 `static/css/base.css` define vars (`--r`, `--gd`, `--gl`, `--bdr`, etc.) y
 reset. Los tema dark se aplican vía `[data-theme="dark"]` overrides.
 
-## Settings clave (`archivo_pietramonte/settings.py`)
+## Settings clave (`archivo/settings.py`)
 
 - `DATABASE_URL` env → Postgres. Si vacío, SQLite local.
 - `EMAIL_HOST/USER/PASSWORD/PORT/USE_TLS` → SMTP outbound (Resend).
 - `GMAIL_IMAP_USER/PASSWORD` → IMAP de Gmail. Cae a `EMAIL_HOST_*` por
   fallback (compat con deploys anteriores donde compartían credenciales).
 - `FIRMA_LOGO_URL` → URL absoluta del logo embebido en firmas.
-- `BRAND_PRIMARY_COLOR` → color de acento en firmas (default `#C80C0F`).
+- `BRAND_PRIMARY_COLOR` → color de acento en firmas (default `#1e7d32`).
   Cambiar para multi-tenant: cada deployment con su color.
 - `ADMIN_URL_PATH` → prefijo random del admin Django (anti-discovery).
 - `TURNSTILE_SITE_KEY/SECRET_KEY` → captcha en login y agendar.
@@ -96,7 +96,7 @@ reset. Los tema dark se aplican vía `[data-theme="dark"]` overrides.
 
 ```bash
 # Desde el server vía ssh dongo + docker exec:
-CONT=$(docker ps -qf "name=archivo_pietramonte")
+CONT=$(docker ps -qf "name=archivo")
 docker exec -it $CONT python manage.py migrate
 docker exec -it $CONT python manage.py createsuperuser
 docker exec -it $CONT python manage.py seed_estructura --password-default=ClaveTemp.2026!
@@ -135,7 +135,7 @@ threading). Pendiente.
 - **`X_FRAME_OPTIONS = 'DENY'`** global. El endpoint `adjunto_view` lo
   override a `SAMEORIGIN` solo cuando `disposition='inline'` (para que el
   modal de PDF funcione).
-- **DMARC alignment con Resend**: DKIM firma como `pietramonte.cl` ✓.
+- **DMARC alignment**: DKIM firma como `rtriosanpedro.cl` ✓.
   Microsoft/Outlook puede tardar semanas en confiar dominios nuevos —
   no es bug, warmup natural.
 
@@ -150,7 +150,7 @@ threading). Pendiente.
 
 ## Referencias rápidas
 
-- Memorias del proyecto: `~/.claude/projects/c--archivo-pietramonte/memory/`
-- Servicio en panel Coolify: `https://coolify.dongoproyect.com`
-- Portal en producción: `https://archivo.pietramonte.cl`
-- Repo: `https://github.com/ProyectDongo/archivo_pietramonte`
+- Memorias del proyecto: `~/.claude/projects/c--archivo-rtps/memory/`
+- Servicio en panel Coolify: `https://coolify.rtriosanpedro.cl`
+- Portal en producción: `https://portal.rtriosanpedro.cl`
+- Repo: `https://github.com/ProyectDongo/archivo`

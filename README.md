@@ -1,10 +1,10 @@
-# Archivo Digital — Pietramonte Automotriz
+# Archivo Digital — RSP Automotriz
 
 **El cerebro digital de tu PyME.** Almacén unificado de correos, archivos,
 contratos y agenda, con interfaz tipo escritorio. Se conecta con lo que
 ya usás — no te obliga a reemplazar nada.
 
-> **Pietramonte** es la primera implementación productiva. El stack es
+> **RSP** es la primera implementación productiva. El stack es
 > reutilizable y se está madurando como **producto SaaS complementario**
 > para PyMEs de Chile/LatAm.
 
@@ -31,7 +31,7 @@ La mayoría de las PyMEs ya tienen 3-8 herramientas:
 | Calendar (Google/Outlook) | App Taller integra y agrega recordatorios SMS |
 | Drive / OneDrive | Espejo organizado por perfil/tema/fecha + audit log |
 
-**Nada se reemplaza.** Pietramonte es la capa de **memoria + colaboración**
+**Nada se reemplaza.** RSP es la capa de **memoria + colaboración**
 encima de las herramientas operativas que ya tenés.
 
 ### Por qué nos elegirías
@@ -111,7 +111,7 @@ tipo de información y todas comparten búsqueda, permisos y notificaciones.
 
 ## Integraciones — SaaS complementario
 
-Pietramonte está diseñado para **vivir junto a otras herramientas**, no
+RSP está diseñado para **vivir junto a otras herramientas**, no
 reemplazarlas. Por eso priorizamos importación / exportación / conectores
 desde el día 1.
 
@@ -153,7 +153,7 @@ desde el día 1.
 | **Connector LatAm** | Por integración activa (gestioncar, Bsale, etc) | +USD 10/mes |
 
 Comparativa: una PyME de 20 personas paga **~$140-280/mes con Google
-Workspace Business Standard** ($14/user). Pietramonte: **~$80/mes total**.
+Workspace Business Standard** ($14/user). RSP: **~$80/mes total**.
 Ahorro: 50-70%, **con datos en server propio y verticales que ningún SaaS
 mainstream ofrece**.
 
@@ -164,8 +164,8 @@ mainstream ofrece**.
 ```bash
 # 1. Clonar/copiar el proyecto
 cd /opt
-git clone ... archivo_pietramonte   # o copia manual
-cd archivo_pietramonte
+git clone ... archivo_rsp   # o copia manual
+cd archivo_rsp
 
 # 2. Crear entorno virtual
 python3 -m venv venv
@@ -218,25 +218,25 @@ Thunderbird guarda los correos en archivos .mbox en:
 ### Importar un buzón
 ```bash
 # Sin Docker
-python manage.py import_mbox aledezma@pietramonte.cl --archivo=/ruta/Inbox
+python manage.py import_mbox aledezma@rtriosanpedro.cl --archivo=/ruta/Inbox
 
 # Con Docker
-docker compose exec web python manage.py import_mbox aledezma@pietramonte.cl --archivo=/app/mbox/aledezma.mbox
+docker compose exec web python manage.py import_mbox aledezma@rtriosanpedro.cl --archivo=/app/mbox/aledezma.mbox
 
 # Reimportar limpio (borra e importa de nuevo)
-python manage.py import_mbox aledezma@pietramonte.cl --archivo=/ruta/Inbox --limpiar
+python manage.py import_mbox aledezma@rtriosanpedro.cl --archivo=/ruta/Inbox --limpiar
 ```
 
 ### Importar toda una carpeta de .mbox
 ```bash
-python manage.py import_mbox cobranza@pietramonte.cl --carpeta=/opt/mboxes/cobranza/
+python manage.py import_mbox cobranza@rtriosanpedro.cl --carpeta=/opt/mboxes/cobranza/
 ```
 
 ### Copiar .mbox al servidor
 ```bash
 # Desde tu PC con Thunderbird al servidor
-scp "C:\Users\Anghello\AppData\Roaming\Thunderbird\Profiles\xxx\Mail\mail.pietramonte.cl\Inbox" \
-    usuario@servidor:/opt/archivo_pietramonte/mbox/aledezma.mbox
+scp "C:\Users\Anghello\AppData\Roaming\Thunderbird\Profiles\xxx\Mail\mail.rtriosanpedro.cl\Inbox" \
+    usuario@servidor:/opt/archivo_rsp/mbox/aledezma.mbox
 ```
 
 ---
@@ -245,8 +245,8 @@ scp "C:\Users\Anghello\AppData\Roaming\Thunderbird\Profiles\xxx\Mail\mail.pietra
 
 En Cloudflare → Zero Trust → Tunnels → tu tunnel existente:
 ```
-Public hostname:  archivo.pietramonte.cl
-Service:          http://localhost:8000   (o http://pietramonte_archivo:8000 si es Docker)
+Public hostname:  archivo.rtriosanpedro.cl
+Service:          http://localhost:8000   (o http://rsp_archivo:8000 si es Docker)
 ```
 
 ---
@@ -255,12 +255,12 @@ Service:          http://localhost:8000   (o http://pietramonte_archivo:8000 si 
 
 ```python
 EMAILS_VALIDOS = [
-    'aledezma@pietramonte.cl',
-    'cobranza@pietramonte.cl',
-    'contacto@pietramonte.cl',
-    'cpietrasanta@pietramonte.cl',
-    'vpietrasanta@pietramonte.cl',
-    'ralbornoz@pietramonte.cl',
+    'aledezma@rtriosanpedro.cl',
+    'cobranza@rtriosanpedro.cl',
+    'contacto@rtriosanpedro.cl',
+    'cpietrasanta@rtriosanpedro.cl',
+    'vpietrasanta@rtriosanpedro.cl',
+    'ralbornoz@rtriosanpedro.cl',
 ]
 ```
 
@@ -269,8 +269,8 @@ EMAILS_VALIDOS = [
 ## Estructura del proyecto
 
 ```
-archivo_pietramonte/
-├── archivo_pietramonte/    # config Django
+archivo_rsp/
+├── archivo_rsp/    # config Django
 │   ├── settings.py
 │   └── urls.py
 ├── correos/                # app principal

@@ -29,7 +29,9 @@
     input:focus{outline:none;border-color:#1e7d32;box-shadow:0 0 0 3px rgba(30,125,50,.12)}
     button{width:100%;margin-top:14px;padding:13px;background:#1e7d32;color:#fff;
            border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer}
-    button:hover{background:#a30a0c}
+    button:hover{background:#155724}
+    .btn-secondary{background:#fff;color:#1e7d32;border:1px solid #1e7d32}
+    .btn-secondary:hover{background:#eaf5ed}
     .err{background:#fdecea;border:1px solid #f5c6cb;color:#8b0000;
          padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:14px}
     .nota{font-size:12px;color:#888;margin-top:18px;text-align:center}
@@ -48,12 +50,12 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="logo">PIETRAMONTE · ADMIN</div>
+    <div class="logo">RSP · ADMIN</div>
     <h1>Configurar 2FA</h1>
     <p class="lead">Antes de acceder al panel necesitás activar autenticación en dos pasos.</p>
 
-    {% if messages %}
-      {% for m in messages %}<div class="err">{{ m }}</div>{% endfor %}
+    {% if error %}
+      <div class="err">{{ error }}</div>
     {% endif %}
 
     <ol>
@@ -70,7 +72,7 @@
           </a>
           <a class="app-btn" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
              target="_blank" rel="noopener noreferrer">
-            <span class="app-btn-icon">▶</span>
+            <span class="app-btn-icon">&#9654;</span>
             <div>
               <span class="app-btn-os">Descargar para</span>
               <span class="app-btn-text">Android</span>
@@ -79,24 +81,41 @@
         </div>
       </li>
       <li>
-        Escaneá este QR:
-        <div class="qr">{{ qr_svg|safe }}</div>
-        <details>
-          <summary>¿No podés escanear? Ingresá el código a mano</summary>
-          <div class="secret">{{ secret }}</div>
-          <p class="meta">Cuenta: <strong>{{ identidad }}</strong> · Emisor: <strong>RSP Admin</strong></p>
-        </details>
+        {% if profile.totp_secret %}
+          Escaneá este QR con tu app:
+          <div class="qr">{{ qr_svg|safe }}</div>
+          <details>
+            <summary>¿No podés escanear? Ingresá el código a mano</summary>
+            <div class="secret">{{ profile.totp_secret }}</div>
+            <p class="meta">Cuenta: <strong>{{ identidad }}</strong> · Emisor: <strong>RSP Admin</strong></p>
+          </details>
+          <form method="post" style="margin-top:10px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="generar">
+            <button type="submit" class="btn-secondary" style="font-size:13px;padding:9px">Regenerar QR</button>
+          </form>
+        {% else %}
+          Generá tu código QR:
+          <form method="post" style="margin-top:10px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="generar">
+            <button type="submit">Generar QR</button>
+          </form>
+        {% endif %}
       </li>
+      {% if profile.totp_secret %}
       <li>
-        Ingresá el código de 6 dígitos:
+        Ingresá el código de 6 dígitos para activar:
         <form method="post" autocomplete="off" style="margin-top:10px">
           {% csrf_token %}
+          <input type="hidden" name="action" value="activar">
           <input type="text" name="codigo" inputmode="numeric" pattern="[0-9]*"
                  maxlength="6" autocomplete="one-time-code" autofocus
                  placeholder="000000" required>
           <button type="submit">Activar 2FA</button>
         </form>
       </li>
+      {% endif %}
     </ol>
 
     <p class="nota">Después vas a recibir 8 códigos de recuperación. Guardalos: son tu única salida si perdés el celular.</p>

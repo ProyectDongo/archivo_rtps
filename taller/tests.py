@@ -52,7 +52,7 @@ class DisposableDomainsTest(TestCase):
 
     def test_dominios_legitimos_pasan(self):
         for email in ['x@gmail.com', 'y@hotmail.com',
-                      'z@pietramonte.cl', 'persona@empresa.com']:
+                      'z@rtriosanpedro.cl', 'persona@empresa.com']:
             with self.subTest(email=email):
                 self.assertFalse(es_email_desechable(email))
 

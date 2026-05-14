@@ -1,8 +1,8 @@
 services:
   web:
     build: .
-    image: archivo-pietramonte:latest
-    container_name: pietramonte_archivo
+    image: archivo-rsp:latest
+    container_name: rsp_archivo
     restart: unless-stopped
     env_file: .env
     volumes:
