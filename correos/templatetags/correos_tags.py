@@ -734,10 +734,13 @@ def render_firma_html(buzon) -> str:
             f'{escape(cargo)}</div>'
         )
 
-    # Línea fina del color de acento debajo del nombre/cargo
+    # Línea fina del color de acento debajo del nombre/cargo (bgcolor para Gmail)
     bloques.append(
-        f'<div style="width:36px;height:2px;background:{accent};'
-        f'margin:10px 0 12px"></div>'
+        f'<table cellpadding="0" cellspacing="0" border="0" role="presentation" '
+        f'style="border-collapse:collapse;margin:10px 0 12px">'
+        f'<tr><td width="36" height="2" bgcolor="{accent}" '
+        f'style="background-color:{accent};height:2px;font-size:0;line-height:0">&nbsp;</td></tr>'
+        f'</table>'
     )
 
     # Filas de contacto
