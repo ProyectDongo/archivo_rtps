@@ -29,6 +29,8 @@ def safe_send(
     contexto: dict,
     from_alias: str | None = None,
     reply_to: list[str] | None = None,
+    cc: str | Sequence[str] | None = None,
+    headers: dict | None = None,
     adjuntos: list[tuple[str, bytes, str]] | None = None,
     inline_images: list[tuple[str, bytes, str, str]] | None = None,
 ) -> dict:
@@ -44,6 +46,8 @@ def safe_send(
         contexto:     Dict pasado a los templates.
         from_alias:   Dirección "From". Si None usa DEFAULT_FROM_EMAIL.
         reply_to:     Lista de Reply-To. Si None no se setea.
+        cc:           CC destinatarios. String o lista.
+        headers:      Dict de headers extra (In-Reply-To, References, etc.).
         adjuntos:     Lista de (nombre, bytes, mime_type) — attachments normales.
         inline_images: Lista de (nombre, bytes, mime_type, content_id) — partes inline.
 
@@ -55,6 +59,11 @@ def safe_send(
         para = [para]
     else:
         para = list(para)
+
+    if isinstance(cc, str):
+        cc = [cc] if cc else []
+    else:
+        cc = list(cc) if cc else []
 
     from_email = from_alias or settings.DEFAULT_FROM_EMAIL
 
@@ -71,7 +80,9 @@ def safe_send(
             body=cuerpo_txt,
             from_email=from_email,
             to=para,
+            cc=cc or [],
             reply_to=reply_to or [],
+            headers=headers or {},
         )
         msg.attach_alternative(cuerpo_html, 'text/html')
 
