@@ -36,18 +36,33 @@
       const loader = document.createElement('div');
       loader.className = 'adj-viewer-loading';
       loader.innerHTML = '<div class="adj-viewer-spinner"></div><span>Cargando…</span>';
-
-      // <embed> en vez de <iframe>: evita que frame-src CSP bloquee el
-      // visor de PDF nativo de Chrome (chrome-extension://...).
-      const emb = document.createElement('embed');
-      emb.className = 'adj-viewer-iframe';
-      emb.type = 'application/pdf';
-      emb.setAttribute('title', name || 'PDF');
-      emb.addEventListener('load', function () { loader.hidden = true; });
-      emb.src = href;
-
       body.appendChild(loader);
-      body.appendChild(emb);
+
+      // Fetch como blob: envía cookie de sesión y crea un blob URL
+      // que no está sujeto a restricciones frame-src/object-src del CSP.
+      fetch(href, { credentials: 'same-origin' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.blob();
+        })
+        .then(function (blob) {
+          var blobUrl = URL.createObjectURL(blob);
+          var emb = document.createElement('embed');
+          emb.className = 'adj-viewer-iframe';
+          emb.type = 'application/pdf';
+          emb.src = blobUrl;
+          emb._blobUrl = blobUrl;
+          loader.hidden = true;
+          body.appendChild(emb);
+        })
+        .catch(function () {
+          loader.hidden = true;
+          body.innerHTML =
+            '<div style="padding:32px;text-align:center;color:#666">' +
+            '<p>No se pudo previsualizar el PDF.</p>' +
+            '<a href="' + href + '" target="_blank" rel="noopener" ' +
+            'style="color:#1a73e8">Abrir en nueva pestaña ↗</a></div>';
+        });
     } else if (tipo === 'audio') {
       const a = document.createElement('audio');
       a.controls = true;
@@ -70,6 +85,10 @@
 
   function cerrar() {
     vw.hidden = true;
+    // Liberar blob URLs para no acumular memoria
+    body.querySelectorAll('[_blobUrl]').forEach(function (el) {
+      try { URL.revokeObjectURL(el._blobUrl); } catch (e) {}
+    });
     body.innerHTML = '';
     document.body.style.overflow = '';
   }

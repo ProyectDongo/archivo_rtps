@@ -34,6 +34,7 @@ _CSP_PORTAL = (
     "img-src 'self' data: https: http:; "
     "connect-src 'self'; "
     "frame-src https://challenges.cloudflare.com 'self'; "
+    "object-src 'self' blob:; "
     "frame-ancestors 'none'; "
     "base-uri 'self'; "
     "form-action 'self';"
