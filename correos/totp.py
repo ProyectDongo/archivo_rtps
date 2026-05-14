@@ -90,6 +90,22 @@ def consumir_recovery_code(
     return False, codes_hash
 
 
+def generar_qr_svg(secret: str, email: str, issuer: str = 'RSP Archivo') -> str:
+    """Genera el QR SVG inline a partir del secret, email e issuer."""
+    return qr_svg(url_otpauth(secret, email, issuer))
+
+
+def verificar(profile, codigo: str) -> bool:
+    """Verifica un código TOTP contra el perfil AdminTOTP."""
+    ultimo = getattr(profile, 'totp_ultimo_codigo', '') or ''
+    return verificar_totp(profile.totp_secret, codigo, ultimo_usado=ultimo)
+
+
+def verificar_recovery(profile, codigo: str) -> tuple[bool, list[str]]:
+    """Verifica un recovery code contra el perfil AdminTOTP."""
+    return consumir_recovery_code(profile.recovery_codes_hash, codigo)
+
+
 def url_otpauth(secret: str, email: str, issuer: str = 'RSP Archivo') -> str:
     """
     URL provisioning estándar otpauth:// que las apps de TOTP entienden.
