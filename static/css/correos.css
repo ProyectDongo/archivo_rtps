@@ -1380,8 +1380,10 @@
   line-height: 1.55;
   color: var(--gd);
   word-break: break-word;
-  overflow-x: auto;          /* tablas anchas no rompen el split, scrollean */
+  overflow-x: auto;
+  overflow-y: auto;
   max-width: 100%;
+  max-height: 70vh;
 }
 .cuerpo-html {
   background: var(--w);

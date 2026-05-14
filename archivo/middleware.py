@@ -26,6 +26,19 @@ _CSP_STRICT = (
     "form-action 'self';"
 )
 
+_CSP_PORTAL = (
+    "default-src 'self'; "
+    "script-src 'self' https://challenges.cloudflare.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "img-src 'self' data: https: http:; "
+    "connect-src 'self'; "
+    "frame-src https://challenges.cloudflare.com 'self'; "
+    "frame-ancestors 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self';"
+)
+
 _CSP_ADMIN = (
     "default-src 'self'; "
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
@@ -49,6 +62,8 @@ class CSPMiddleware:
         if 'Content-Security-Policy' not in response:
             if request.path.startswith(admin_path):
                 response['Content-Security-Policy'] = _CSP_ADMIN
+            elif request.path.startswith('/intranet/'):
+                response['Content-Security-Policy'] = _CSP_PORTAL
             else:
                 response['Content-Security-Policy'] = _CSP_STRICT
         return response

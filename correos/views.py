@@ -1569,10 +1569,11 @@ def _brand_email_ctx() -> dict:
 
 
 def _from_alias_buzon(buzon: Buzon) -> str:
-    """Construye el From del envío. Usa el nombre del buzón si está, si no solo el email."""
-    if buzon.nombre:
-        return f'{buzon.nombre} <{buzon.email}>'
-    return buzon.email
+    """Construye el From del envío. Usa el nombre del buzón si está y es distinto al email."""
+    nombre = (buzon.nombre or '').strip()
+    if nombre and nombre.lower() != (buzon.email or '').lower():
+        return f'{nombre} <{buzon.email}>'
+    return buzon.email or ''
 
 
 def _prefill_responder(correo: Correo, modo: str) -> dict:
