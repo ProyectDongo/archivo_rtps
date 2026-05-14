@@ -836,3 +836,55 @@ def firma_html(buzon):
 def firma_texto(buzon):
     """Renderiza la firma en texto plano del buzón."""
     return render_firma_texto(buzon)
+
+
+# ─── iframe sandbox para email (estilo Gmail) ────────────────────────────────
+
+_IFRAME_DOC_TMPL = """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html,body{{margin:0;padding:8px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;word-break:break-word;background:#fff}}
+  *{{max-width:100%;box-sizing:border-box}}
+  img{{max-width:100%;height:auto}}
+  a{{color:#1a73e8}}
+  table{{border-collapse:collapse}}
+  td,th{{vertical-align:top}}
+  pre,code{{white-space:pre-wrap;word-break:break-all}}
+  blockquote{{border-left:3px solid #dadada;margin:4px 0;padding:0 0 0 12px;color:#555}}
+</style>
+</head>
+<body>{body}</body>
+</html>"""
+
+
+@register.simple_tag
+def correo_iframe(correo):
+    """
+    Renderiza el cuerpo del correo en un iframe sandboxed (estilo Gmail).
+    El HTML vive aislado: inline styles, tablas anchas y todo el ruido
+    de los emails transaccionales no afectan el portal ni violan el CSP.
+    """
+    from django.utils.html import escape as html_escape
+
+    if correo.cuerpo_html:
+        body = render_correo_html(correo)
+    else:
+        texto = (correo.cuerpo_texto or '').strip()
+        if not texto:
+            return mark_safe('<p style="color:#888;font-size:13px">Sin contenido.</p>')
+        body = render_texto_plano(texto)
+
+    doc = _IFRAME_DOC_TMPL.format(body=body)
+    srcdoc = html_escape(doc)
+
+    return mark_safe(
+        f'<iframe class="email-iframe" srcdoc="{srcdoc}" '
+        f'sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin" '
+        f'frameborder="0" scrolling="no" '
+        f'onload="window._resizeEmailIframe(this)" '
+        f'style="width:100%;border:none;display:block;min-height:60px">'
+        f'</iframe>'
+    )

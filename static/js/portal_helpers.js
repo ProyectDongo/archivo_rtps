@@ -49,3 +49,12 @@ window.PM = window.PM || {};
     if (msg && !window.confirm(msg)) e.preventDefault();
   }, true);
 })();
+
+// Auto-resize iframe de email (llamado por onload del iframe)
+window._resizeEmailIframe = function (iframe) {
+  try {
+    var doc = iframe.contentDocument || iframe.contentWindow.document;
+    var h = doc.documentElement.scrollHeight || doc.body.scrollHeight;
+    iframe.style.height = Math.max(h + 16, 60) + 'px';
+  } catch (e) {}
+};

@@ -120,7 +120,7 @@
 
   <div class="preview-body">
     {% if correo.cuerpo_html or correo.cuerpo_texto %}
-    <div class="preview-content preview-content-html">{% render_correo_body correo %}</div>
+    <div class="preview-content preview-content-html">{% correo_iframe correo %}</div>
     {% else %}
     <div class="preview-empty-body">Este correo no tiene cuerpo en texto plano o es solo adjunto.</div>
     {% endif %}
