@@ -45,6 +45,8 @@
     .app-btn-icon{font-size:20px;line-height:1}
     .app-btn-os{font-size:11px;color:#777;display:block}
     .app-btn-text{font-weight:600}
+    .form-mt{margin-top:10px}
+    .btn-regen{font-size:13px;padding:9px}
   </style>
 </head>
 <body>
@@ -89,14 +91,14 @@
             <div class="secret">{{ profile.totp_secret }}</div>
             <p class="meta">Cuenta: <strong>{{ identidad }}</strong> · Emisor: <strong>RSP Admin</strong></p>
           </details>
-          <form method="post" style="margin-top:10px">
+          <form method="post" class="form-mt">
             {% csrf_token %}
             <input type="hidden" name="action" value="generar">
-            <button type="submit" class="btn-secondary" style="font-size:13px;padding:9px">Regenerar QR</button>
+            <button type="submit" class="btn-secondary btn-regen">Regenerar QR</button>
           </form>
         {% else %}
           Generá tu código QR:
-          <form method="post" style="margin-top:10px">
+          <form method="post" class="form-mt">
             {% csrf_token %}
             <input type="hidden" name="action" value="generar">
             <button type="submit">Generar QR</button>
@@ -106,7 +108,7 @@
       {% if profile.totp_secret %}
       <li>
         Ingresá el código de 6 dígitos para activar:
-        <form method="post" autocomplete="off" style="margin-top:10px">
+        <form method="post" autocomplete="off" class="form-mt">
           {% csrf_token %}
           <input type="hidden" name="action" value="activar">
           <input type="text" name="codigo" inputmode="numeric" pattern="[0-9]*"
