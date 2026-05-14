@@ -20,11 +20,11 @@ urlpatterns = [
     path(settings.ADMIN_URL_PATH + 'agenda/', taller_admin.panel_agenda_view, name='taller_admin_agenda'),
     path(settings.ADMIN_URL_PATH + 'agenda/confirmar/<int:reserva_id>/', taller_admin.confirmar_llamada_view, name='taller_admin_confirmar'),
 
+    # Admin 2FA — VA ANTES de admin.site.urls para que Django no lo capture
+    path(settings.ADMIN_URL_PATH + '2fa/', include(admin_2fa.urlpatterns)),
+
     # Admin Django (ruta ofuscada)
     path(settings.ADMIN_URL_PATH, admin.site.urls),
-
-    # Admin 2FA
-    path(settings.ADMIN_URL_PATH + '2fa/', include(admin_2fa.urlpatterns)),
 
     # Taller — agendamiento público
     path('', include('taller.urls')),
