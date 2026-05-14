@@ -37,14 +37,17 @@
       loader.className = 'adj-viewer-loading';
       loader.innerHTML = '<div class="adj-viewer-spinner"></div><span>Cargando…</span>';
 
-      const ifr = document.createElement('iframe');
-      ifr.className = 'adj-viewer-iframe';
-      ifr.title = name || 'PDF';
-      ifr.addEventListener('load', function () { loader.hidden = true; });
-      ifr.src = href;  // src después de listener para que 'load' no se pierda
+      // <embed> en vez de <iframe>: evita que frame-src CSP bloquee el
+      // visor de PDF nativo de Chrome (chrome-extension://...).
+      const emb = document.createElement('embed');
+      emb.className = 'adj-viewer-iframe';
+      emb.type = 'application/pdf';
+      emb.setAttribute('title', name || 'PDF');
+      emb.addEventListener('load', function () { loader.hidden = true; });
+      emb.src = href;
 
       body.appendChild(loader);
-      body.appendChild(ifr);
+      body.appendChild(emb);
     } else if (tipo === 'audio') {
       const a = document.createElement('audio');
       a.controls = true;
