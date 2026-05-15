@@ -454,6 +454,49 @@ class CorreoSnooze(models.Model):
         return f'{self.usuario.email} → #{self.correo_id} hasta {self.until_at:%Y-%m-%d %H:%M}'
 
 
+class CorreoEliminado(models.Model):
+    """
+    Soft-delete per-usuario de un correo (estilo Gmail). Si existe el record
+    → el correo está borrado para ese usuario (no aparece en bandeja).
+
+    Estados:
+      - purgado=False → en papelera, recuperable con "Restaurar".
+      - purgado=True  → eliminación definitiva manual o por auto-purge
+        (>30 días en papelera). Sigue oculto del inbox y de la papelera.
+
+    El correo original NUNCA se borra de la DB por esta acción — esta tabla
+    es solo "vista oculta per-usuario". Otros usuarios del mismo buzón
+    siguen viendo el correo normalmente. Eso permite que cada uno limpie
+    su bandeja sin afectar a los demás (decisión UX confirmada).
+
+    El management command `purgar_papelera_correos --dias=30` marca como
+    purgados los registros con >30 días en papelera (idempotente).
+    """
+    usuario      = models.ForeignKey('UsuarioPortal', on_delete=models.CASCADE,
+                                     related_name='correos_eliminados')
+    correo       = models.ForeignKey('Correo', on_delete=models.CASCADE,
+                                     related_name='eliminaciones')
+    eliminado_en = models.DateTimeField(auto_now_add=True, db_index=True)
+    purgado      = models.BooleanField(
+        default=False, db_index=True,
+        help_text='True = eliminado definitivamente (no en papelera). '
+                  'False = en papelera, recuperable.',
+    )
+
+    class Meta:
+        verbose_name = 'Correo eliminado'
+        verbose_name_plural = 'Correos eliminados'
+        unique_together = [('usuario', 'correo')]
+        indexes = [
+            models.Index(fields=['usuario', 'purgado', '-eliminado_en'],
+                         name='correos_elim_usr_purg_idx'),
+        ]
+
+    def __str__(self):
+        estado = 'purgado' if self.purgado else 'papelera'
+        return f'{self.usuario.email} → #{self.correo_id} ({estado})'
+
+
 class Adjunto(models.Model):
     """
     Archivo adjunto extraído de un correo .mbox y guardado en MEDIA_ROOT.

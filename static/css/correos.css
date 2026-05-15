@@ -872,6 +872,67 @@
 .row-star svg { transition: transform .15s; }
 .row-star:active svg { transform: scale(.9); }
 
+/* Botón de eliminar (papelera) en cada fila — visible al hover */
+.row-delete {
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+  margin-left: 6px;
+  cursor: pointer;
+  color: var(--gm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 4px;
+  opacity: 0;
+  transition: color .15s, opacity .15s, background .15s;
+}
+.correo-row:hover .row-delete { opacity: 1; }
+.row-delete:hover { color: #c80c0f; background: rgba(200,12,15,.08); }
+[data-theme="dark"] .row-delete { color: #6b7280; }
+[data-theme="dark"] .row-delete:hover { color: #ff8d90; background: rgba(200,12,15,.15); }
+
+/* Papelera: variante de row sin link envoltorio */
+.correo-row-papelera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+.correo-row-papelera .correo-subject-link {
+  color: inherit;
+  text-decoration: none;
+}
+.correo-row-papelera .correo-subject-link:hover .correo-subject { text-decoration: underline; }
+.papelera-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.papelera-form { margin: 0; }
+.papelera-btn {
+  background: var(--w);
+  border: 1px solid var(--bdr);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: var(--f);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.papelera-btn-restore { color: #1976D2; }
+.papelera-btn-restore:hover { background: #e3f2fd; border-color: #1976D2; }
+.papelera-btn-delete { color: #c80c0f; }
+.papelera-btn-delete:hover { background: rgba(200,12,15,.08); border-color: #c80c0f; }
+[data-theme="dark"] .papelera-btn { background: #252b30; border-color: #383f45; }
+[data-theme="dark"] .papelera-btn-restore { color: #90b8ef; }
+[data-theme="dark"] .papelera-btn-restore:hover { background: rgba(30,58,110,.35); }
+[data-theme="dark"] .papelera-btn-delete { color: #ff8d90; }
+[data-theme="dark"] .papelera-btn-delete:hover { background: rgba(200,12,15,.2); }
+
 /* ─── Etiquetas en la fila (chips mini) ──────────────────── */
 .row-tags {
   display: flex;
@@ -2531,6 +2592,33 @@
   transform: translateY(-1px);
 }
 
+/* Botón "Eliminar" en el preview/detalle del correo */
+.preview-delete-form { display: inline-block; margin: 0; }
+.preview-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--w);
+  color: var(--gm);
+  border: 1.5px solid var(--bdr);
+  border-radius: 8px;
+  font-family: var(--f);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+.preview-delete-btn:hover {
+  background: rgba(200,12,15,.08);
+  border-color: #c80c0f;
+  color: #c80c0f;
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .preview-delete-btn { background: #252b30; border-color: #383f45; color: #9aa0a6; }
+[data-theme="dark"] .preview-delete-btn:hover { background: rgba(200,12,15,.18); border-color: #ff8d90; color: #ff8d90; }
+
 /* ─── Botones de envío (reenviar, responder) ─────────────── */
 .btn-reenviar,
 .preview-fwd-btn,
@@ -3733,6 +3821,10 @@
 }
 .bulk-btn:hover { background: var(--off); border-color: var(--gl); }
 .bulk-btn:active { transform: scale(.97); }
+.bulk-btn-danger { color: #c80c0f; }
+.bulk-btn-danger:hover { background: rgba(200,12,15,.08); border-color: #c80c0f; color: #c80c0f; }
+[data-theme="dark"] .bulk-btn-danger { color: #ff8d90; }
+[data-theme="dark"] .bulk-btn-danger:hover { background: rgba(200,12,15,.18); border-color: #ff8d90; color: #ff8d90; }
 
 .bulk-tag-wrap { position: relative; }
 .bulk-tag-menu {

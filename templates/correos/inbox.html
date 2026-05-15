@@ -278,6 +278,16 @@
           Sin destacar
         </button>
 
+        <button type="button" class="bulk-btn bulk-btn-danger" data-bulk-accion="eliminar" title="Mover a papelera">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Papelera
+        </button>
+
         {% if etiquetas_disponibles %}
         <div class="bulk-tag-wrap">
           <button type="button" class="bulk-btn" id="bulk-tag-btn" title="Asignar etiqueta">
@@ -332,6 +342,16 @@
               </span>
               {% if correo.tiene_adjunto %}<span class="adj-pill" title="Con adjunto">📎</span>{% endif %}
               <span class="correo-date" title="{{ correo.fecha|fecha_iso }}">{{ correo.fecha|fecha_amigable }}</span>
+              <button type="button" class="row-delete" data-correo-id="{{ correo.id }}"
+                      title="Mover a papelera" aria-label="Mover a papelera">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                     stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
             </a>
           </li>
           {% endfor %}

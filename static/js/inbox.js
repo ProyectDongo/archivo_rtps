@@ -68,6 +68,31 @@
       toggleStarRow(star.dataset.correoId, row);
       return;
     }
+    // Botón "papelera" en la fila: animación de salida + POST.
+    const delBtn = e.target.closest('.row-delete');
+    if (delBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const row = delBtn.closest('.correo-row');
+      const li = row && row.parentElement;
+      if (li) {
+        li.style.transition = 'opacity .18s, transform .18s, max-height .25s';
+        li.style.opacity = '0';
+        li.style.transform = 'translateX(40px)';
+      }
+      PM.post('/intranet/correo/' + delBtn.dataset.correoId + '/eliminar/')
+        .then(function () {
+          if (li) {
+            li.style.maxHeight = '0px';
+            setTimeout(function () { li.remove(); }, 250);
+          }
+        })
+        .catch(function () {
+          // Si fallo, restaurar la fila.
+          if (li) { li.style.opacity = '1'; li.style.transform = 'none'; }
+        });
+      return;
+    }
     // El checkbox para multi-select ya tiene su propio handler en bulk_select.js
     // que llama stopPropagation; acá solo nos aseguramos que no se confunda
     // con un click que dispara la navegación del <a>.

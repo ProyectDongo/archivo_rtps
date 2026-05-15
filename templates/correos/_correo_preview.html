@@ -42,6 +42,22 @@
           </svg>
           <span>No leído</span>
         </button>
+        <form method="post" action="{% url 'correo_eliminar' correo.id %}"
+              class="preview-delete-form"
+              data-confirm="¿Mover este correo a tu papelera?">
+          {% csrf_token %}
+          <button type="submit" class="preview-delete-btn"
+                  title="Mover a papelera (recuperable 30 dias)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            <span>Eliminar</span>
+          </button>
+        </form>
         <div class="preview-snooze-wrap">
           <button type="button" class="preview-snooze-btn" data-correo-id="{{ correo.id }}"
                   data-snoozed-until="{{ correo.snoozed_until|default_if_none:''|date:'c' }}"

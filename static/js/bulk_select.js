@@ -117,6 +117,29 @@
   function ejecutarAccion(accion, etiquetaId) {
     if (seleccion.size === 0) return;
     const ids = Array.from(seleccion).join(',');
+
+    // "eliminar" tiene su propio endpoint y borra las filas de la lista.
+    if (accion === 'eliminar') {
+      if (!confirm('¿Mover ' + seleccion.size + ' correo(s) a la papelera?')) return;
+      return PM.post('/intranet/correos/bulk-eliminar/', { ids: ids }).then(function (resp) {
+        if (!resp || !resp.ok) return;
+        seleccion.forEach(function (id) {
+          const row = lista.querySelector('.correo-row[data-correo-id="' + CSS.escape(id) + '"]');
+          if (!row) return;
+          const li = row.parentElement;
+          if (li) {
+            li.style.transition = 'opacity .18s, transform .18s, max-height .25s';
+            li.style.opacity = '0';
+            li.style.transform = 'translateX(40px)';
+            setTimeout(function () { li.style.maxHeight = '0px'; }, 50);
+            setTimeout(function () { li.remove(); }, 280);
+          }
+        });
+        seleccion.clear();
+        pintar();
+      });
+    }
+
     const data = { ids: ids, accion: accion };
     if (etiquetaId) data.etiqueta_id = etiquetaId;
     return PM.post('/intranet/correos/bulk/', data).then(function (resp) {

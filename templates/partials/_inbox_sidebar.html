@@ -159,6 +159,12 @@
       {% if cant_pospuestos %}<span class="sidebar-link-count">{{ cant_pospuestos }}</span>{% endif %}
     </a>
     {% endif %}
+    <a href="{% url 'papelera_correos' %}"
+       class="sidebar-link sidebar-filter"
+       title="Correos en papelera (recuperables hasta 30 dias)">
+      <span class="sidebar-link-ico" aria-hidden="true">🗑️</span>
+      <span class="sidebar-link-text">Papelera</span>
+    </a>
   </nav>
 <nav class="sidebar-section" aria-label="Etiquetas">
     <div class="sidebar-label">Etiquetas</div>
