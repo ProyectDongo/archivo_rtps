@@ -2160,8 +2160,15 @@ def toggle_destacado_view(request, correo_id):
 
 # ─── Papelera (soft-delete per-usuario) ────────────────────────────────────
 def _es_ajax(request) -> bool:
-    """True si el request viene de fetch/XHR; False si es submit de form clasico."""
-    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    """
+    True si el request viene de fetch/XHR; False si es submit de form clasico.
+
+    Acepta cualquier valor en X-Requested-With (XMLHttpRequest, fetch, etc.) —
+    los browsers solo lo setean cuando JS lo pide explícito, así que cualquier
+    valor indica fetch/AJAX (PM.post manda 'fetch'). Un form HTML clásico no
+    setea ese header.
+    """
+    return bool(request.headers.get('x-requested-with'))
 
 
 def _respuesta_papelera(request, mensaje: str, ok: bool = True, **extras):
