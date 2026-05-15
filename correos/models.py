@@ -109,8 +109,10 @@ class Thread(models.Model):
         verbose_name_plural = 'Hilos'
         ordering = ['-fecha_ultimo']
         indexes = [
-            models.Index(fields=['buzon', '-fecha_ultimo']),
-            models.Index(fields=['buzon', 'mensaje_id_raiz']),
+            models.Index(fields=['buzon', '-fecha_ultimo'],
+                         name='correos_thr_buzon_ultimo_idx'),
+            models.Index(fields=['buzon', 'mensaje_id_raiz'],
+                         name='correos_thr_buzon_raiz_idx'),
         ]
 
     def __str__(self):
