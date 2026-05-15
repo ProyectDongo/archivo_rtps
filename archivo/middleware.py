@@ -33,7 +33,10 @@ _CSP_PORTAL = (
     "font-src 'self' https://fonts.gstatic.com; "
     "img-src 'self' data: https: http:; "
     "connect-src 'self'; "
-    "frame-src https://challenges.cloudflare.com 'self'; "
+    # blob: en frame-src es lo que permite que el modal del visor de PDFs
+    # (adj_viewer.js) cargue el archivo via URL.createObjectURL() dentro de
+    # un <iframe>. Sin esto el modal queda en "Cargando..." indefinidamente.
+    "frame-src 'self' blob: https://challenges.cloudflare.com; "
     "object-src 'self' blob:; "
     "frame-ancestors 'none'; "
     "base-uri 'self'; "
