@@ -80,16 +80,27 @@ def parse_threading_headers(msg) -> tuple[str, str]:
 
 
 def find_parent_thread(buzon, in_reply_to: str, references: str,
-                       asunto: str) -> Optional[Thread]:
+                       asunto: str,
+                       fecha=None,
+                       subject_fallback: bool = False,
+                       subject_fallback_dias: int = 30) -> Optional[Thread]:
     """
-    Encuentra el Thread al que pertenece un correo entrante, en este orden:
+    Encuentra el Thread al que pertenece un correo entrante.
 
-    1. **Por headers**: si `in_reply_to` o el último `references` matchean
-       un Correo existente, devuelve su thread.
-    2. **Por asunto normalizado**: si hay un Thread previo con el mismo
-       asunto normalizado en el mismo buzón, devuelve ese.
+    STRICT por default (solo headers MIME):
+    - Si `in_reply_to` o algún ref de `references` matchea un Correo
+      existente, devuelve su thread.
+    - Si no hay match → retorna None y el caller crea un Thread nuevo.
 
-    Retorna None si no hay match — el caller debe crear un Thread nuevo.
+    Subject fallback (opt-in vía `subject_fallback=True`):
+    - Cuando los headers MIME no resuelven, intentamos matchear por asunto
+      normalizado en el mismo buzón.
+    - REQUIERE además proximidad temporal: el thread candidato debe tener
+      `fecha_ultimo` dentro de `subject_fallback_dias` (default 30) del
+      `fecha` del nuevo correo.
+    - Pensado SOLO para backfill de correos legacy sin headers. Los flujos
+      live de sync/send NO deben usarlo porque produce falsos positivos
+      (ej: 20 correos masivos con mismo asunto pero conversaciones distintas).
     """
     # Lista de mensaje_ids candidatos. El último de References suele ser
     # el padre directo, pero matcheamos cualquiera (a veces el padre directo
@@ -112,15 +123,21 @@ def find_parent_thread(buzon, in_reply_to: str, references: str,
         if padre and padre.thread_id:
             return Thread.objects.filter(id=padre.thread_id).first()
 
-    # Fallback: matchear por asunto normalizado en el mismo buzón.
-    norm = normalizar_asunto(asunto)
-    if norm and len(norm) >= 4:
-        return (Thread.objects
-                .filter(buzon=buzon, asunto__iexact=norm)
-                .order_by('-fecha_ultimo')
-                .first())
+    if not subject_fallback:
+        return None
 
-    return None
+    # Fallback por asunto + proximidad temporal.
+    norm = normalizar_asunto(asunto)
+    if not norm or len(norm) < 4:
+        return None
+
+    qs = Thread.objects.filter(buzon=buzon, asunto__iexact=norm)
+    if fecha is not None:
+        from datetime import timedelta
+        delta = timedelta(days=subject_fallback_dias)
+        qs = qs.filter(fecha_ultimo__gte=fecha - delta,
+                       fecha_ultimo__lte=fecha + delta)
+    return qs.order_by('-fecha_ultimo').first()
 
 
 def create_thread_for(correo: Correo) -> Thread:
