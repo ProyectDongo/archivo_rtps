@@ -228,9 +228,6 @@
   {% endif %}
   {% endwith %}
 
-  {# ─── Archivos del Archivo digital vinculados a este correo ───
-       Solo mostrar el footer si hay vinculos O hay archivos disponibles para
-       vincular. Si está todo vacío, gastaba ~50px sin información útil. #}
   {% if archivo_vinculos or archivos_para_vincular %}
   <footer class="preview-foot preview-vinculos">
     <div class="adj-list-label">
