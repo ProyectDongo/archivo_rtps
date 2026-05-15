@@ -173,6 +173,18 @@
         if (!body) return;
         body.hidden = !abrir;
         msg.setAttribute('aria-expanded', String(abrir));
+        // Re-medir iframes: cuando un iframe estaba dentro de un nodo
+        // [hidden] (display:none), su scrollHeight era 0 al cargar y quedó
+        // capado a 60px. Ahora que es visible, re-medimos para que crezca
+        // a su altura real. requestAnimationFrame asegura que el layout
+        // se aplicó antes de medir.
+        if (abrir && window._resizeEmailIframe) {
+          requestAnimationFrame(function () {
+            body.querySelectorAll('iframe.email-iframe').forEach(function (iframe) {
+              window._resizeEmailIframe(iframe);
+            });
+          });
+        }
       };
 
       threadMsgs.forEach(function (msg) {
