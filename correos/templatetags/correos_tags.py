@@ -914,6 +914,7 @@ _IFRAME_DOC_TMPL = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<base target="_blank">
 <style>
   html,body{{margin:0;padding:8px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;word-break:break-word;background:#fff}}
   *{{max-width:100%;box-sizing:border-box}}
