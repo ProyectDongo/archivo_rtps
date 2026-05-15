@@ -145,6 +145,17 @@
         </svg>
         Filtros
       </button>
+
+      {# Toggle vista hilos / plana — equivalente a la columna de conversación de Gmail #}
+      <a class="toolbar-vista-toggle {% if vista == 'hilos' %}is-on{% endif %}"
+         href="{% url 'inbox' %}?vista={% if vista == 'hilos' %}plana{% else %}hilos{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if solo_destacados %}&destacado=1{% endif %}{% if solo_adjuntos %}&adjuntos=1{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}{% if etiqueta_actual %}&etiqueta={{ etiqueta_actual.id }}{% endif %}{% if fecha_desde %}&desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&hasta={{ fecha_hasta }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if ver_pospuestos %}&pospuestos=1{% endif %}"
+         title="{% if vista == 'hilos' %}Cambiar a vista plana (un correo por fila){% else %}Agrupar por hilo de conversación{% endif %}">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        {% if vista == 'hilos' %}Hilos{% else %}Plano{% endif %}
+      </a>
     </div>
 <form class="toolbar-adv" method="get" action="{% url 'inbox' %}" id="toolbar-adv" hidden>
       {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
@@ -310,6 +321,9 @@
               <span class="correo-from" title="{{ correo.remitente }}">{{ correo.remitente_nombre|default:correo.remitente|truncatechars:28 }}</span>
               <span class="correo-content">
                 <span class="correo-subject">{{ correo.asunto|default:"(sin asunto)" }}</span>
+                {% if agrupar_hilos and correo.thread_count_local and correo.thread_count_local > 1 %}
+                <span class="thread-count" title="{{ correo.thread_count_local }} mensajes en este hilo">{{ correo.thread_count_local }}</span>
+                {% endif %}
                 <span class="correo-sep">—</span>
                 <span class="correo-snippet">{{ correo.cuerpo_texto|truncatechars:200 }}</span>
                 {% for et in correo.etiquetas.all %}

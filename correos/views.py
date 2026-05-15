@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, F, OuterRef, Q, Subquery
 from django.db.models.functions import ExtractHour, ExtractIsoWeekDay, TruncDate, TruncMonth
 from django.http import FileResponse, Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -42,6 +42,10 @@ from .models import (
     hash_ip,
 )
 from .templatetags.correos_tags import html_a_texto
+from .threading import (
+    create_thread_for as thread_create_for,
+    recompute_thread_cache as thread_recompute,
+)
 from .throttle import throttle_user
 
 logger = logging.getLogger('correos.views')
@@ -1087,6 +1091,35 @@ def inbox_view(request):
         orden = 'desc'
     correos_qs = correos_qs.order_by('fecha' if orden == 'asc' else '-fecha')
 
+    # ─── Vista de hilos (estilo Gmail) ──────────────────────────────────
+    # Toggle: 'hilos' (default, agrupa por thread mostrando solo el ultimo)
+    # o 'plana' (lista plana sin agrupación).
+    # Auto-disable cuando hay búsqueda de texto activa: si el user busca algo,
+    # queremos mostrarle TODAS las coincidencias, no solo la última del hilo.
+    vista_pref = (request.COOKIES.get('inbox_vista') or 'hilos').lower()
+    vista = (request.GET.get('vista') or vista_pref).lower()
+    if vista not in ('hilos', 'plana'):
+        vista = 'hilos'
+    busqueda_activa = bool(query)
+    agrupar_hilos = (vista == 'hilos') and not busqueda_activa
+
+    if agrupar_hilos:
+        # Reemplazamos el queryset por uno que devuelve, por cada hilo, solo
+        # el correo MÁS RECIENTE (o el más antiguo si orden==asc).
+        # Correos sin thread (raros tras el backfill) pasan tal cual.
+        latest_per_thread_subq = (
+            Correo.objects
+            .filter(thread_id=OuterRef('thread_id'), buzon=OuterRef('buzon'))
+            .order_by('fecha' if orden == 'asc' else '-fecha')
+            .values('id')[:1]
+        )
+        correos_qs = correos_qs.filter(
+            Q(thread__isnull=True) |
+            Q(id=Subquery(latest_per_thread_subq))
+        ).annotate(thread_count_local=F('thread__count'))
+    else:
+        correos_qs = correos_qs.annotate(thread_count_local=F('thread__count'))
+
     paginator = Paginator(correos_qs, 50)
     page = paginator.get_page(request.GET.get('page', 1))
 
@@ -1107,7 +1140,7 @@ def inbox_view(request):
     )
     cant_borradores = BorradorCorreo.objects.filter(usuario=usuario).count()
 
-    return render(request, 'correos/inbox.html', {
+    resp = render(request, 'correos/inbox.html', {
         'buzon': buzon,
         'page': page,
         'query': query,
@@ -1132,7 +1165,14 @@ def inbox_view(request):
         'cant_pospuestos': cant_pospuestos,
         'borradores_recientes': borradores_recientes,
         'cant_borradores': cant_borradores,
+        'vista': vista,
+        'agrupar_hilos': agrupar_hilos,
     })
+    # Persistir la preferencia de vista (hilos/plana) si el user la cambió por URL.
+    if request.GET.get('vista') in ('hilos', 'plana'):
+        resp.set_cookie('inbox_vista', request.GET['vista'],
+                        max_age=60 * 60 * 24 * 365, samesite='Lax')
+    return resp
 
 
 @portal_login_required
@@ -1766,10 +1806,21 @@ def responder_correo_view(request, correo_id):
             # y derivamos `cuerpo_texto` con strip de tags para búsqueda y
             # fallback a clientes que no entienden HTML.
             _es_html = bool(cuerpo) and ('<' in cuerpo and '>' in cuerpo)
+            # Thread: hereda del correo original (este es Reply).
+            _thread = correo.thread
+            if _thread is None:
+                # El original todavía no tenía thread asignado (backlog
+                # legacy). Lo creamos ahora con el original como raíz.
+                _thread = thread_create_for(correo)
+                correo.thread = _thread
+                correo.save(update_fields=['thread'])
             sent_correo = Correo.objects.create(
                 buzon=correo.buzon,
                 tipo_carpeta=Correo.Carpeta.ENVIADOS,
                 mensaje_id=new_msg_id[:500],
+                in_reply_to=(correo.mensaje_id or '')[:500],
+                references=(correo.references + ' ' + (correo.mensaje_id or '')).strip()[:5000],
+                thread=_thread,
                 remitente=_from_alias_buzon(correo.buzon)[:500],
                 destinatario=', '.join(to_addrs + cc_addrs)[:1000],
                 asunto=asunto[:1000],
@@ -1778,6 +1829,7 @@ def responder_correo_view(request, correo_id):
                 cuerpo_html=cuerpo if _es_html else '',
                 tiene_adjunto=False,
             )
+            thread_recompute(_thread)
             # Marcado como leído por el que lo envió (es su propio mensaje)
             CorreoLeido.objects.get_or_create(usuario=usuario, correo=sent_correo)
         except Exception:
@@ -2019,17 +2071,25 @@ def _normalizar_asunto(asunto: str) -> str:
 def _hilo_de(correo: Correo):
     """
     Devuelve un queryset de correos del MISMO hilo que `correo`, dentro de su
-    buzón. Heurística: mismo asunto normalizado (case-insensitive). No toca
-    headers porque no los persistimos. Excluye al propio correo.
-    Ordenado cronológicamente.
+    buzón. Excluye al propio correo. Ordenado cronológicamente.
+
+    Estrategia:
+    1. Si el correo tiene `thread_id` asignado → todos los Correos con el
+       mismo thread_id. Cero falsos positivos/negativos.
+    2. Si NO tiene thread (correo legacy sin backfill) → fallback a heurística
+       histórica: mismo asunto normalizado (case-insensitive).
     """
+    if correo.thread_id:
+        return (Correo.objects
+                .filter(buzon=correo.buzon, thread_id=correo.thread_id)
+                .exclude(id=correo.id)
+                .order_by('fecha')
+                .only('id', 'asunto', 'remitente', 'fecha', 'tipo_carpeta'))
+
     norm = _normalizar_asunto(correo.asunto)
     if not norm or len(norm) < 4:
         return Correo.objects.none()
 
-    # asunto contiene exactamente la versión normalizada (con o sin prefijos).
-    # Postgres collation `icontains` matchea tildes a veces — usamos endswith
-    # NO porque los prefijos vienen al inicio. Mejor: igual o termina en " : NORM".
     qs = Correo.objects.filter(buzon=correo.buzon).exclude(id=correo.id)
     qs = qs.filter(
         Q(asunto__iexact=norm) |
@@ -2585,10 +2645,32 @@ def borrador_enviar_view(request, borrador_id):
     if resultado['ok']:
         try:
             _es_html = bool(cuerpo) and ('<' in cuerpo and '>' in cuerpo)
+            # Thread: si el borrador era responder/responder-todos, hereda
+            # del original; si era compose nuevo o reenvío externo, abre
+            # un thread propio.
+            _orig = b.correo_original
+            _is_reply = (_orig is not None and b.modo in (
+                BorradorCorreo.Modo.RESPONDER, BorradorCorreo.Modo.RESPONDER_TODOS,
+            ))
+            if _is_reply:
+                _thread = _orig.thread
+                if _thread is None:
+                    _thread = thread_create_for(_orig)
+                    _orig.thread = _thread
+                    _orig.save(update_fields=['thread'])
+                _irt = (_orig.mensaje_id or '')[:500]
+                _refs = ((_orig.references or '') + ' ' + (_orig.mensaje_id or '')).strip()[:5000]
+            else:
+                _thread = None  # se setea abajo después del create
+                _irt = ''
+                _refs = ''
             sent_correo = Correo.objects.create(
                 buzon=buzon,
                 tipo_carpeta=Correo.Carpeta.ENVIADOS,
                 mensaje_id=new_msg_id[:500],
+                in_reply_to=_irt,
+                references=_refs,
+                thread=_thread,
                 remitente=_from_alias_buzon(buzon)[:500],
                 destinatario=', '.join(to_addrs + cc_addrs)[:1000],
                 asunto=asunto[:1000],
@@ -2597,6 +2679,12 @@ def borrador_enviar_view(request, borrador_id):
                 cuerpo_html=cuerpo if _es_html else '',
                 tiene_adjunto=bool(adjuntos_draft),
             )
+            if _thread is None:
+                _thread = thread_create_for(sent_correo)
+                sent_correo.thread = _thread
+                sent_correo.save(update_fields=['thread'])
+            else:
+                thread_recompute(_thread)
             CorreoLeido.objects.get_or_create(usuario=usuario, correo=sent_correo)
             # Guardar adjuntos en DB para que aparezcan en la vista de enviados
             for nombre, contenido, mime in adjuntos_draft:
@@ -2829,6 +2917,7 @@ def compose_view(request):
     if resultado['ok']:
         try:
             _es_html = bool(cuerpo) and ('<' in cuerpo and '>' in cuerpo)
+            # Compose nuevo siempre abre un thread propio (no es reply).
             sent_correo = Correo.objects.create(
                 buzon=buzon,
                 tipo_carpeta=Correo.Carpeta.ENVIADOS,
@@ -2841,6 +2930,9 @@ def compose_view(request):
                 cuerpo_html=cuerpo if _es_html else '',
                 tiene_adjunto=bool(archivos_para_persistir),
             )
+            _thread = thread_create_for(sent_correo)
+            sent_correo.thread = _thread
+            sent_correo.save(update_fields=['thread'])
             CorreoLeido.objects.get_or_create(usuario=usuario, correo=sent_correo)
             # Persistir adjuntos como rows Adjunto (para que aparezcan en
             # Enviados con el pill 📎 y se puedan re-descargar).
