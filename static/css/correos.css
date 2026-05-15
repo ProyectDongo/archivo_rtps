@@ -4631,6 +4631,12 @@
   font-size: 13px;
   z-index: 1;
 }
+/* Sin esta regla, `.adj-viewer-loading` (clase, especificidad 0,1,0)
+   pisa la regla UA de `[hidden]` (también 0,1,0 pero del user agent y
+   por ende menor prioridad por origen). Resultado visible antes del fix:
+   al cargar el PDF, el spinner quedaba arriba del <embed> tapándolo y
+   el modal parecía estar "cargando" para siempre. */
+.adj-viewer-loading[hidden] { display: none !important; }
 .adj-viewer-spinner {
   width: 34px;
   height: 34px;
