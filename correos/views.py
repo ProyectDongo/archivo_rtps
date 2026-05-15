@@ -2115,13 +2115,18 @@ def _hilo_de(correo: Correo):
        mismo thread_id. Cero falsos positivos/negativos.
     2. Si NO tiene thread (correo legacy sin backfill) → fallback a heurística
        histórica: mismo asunto normalizado (case-insensitive).
+
+    NO usa `.only(...)` porque los template tags `correo_iframe` y similares
+    leen `cuerpo_html`, `cuerpo_texto`, `tiene_adjunto`, `destinatario`. Si
+    los excluís acá, Django hace una query extra por cada uno (N+1). Mejor
+    traer todo y prefetch adjuntos.
     """
     if correo.thread_id:
         return (Correo.objects
                 .filter(buzon=correo.buzon, thread_id=correo.thread_id)
                 .exclude(id=correo.id)
                 .order_by('fecha')
-                .only('id', 'asunto', 'remitente', 'fecha', 'tipo_carpeta'))
+                .prefetch_related('adjuntos'))
 
     norm = _normalizar_asunto(correo.asunto)
     if not norm or len(norm) < 4:
@@ -2133,7 +2138,7 @@ def _hilo_de(correo: Correo):
         Q(asunto__iendswith=': ' + norm) |
         Q(asunto__iendswith=':' + norm)
     )
-    return qs.order_by('fecha').only('id', 'asunto', 'remitente', 'fecha', 'tipo_carpeta')
+    return qs.order_by('fecha').prefetch_related('adjuntos')
 
 
 # ─── AJAX: organización del archivo ────────────────────────────────────────

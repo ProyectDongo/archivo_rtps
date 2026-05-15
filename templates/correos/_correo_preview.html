@@ -142,30 +142,68 @@
     {% endif %}
   </div>
 {% if thread %}
-  <section class="preview-thread" aria-label="Otros mensajes del hilo">
-    <button type="button" class="preview-thread-toggle" aria-expanded="false">
+  <section class="thread-inline" aria-label="Hilo completo de la conversación">
+    <header class="thread-inline-head">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
       <span>{{ thread|length }} mensaje{{ thread|length|pluralize:"s" }} más en este hilo</span>
-      <svg class="preview-thread-chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    </button>
-    <ul class="preview-thread-list" hidden role="list">
+      <button type="button" class="thread-inline-expand-all"
+              data-state="collapsed">Expandir todo</button>
+    </header>
+    <div class="thread-inline-list" role="list">
       {% for c in thread %}
-      <li>
-        <a href="{% url 'detalle' c.id %}" class="preview-thread-item" data-correo-id="{{ c.id }}"
-           data-preview-url="{% url 'correo_preview' c.id %}">
-          <span class="preview-thread-from" title="{{ c.remitente }}">{{ c.remitente_nombre|default:c.remitente|truncatechars:30 }}</span>
-          <span class="preview-thread-asunto">{{ c.asunto|default:"(sin asunto)"|truncatechars:60 }}</span>
-          <span class="preview-thread-fecha" title="{{ c.fecha|fecha_iso }}">{{ c.fecha|fecha_amigable }}</span>
-        </a>
-      </li>
+      <article class="thread-msg" data-correo-id="{{ c.id }}" aria-expanded="false">
+        <header class="thread-msg-head" tabindex="0" role="button"
+                aria-controls="thread-msg-body-{{ c.id }}"
+                aria-label="Expandir mensaje de {{ c.remitente_nombre|default:c.remitente }}">
+          <span class="avatar avatar-sm" data-color="{{ c.remitente|avatar_color }}">{{ c.remitente|avatar_iniciales }}</span>
+          <div class="thread-msg-meta">
+            <div class="thread-msg-from-row">
+              <span class="thread-msg-from" title="{{ c.remitente }}">{{ c.remitente_nombre|default:c.remitente|truncatechars:40 }}</span>
+              {% if c.tipo_carpeta == 'enviados' %}
+              <span class="thread-msg-tag-enviado">Enviado</span>
+              {% endif %}
+            </div>
+            <div class="thread-msg-snippet">{{ c.cuerpo_texto|truncatechars:140 }}</div>
+          </div>
+          <div class="thread-msg-side">
+            {% if c.tiene_adjunto %}<span class="thread-msg-adj" title="Con adjunto">📎</span>{% endif %}
+            <span class="thread-msg-fecha" title="{{ c.fecha|fecha_iso }}">{{ c.fecha|fecha_amigable }}</span>
+            <a href="{% url 'detalle' c.id %}" class="thread-msg-open" title="Abrir en pantalla completa" aria-label="Abrir">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 17L17 7M9 7h8v8"/>
+              </svg>
+            </a>
+            <svg class="thread-msg-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </header>
+        <div class="thread-msg-body" id="thread-msg-body-{{ c.id }}" hidden>
+          <div class="thread-msg-to">
+            <span class="thread-msg-to-label">Para:</span>
+            <span class="thread-msg-to-val">{{ c.destinatario|default:"—"|truncatechars:200 }}</span>
+          </div>
+          {% if c.cuerpo_html or c.cuerpo_texto %}
+          <div class="thread-msg-content">{% correo_iframe c %}</div>
+          {% else %}
+          <div class="thread-msg-empty">Este mensaje no tiene cuerpo visible.</div>
+          {% endif %}
+          {% with adjs=c.adjuntos.all %}
+          {% if adjs %}
+          <footer class="thread-msg-adjs">
+            <div class="adj-list-label">📎 Adjuntos ({{ adjs|length }})</div>
+            {% include 'correos/_adjuntos_galeria.html' with adjuntos=adjs %}
+          </footer>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </article>
       {% endfor %}
-    </ul>
+    </div>
   </section>
   {% endif %}
 <div class="preview-notas" data-correo-id="{{ correo.id }}">

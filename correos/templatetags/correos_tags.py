@@ -280,12 +280,15 @@ def _make_email_cleaner(modo: str):
         'a',
     }
     attrs = {
+        # bgcolor: presente en td/th/tr/table porque Excel/Word/Outlook exportan
+        # con HTML pre-CSS y muchos emails de empresas (facturas, reportes)
+        # pintan celdas SOLO con bgcolor. Sin esto las tablas pierden colores.
         '*':       ['class', 'style', 'align', 'valign', 'dir', 'title', 'lang'],
         'a':       ['href', 'name', 'target', 'rel', 'title'],
-        'table':   ['border', 'cellpadding', 'cellspacing', 'width', 'height', 'summary'],
-        'td':      ['colspan', 'rowspan', 'width', 'height', 'align', 'valign', 'nowrap'],
-        'th':      ['colspan', 'rowspan', 'width', 'height', 'align', 'valign', 'scope'],
-        'tr':      ['align', 'valign'],
+        'table':   ['border', 'cellpadding', 'cellspacing', 'width', 'height', 'summary', 'bgcolor'],
+        'td':      ['colspan', 'rowspan', 'width', 'height', 'align', 'valign', 'nowrap', 'bgcolor'],
+        'th':      ['colspan', 'rowspan', 'width', 'height', 'align', 'valign', 'scope', 'bgcolor'],
+        'tr':      ['align', 'valign', 'bgcolor'],
         'col':     ['span', 'width'],
         'colgroup':['span', 'width'],
         'font':    ['color', 'face', 'size'],

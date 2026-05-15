@@ -163,15 +163,46 @@
       }
     }
 
-    // ─── Hilo: toggle expandible (los items ya son <a> que navegan solos) ─
-    const thBtn = card.querySelector('.preview-thread-toggle');
-    const thList = card.querySelector('.preview-thread-list');
-    if (thBtn && thList) {
-      thBtn.addEventListener('click', function () {
-        const abrir = thList.hidden;
-        thList.hidden = !abrir;
-        thBtn.setAttribute('aria-expanded', String(abrir));
+    // ─── Hilo inline estilo Gmail: cada thread-msg es colapsable ──────────
+    // Click en thread-msg-head → toggle del body. Enter/Space también.
+    // El "Expandir todo" del header abre/cierra todas las cards de una.
+    const threadMsgs = card.querySelectorAll('.thread-msg');
+    if (threadMsgs.length) {
+      const setExpanded = function (msg, abrir) {
+        const body = msg.querySelector('.thread-msg-body');
+        if (!body) return;
+        body.hidden = !abrir;
+        msg.setAttribute('aria-expanded', String(abrir));
+      };
+
+      threadMsgs.forEach(function (msg) {
+        const head = msg.querySelector('.thread-msg-head');
+        if (!head) return;
+        const toggle = function (e) {
+          // No interceptar clicks en el botón "abrir en pantalla completa".
+          if (e && e.target && e.target.closest('.thread-msg-open')) return;
+          const abierto = msg.getAttribute('aria-expanded') === 'true';
+          setExpanded(msg, !abierto);
+        };
+        head.addEventListener('click', toggle);
+        head.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggle();
+          }
+        });
       });
+
+      // Botón "Expandir todo / Colapsar todo" del header.
+      const expandAll = card.querySelector('.thread-inline-expand-all');
+      if (expandAll) {
+        expandAll.addEventListener('click', function () {
+          const colapsado = expandAll.dataset.state !== 'expanded';
+          threadMsgs.forEach(function (m) { setExpanded(m, colapsado); });
+          expandAll.dataset.state = colapsado ? 'expanded' : 'collapsed';
+          expandAll.textContent = colapsado ? 'Colapsar todo' : 'Expandir todo';
+        });
+      }
     }
 
     // ─── Notas internas: autosave on blur + debounced input ─────────────
