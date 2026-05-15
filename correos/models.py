@@ -74,6 +74,49 @@ class Etiqueta(models.Model):
         return f'{self.buzon.email} · {self.nombre}'
 
 
+class Thread(models.Model):
+    """
+    Hilo de conversación de correos. Agrupa Correos relacionados (cadena de
+    Re:/Fwd:) en una sola unidad lógica.
+
+    Asignación:
+    - Sync IMAP: parsea headers `In-Reply-To` y `References`. Si el último ref
+      apunta a un Correo existente, hereda su `thread_id`. Si no, crea Thread
+      nuevo con este correo como raíz.
+    - Send portal: el sent_correo hereda el thread del correo al que responde.
+    - Backfill (correos viejos sin headers persistidos): se usa la heurística
+      asunto-normalizado + buzón. Ver `recompute_threads` command.
+
+    Campos cacheados (`fecha_ultimo`, `count`, `asunto`) se actualizan en bulk
+    por el backfill y on-the-fly al asignar correos al thread (signal post_save).
+    El cache evita N+1 al listar la bandeja en modo "vista de hilos".
+    """
+    buzon         = models.ForeignKey(Buzon, on_delete=models.CASCADE,
+                                      related_name='threads')
+    # Asunto del primer correo del hilo (sin prefijos Re:/Fwd:). Sirve para
+    # ordenar/buscar sin tener que joinear al Correo raíz.
+    asunto        = models.CharField(max_length=1000, blank=True)
+    # mensaje_id del correo "raíz" del hilo (el más antiguo). Útil para
+    # threading robusto al integrar nuevos correos via In-Reply-To/References.
+    mensaje_id_raiz = models.CharField(max_length=500, blank=True, db_index=True)
+    fecha_primero = models.DateTimeField(null=True, blank=True)
+    fecha_ultimo  = models.DateTimeField(null=True, blank=True, db_index=True)
+    # Conteo cacheado. Actualizado por _recompute_count() y backfill.
+    count         = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Hilo'
+        verbose_name_plural = 'Hilos'
+        ordering = ['-fecha_ultimo']
+        indexes = [
+            models.Index(fields=['buzon', '-fecha_ultimo']),
+            models.Index(fields=['buzon', 'mensaje_id_raiz']),
+        ]
+
+    def __str__(self):
+        return f'Hilo<{self.asunto[:60]}> ({self.count} msgs)'
+
+
 class Correo(models.Model):
     """Un correo electrónico individual indexado desde .mbox"""
 
@@ -91,6 +134,15 @@ class Correo(models.Model):
                                      default=Carpeta.OTROS, db_index=True)
 
     mensaje_id    = models.CharField(max_length=500, blank=True, db_index=True)
+    # Headers de threading. Persistidos desde 2026-05-15 para agrupar
+    # correos por hilo igual que Gmail (no por heurística de asunto).
+    in_reply_to   = models.CharField(max_length=500, blank=True, default='', db_index=True,
+                                     help_text='Header In-Reply-To del email (mensaje_id del padre).')
+    references    = models.TextField(blank=True, default='',
+                                     help_text='Header References completo (lista space-separated).')
+    thread        = models.ForeignKey('Thread', on_delete=models.SET_NULL,
+                                      null=True, blank=True, related_name='correos',
+                                      db_index=True)
     remitente     = models.CharField(max_length=500, blank=True)
     destinatario  = models.TextField(blank=True)
     asunto        = models.CharField(max_length=1000, blank=True)
@@ -121,6 +173,9 @@ class Correo(models.Model):
             # el filtro ?adjuntos=1 — antes era seq scan parcial sobre el buzón.
             models.Index(fields=['buzon', 'tiene_adjunto'],
                          name='correos_cor_buzon_a_d2f8e1_idx'),
+            # Para la vista de hilos: traer "último correo de cada thread".
+            models.Index(fields=['buzon', 'thread', '-fecha'],
+                         name='correos_cor_buzon_thread_idx'),
         ]
         constraints = [
             # Anti-duplicación del sync (migración 0022). Postgres rechaza

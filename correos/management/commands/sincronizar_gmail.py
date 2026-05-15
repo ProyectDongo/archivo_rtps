@@ -259,12 +259,29 @@ class Command(BaseCommand):
                     html  = html.replace('\x00', '')
                     adjuntos_data = extraer_adjuntos(msg)
 
+                    # Threading: parsea In-Reply-To/References. Asignamos
+                    # `thread` ANTES del create para que el FK quede en una
+                    # sola insertion. Lazy import: evita ciclo con templatetags.
+                    from correos.threading import (
+                        parse_threading_headers,
+                        find_parent_thread,
+                        create_thread_for,
+                        recompute_thread_cache,
+                    )
+                    irt, refs = parse_threading_headers(msg)
+
                     try:
                         with transaction.atomic():
+                            thread = find_parent_thread(
+                                sync.buzon, irt, refs, asunto,
+                            )
                             correo = Correo.objects.create(
                                 buzon=sync.buzon,
                                 tipo_carpeta=sync.tipo_carpeta,
                                 mensaje_id=msg_id,
+                                in_reply_to=irt,
+                                references=refs,
+                                thread=thread,
                                 remitente=remitente[:500],
                                 destinatario=dest[:1000],
                                 asunto=asunto[:1000],
@@ -273,6 +290,13 @@ class Command(BaseCommand):
                                 cuerpo_html=html,
                                 tiene_adjunto=bool(adjuntos_data),
                             )
+                            if thread is None:
+                                # No matcheó nada: este correo abre un hilo nuevo.
+                                thread = create_thread_for(correo)
+                                correo.thread = thread
+                                correo.save(update_fields=['thread'])
+                            else:
+                                recompute_thread_cache(thread)
                             for nombre, mime, payload, content_id in adjuntos_data:
                                 adj = Adjunto(
                                     correo=correo,
