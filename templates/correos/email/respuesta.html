@@ -46,6 +46,8 @@
           <blockquote style="margin:0;padding:0 0 0 14px;border-left:3px solid #d8d8d8;color:#666666">
             {% if correo_original.cuerpo_html %}
             <div style="font-size:13px;line-height:1.6">{{ correo_original.cuerpo_html|sanitizar_email_html_outbound|safe }}</div>
+            {% elif correo_original.cuerpo_texto|is_html_content %}
+            <div style="font-size:13px;line-height:1.6">{{ correo_original.cuerpo_texto|sanitizar_email_html_outbound|safe }}</div>
             {% else %}
             <div style="font-size:13px;line-height:1.6;white-space:pre-wrap">{{ correo_original.cuerpo_texto|default:"(sin cuerpo)" }}</div>
             {% endif %}

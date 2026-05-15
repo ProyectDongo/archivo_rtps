@@ -437,6 +437,47 @@ def sanitizar_email_html(html: str) -> str:
         return strip_tags(html)
 
 
+# Detección de "texto que en realidad es HTML". Algunos correos llegan con la
+# parte text/plain conteniendo HTML literal (editores web que paste'ean
+# `<p>...</p>` en el campo plain). Sin esta detección, render_texto_plano
+# escapa los `<` y el usuario ve los tags como texto.
+_RE_TEXTO_ES_HTML = re.compile(
+    r'^\s*<\s*(?:!doctype\s+html|\?xml|html|head|body|table|tbody|thead|tr|td|'
+    r'p|div|span|h[1-6]|ul|ol|li|blockquote|pre|article|section|header|footer|'
+    r'main|aside|figure|nav)\b',
+    re.IGNORECASE,
+)
+
+
+def _texto_parece_html(texto: str) -> bool:
+    """
+    True si `texto` parece ser HTML disfrazado de texto plano. Requiere:
+      - Arranca con un tag HTML conocido (block-level).
+      - Contiene al menos un closing tag `</...>` (defensa anti falso-positivo,
+        ej. plain-text que arranca con "<por> ..." o similar).
+    """
+    if not texto:
+        return False
+    if not _RE_TEXTO_ES_HTML.match(texto):
+        return False
+    return '</' in texto
+
+
+def _render_texto_como_html(texto: str) -> str:
+    """
+    Sanitiza un cuerpo plain-text que en realidad es HTML y devuelve el HTML
+    listo para incrustar. Mismo pipeline que `render_correo_html` pero sin
+    resolución de `cid:` (que requiere correo).
+    """
+    try:
+        html = _pre_strip_html_para_bleach(texto)
+        cleaned = _email_cleaner_inbound_safe_imgs().clean(html)
+        return _inject_img_safety_attrs(cleaned)
+    except Exception:
+        from django.utils.html import strip_tags
+        return strip_tags(texto)
+
+
 @register.simple_tag
 def render_correo_body(correo):
     """
@@ -444,10 +485,9 @@ def render_correo_body(correo):
 
     Casos:
       1. cuerpo_html no vacío → render HTML (cid resolution + sanitize + img safety).
-      2. cuerpo_html vacío PERO cuerpo_texto parece HTML (empieza con
-         <!DOCTYPE, <html, <head, <body, <table, etc.) → tratar el "texto"
-         como HTML y renderizarlo. Cubre el bug del importer/sync que en
-         algunos correos puso el HTML literal en cuerpo_texto.
+      2. cuerpo_html vacío PERO cuerpo_texto parece HTML (ver `_texto_parece_html`)
+         → tratar el "texto" como HTML y renderizarlo. Cubre el bug del
+         importer/sync que en algunos correos puso el HTML literal en cuerpo_texto.
       3. cuerpo_texto es texto plano normal → render con render_texto_plano.
       4. Ambos vacíos → string vacío (el template muestra "no tiene cuerpo").
 
@@ -463,25 +503,8 @@ def render_correo_body(correo):
     if not texto:
         return ''
 
-    primeros_chars = texto[:500].lower().lstrip()
-    es_html_disfrazado = (
-        primeros_chars.startswith('<!doctype html')
-        or primeros_chars.startswith('<html')
-        or primeros_chars.startswith('<?xml')
-        or primeros_chars.startswith('<head')
-        or primeros_chars.startswith('<body')
-        or (primeros_chars.startswith('<table') and '</table>' in texto.lower())
-    )
-
-    if es_html_disfrazado:
-        try:
-            html = _pre_strip_html_para_bleach(texto)
-            cleaned = _email_cleaner_inbound_safe_imgs().clean(html)
-            cleaned = _inject_img_safety_attrs(cleaned)
-            return mark_safe(cleaned)
-        except Exception:
-            from django.utils.html import strip_tags
-            return mark_safe(strip_tags(texto))
+    if _texto_parece_html(texto):
+        return mark_safe(_render_texto_como_html(texto))
 
     return render_texto_plano(texto)
 
@@ -581,6 +604,49 @@ _RE_ANGLE_PHONE = re.compile(r'<(\+[\d\s\-().]{4,})>')
 def is_html_content(text):
     t = (text or '').strip()
     return bool(t) and t[0] == '<'
+
+
+# Tags que mapean a un newline al convertir HTML→texto plano. Lista exhaustiva
+# de block-level + line breaks que vienen de editores ricos (Quill, etc.).
+_RE_HTML_TO_TEXT_NEWLINE = re.compile(
+    r'</?\s*(p|div|li|h[1-6]|tr|blockquote|pre|article|section|header|footer|'
+    r'main|aside|figure|hr|br)\s*/?>',
+    re.IGNORECASE,
+)
+_RE_HTML_TO_TEXT_TAB = re.compile(r'</\s*(td|th)\s*>', re.IGNORECASE)
+_RE_MULTI_NEWLINE = re.compile(r'\n{3,}')
+
+
+def html_a_texto(html: str) -> str:
+    """
+    Convierte HTML del editor rico (Quill) a texto plano legible para la parte
+    text/plain de emails multipart y para `cuerpo_texto` en la DB.
+
+    - <p>, <div>, <br>, <li>, <tr>, <h*>, etc. → newline.
+    - <td>, <th> → tab (rough table layout).
+    - El resto se strippea.
+    - Entidades HTML se decodifican (&amp; → &, &nbsp; → space, etc).
+
+    NO es perfecto (no respeta listas, links, etc.), pero evita el bug en el
+    que el destinatario o el portal mostraban `<p>hola</p>` como texto literal.
+    """
+    if not html:
+        return ''
+    from html import unescape
+    from django.utils.html import strip_tags
+
+    t = _RE_HTML_TO_TEXT_NEWLINE.sub('\n', html)
+    t = _RE_HTML_TO_TEXT_TAB.sub('\t', t)
+    t = strip_tags(t)
+    t = unescape(t)
+    t = _RE_MULTI_NEWLINE.sub('\n\n', t)
+    return t.strip()
+
+
+@register.filter(name='html_a_texto', is_safe=False)
+def html_a_texto_filter(html: str) -> str:
+    """Versión filter de `html_a_texto` para usar en templates."""
+    return html_a_texto(html or '')
 
 
 @register.filter(is_safe=True)
@@ -878,7 +944,13 @@ def correo_iframe(correo):
         texto = (correo.cuerpo_texto or '').strip()
         if not texto:
             return mark_safe('<p style="color:#888;font-size:13px">Sin contenido.</p>')
-        body = render_texto_plano(texto)
+        # Algunos correos llegan con HTML literal en la parte text/plain.
+        # Sin esta detección, render_texto_plano escapa los tags y el usuario
+        # ve "<p>Estimados,</p>..." como texto.
+        if _texto_parece_html(texto):
+            body = _render_texto_como_html(texto)
+        else:
+            body = render_texto_plano(texto)
 
     doc = _IFRAME_DOC_TMPL.format(body=body)
     srcdoc = html_escape(doc)

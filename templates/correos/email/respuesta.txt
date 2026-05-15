@@ -1,4 +1,4 @@
-{% load correos_tags %}{{ cuerpo_usuario|default:"" }}
+{% load correos_tags %}{{ cuerpo_usuario|html_a_texto|default:"" }}
 {% if buzon %}{% firma_texto buzon %}{% endif %}
 
 El {% if correo_original.fecha %}{{ correo_original.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}, {{ correo_original.remitente|default:"—" }} escribió:

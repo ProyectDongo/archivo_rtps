@@ -56,6 +56,8 @@
         <tr><td bgcolor="#ffffff" style="padding:12px 32px 32px;background-color:#ffffff">
           {% if correo.cuerpo_html %}
           <div style="font-size:14px;line-height:1.6;color:#222222">{{ correo.cuerpo_html|sanitizar_email_html_outbound|safe }}</div>
+          {% elif correo.cuerpo_texto|is_html_content %}
+          <div style="font-size:14px;line-height:1.6;color:#222222">{{ correo.cuerpo_texto|sanitizar_email_html_outbound|safe }}</div>
           {% else %}
           <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;color:#222222">{{ correo.cuerpo_texto|default:"(sin cuerpo)" }}</div>
           {% endif %}

@@ -41,6 +41,7 @@ from .models import (
     UsuarioPortal,
     hash_ip,
 )
+from .templatetags.correos_tags import html_a_texto
 from .throttle import throttle_user
 
 logger = logging.getLogger('correos.views')
@@ -1760,6 +1761,11 @@ def responder_correo_view(request, correo_id):
     sent_correo = None
     if resultado['ok']:
         try:
+            # El editor Quill produce HTML (`<p>...</p>`). Guardamos el HTML
+            # en `cuerpo_html` para que el preview lo rendee igual que Gmail,
+            # y derivamos `cuerpo_texto` con strip de tags para búsqueda y
+            # fallback a clientes que no entienden HTML.
+            _es_html = bool(cuerpo) and ('<' in cuerpo and '>' in cuerpo)
             sent_correo = Correo.objects.create(
                 buzon=correo.buzon,
                 tipo_carpeta=Correo.Carpeta.ENVIADOS,
@@ -1768,7 +1774,8 @@ def responder_correo_view(request, correo_id):
                 destinatario=', '.join(to_addrs + cc_addrs)[:1000],
                 asunto=asunto[:1000],
                 fecha=timezone.now(),
-                cuerpo_texto=cuerpo,
+                cuerpo_texto=html_a_texto(cuerpo) if _es_html else (cuerpo or ''),
+                cuerpo_html=cuerpo if _es_html else '',
                 tiene_adjunto=False,
             )
             # Marcado como leído por el que lo envió (es su propio mensaje)
@@ -2577,6 +2584,7 @@ def borrador_enviar_view(request, borrador_id):
     sent_correo = None
     if resultado['ok']:
         try:
+            _es_html = bool(cuerpo) and ('<' in cuerpo and '>' in cuerpo)
             sent_correo = Correo.objects.create(
                 buzon=buzon,
                 tipo_carpeta=Correo.Carpeta.ENVIADOS,
@@ -2585,7 +2593,8 @@ def borrador_enviar_view(request, borrador_id):
                 destinatario=', '.join(to_addrs + cc_addrs)[:1000],
                 asunto=asunto[:1000],
                 fecha=timezone.now(),
-                cuerpo_texto=cuerpo,
+                cuerpo_texto=html_a_texto(cuerpo) if _es_html else (cuerpo or ''),
+                cuerpo_html=cuerpo if _es_html else '',
                 tiene_adjunto=bool(adjuntos_draft),
             )
             CorreoLeido.objects.get_or_create(usuario=usuario, correo=sent_correo)
@@ -2819,6 +2828,7 @@ def compose_view(request):
     sent_correo = None
     if resultado['ok']:
         try:
+            _es_html = bool(cuerpo) and ('<' in cuerpo and '>' in cuerpo)
             sent_correo = Correo.objects.create(
                 buzon=buzon,
                 tipo_carpeta=Correo.Carpeta.ENVIADOS,
@@ -2827,7 +2837,8 @@ def compose_view(request):
                 destinatario=', '.join(to_addrs + cc_addrs)[:1000],
                 asunto=asunto[:1000],
                 fecha=timezone.now(),
-                cuerpo_texto=cuerpo,
+                cuerpo_texto=html_a_texto(cuerpo) if _es_html else (cuerpo or ''),
+                cuerpo_html=cuerpo if _es_html else '',
                 tiene_adjunto=bool(archivos_para_persistir),
             )
             CorreoLeido.objects.get_or_create(usuario=usuario, correo=sent_correo)
