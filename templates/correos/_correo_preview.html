@@ -112,9 +112,8 @@
     </div>
 
     <h2 class="preview-subject">{{ correo.asunto|default:"(sin asunto)" }}</h2>
-    <div class="preview-to">
-      <span class="preview-to-l">Para:</span>
-      <span class="preview-to-v">{{ correo.destinatario|default:"—"|truncatechars:200 }}</span>
+    <div class="preview-to" title="{{ correo.destinatario|default:'—' }}">
+      <span class="preview-to-l">Para:</span><span class="preview-to-v">{{ correo.destinatario|default:"—" }}</span>
     </div>
 <div class="preview-tags-wrap" data-correo-id="{{ correo.id }}">
       <div class="preview-tags-label">Etiquetas</div>
@@ -229,7 +228,10 @@
   {% endif %}
   {% endwith %}
 
-  {# ─── Archivos del Archivo digital vinculados a este correo ─── #}
+  {# ─── Archivos del Archivo digital vinculados a este correo ───
+       Solo mostrar el footer si hay vinculos O hay archivos disponibles para
+       vincular. Si está todo vacío, gastaba ~50px sin información útil. #}
+  {% if archivo_vinculos or archivos_para_vincular %}
   <footer class="preview-foot preview-vinculos">
     <div class="adj-list-label">
       🔗 Archivos del Archivo
@@ -269,4 +271,5 @@
     </details>
     {% endif %}
   </footer>
+  {% endif %}
 </article>

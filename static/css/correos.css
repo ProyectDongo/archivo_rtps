@@ -1085,6 +1085,22 @@
   padding-top: 12px;
   border-top: 1px solid var(--bdr);
 }
+/* Cuando NO hay etiquetas, compactamos a una sola línea con "+ Etiqueta"
+   pegado al "Para:". Antes esto eran ~60px de espacio vacío. */
+.preview-tags-wrap:has(.preview-tags-empty) {
+  margin-top: 8px;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preview-tags-wrap:has(.preview-tags-empty) .preview-tags-label { display: none; }
+.preview-tags-wrap:has(.preview-tags-empty) .preview-tags-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+}
 .preview-tags-label {
   font-size: 9px;
   font-weight: 700;
@@ -1314,19 +1330,21 @@
 @keyframes previewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 .preview-head {
-  padding: 1.25rem 1.5rem 1rem;
+  padding: .9rem 1.25rem .7rem;       /* antes: 1.25rem 1.5rem 1rem */
   border-bottom: 1px solid var(--bdr);
   background: linear-gradient(to bottom, var(--off), var(--w));
 }
 .preview-head-top {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 1rem;
+  gap: 10px;                            /* antes: 12px */
+  margin-bottom: .5rem;                 /* antes: 1rem */
   /* Permite que .preview-actions baje a una fila propia cuando el panel
      se achica, en vez de pisar la columna del avatar+meta. */
   flex-wrap: wrap;
 }
+/* Avatar grande del header — reducido para que el header sea más compacto */
+.preview-head .avatar-lg { width: 36px !important; height: 36px !important; font-size: 13px !important; }
 .preview-meta-main {
   flex: 1 1 220px;   /* puede crecer y achicarse, pero no por debajo de 220px */
   min-width: 0;
@@ -1383,21 +1401,31 @@
 .preview-open-btn:hover { border-color: var(--r); color: var(--r); }
 
 .preview-subject {
-  font-size: 17px;
+  font-size: 16px;            /* antes: 17px */
   font-weight: 700;
   color: var(--gd);
   line-height: 1.3;
-  margin: 0 0 8px;
+  margin: 0 0 4px;            /* antes: 0 0 8px */
 }
+/* Lista "Para:" — truncar en una línea con elipsis. El title attribute en el
+   template muestra el listado completo en hover. Sin esto, los emails wrap
+   en múltiples líneas y ocupan ~40px verticales. */
 .preview-to {
   font-size: 12px;
   color: var(--gl);
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .preview-to-l { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 9px; color: var(--gl); margin-right: 6px; }
+.preview-to-v {
+  /* Inline para que el ellipsis del padre funcione */
+  display: inline;
+}
 
 .preview-body {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;      /* antes: 1.25rem 1.5rem */
   flex: 1;
   overflow-y: auto;
 }
@@ -2572,12 +2600,12 @@
 .preview-unread-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 5px 10px;             /* antes: 8px 12px */
   background: var(--w);
   color: var(--gm);
-  border: 1.5px solid var(--bdr);
-  border-radius: 8px;
+  border: 1px solid var(--bdr);   /* antes: 1.5px */
+  border-radius: 6px;              /* antes: 8px */
   font-family: var(--f);
   font-size: 12px;
   font-weight: 600;
@@ -2597,8 +2625,8 @@
 .preview-delete-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 5px 10px;
   background: var(--w);
   color: var(--gm);
   border: 1.5px solid var(--bdr);
@@ -2619,19 +2647,19 @@
 [data-theme="dark"] .preview-delete-btn { background: #252b30; border-color: #383f45; color: #9aa0a6; }
 [data-theme="dark"] .preview-delete-btn:hover { background: rgba(200,12,15,.18); border-color: #ff8d90; color: #ff8d90; }
 
-/* ─── Botones de envío (reenviar, responder) ─────────────── */
+/* ─── Botones de envío (reenviar, responder) — compactos como Gmail ─── */
 .btn-reenviar,
 .preview-fwd-btn,
 .preview-reply-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 5px;
+  padding: 5px 10px;                  /* antes: 8px 14px */
   background: var(--w);
   color: var(--gd);
-  border: 1.5px solid var(--gm);
-  border-radius: 8px;
-  font-size: 13px;
+  border: 1px solid var(--gm);        /* antes: 1.5px (más sutil) */
+  border-radius: 6px;                  /* antes: 8px */
+  font-size: 12px;                     /* antes: 13px */
   font-weight: 600;
   text-decoration: none;
   transition: all .15s ease;
@@ -4244,16 +4272,17 @@
 }
 .thread-inline-expand-all:hover { background: var(--off); border-color: var(--gl); color: var(--gd); }
 
+/* Cards apretadas como Gmail — 36-40px de alto colapsadas. Antes ~70px. */
 .thread-inline-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;                     /* antes: 8px → 4px ahorrados × N cards */
 }
 
 .thread-msg {
   background: var(--w);
   border: 1px solid var(--bdr);
-  border-radius: 10px;
+  border-radius: 6px;           /* antes: 10px (visualmente más liviano) */
   overflow: hidden;
   transition: box-shadow .15s, border-color .15s;
 }
@@ -4261,14 +4290,15 @@
 .thread-msg[aria-expanded="true"] {
   box-shadow: var(--sh);
   border-color: var(--gl);
+  margin: 6px 0;                /* separación visual al expandir */
 }
 
 .thread-msg-head {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;                    /* antes: 12px */
+  padding: 6px 12px;            /* antes: 12px 16px (la mitad vertical) */
   cursor: pointer;
   background: transparent;
   border: 0;
@@ -4281,24 +4311,35 @@
 .thread-msg[aria-expanded="true"] .thread-msg-head {
   border-bottom: 1px solid var(--bdr);
   background: var(--off);
+  padding: 10px 14px;           /* expanded: más respiración */
 }
 
-.avatar-sm { width: 32px; height: 32px; font-size: 12px; }
+.avatar-sm { width: 26px; height: 26px; font-size: 10px; }  /* antes: 32px */
 
-.thread-msg-meta { min-width: 0; }
-.thread-msg-from-row {
+/* Meta: from + snippet en UNA SOLA LINEA tipo Gmail */
+.thread-msg-meta {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+.thread-msg-from-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;               /* el nombre no se trunca */
+  margin: 0;
+  max-width: 240px;
+  overflow: hidden;
 }
 .thread-msg-from {
-  font-weight: 700;
+  font-weight: 600;             /* antes: 700 — más sutil */
   color: var(--gd);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 12px;              /* antes: 13px */
 }
 .thread-msg-tag-enviado {
   font-size: 9px;
@@ -4307,29 +4348,31 @@
   text-transform: uppercase;
   background: var(--gl);
   color: #fff;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 99px;
   flex-shrink: 0;
 }
 .thread-msg-snippet {
-  color: var(--gm);
+  color: var(--gl);             /* más sutil */
   font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 .thread-msg[aria-expanded="true"] .thread-msg-snippet { display: none; }
 
 .thread-msg-side {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   color: var(--gl);
   font-size: 11px;
 }
-.thread-msg-adj { font-size: 12px; }
-.thread-msg-fecha { white-space: nowrap; }
+.thread-msg-adj { font-size: 11px; opacity: .7; }
+.thread-msg-fecha { white-space: nowrap; font-size: 11px; }
 .thread-msg-open {
   color: var(--gl);
   text-decoration: none;
