@@ -154,3 +154,25 @@ threading). Pendiente.
 - Servicio en panel Coolify: `https://coolify.rtriosanpedro.cl`
 - Portal en producción: `https://portal.rtriosanpedro.cl`
 - Repo: `https://github.com/ProyectDongo/archivo`
+
+## graphify
+
+Este proyecto tiene un grafo de conocimiento en `graphify-out/` con 5037 nodos, 9163 edges y 472 comunidades
+mapeando modelos, vistas, templates, JS y CSS de todo el stack.
+
+**Reglas obligatorias:**
+- SIEMPRE leer `graphify-out/GRAPH_REPORT.md` antes de buscar archivos con grep/glob o responder preguntas
+  sobre la estructura del proyecto. El grafo es el mapa primario del codebase.
+- Después de modificar código, ejecutar `graphify update .` para mantener el grafo actualizado (solo AST, sin costo de API).
+
+**Modos de consulta (usar según la pregunta):**
+
+| Modo | Comando | Cuándo usarlo |
+|------|---------|---------------|
+| Exploración amplia | `/graphify query "pregunta"` | "¿Qué está conectado a X?" — BFS, contexto amplio |
+| Detective / rastreo | `/graphify query "pregunta" --dfs` | "¿Cómo llega X a Y?" — DFS, sigue una cadena específica |
+| Camino más corto | `/graphify path "ModuloA" "ModuloB"` | Ver el puente entre dos módulos distintos |
+| Explicar un nodo | `/graphify explain "Concepto"` | Entender qué es un modelo/vista/función y todo lo que toca |
+| Re-extracción profunda | `/graphify . --mode deep` | Rebuild completo con edges INFERRED más agresivos |
+| Incremental | `/graphify . --update` | Solo re-extrae archivos cambiados (sin LLM, rápido) |
+| Vigilancia continua | `/graphify . --watch` | Auto-rebuild al detectar cambios en código |

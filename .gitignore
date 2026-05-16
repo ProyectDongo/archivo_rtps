@@ -62,6 +62,11 @@ media/
 Thumbs.db
 desktop.ini
 
+# ─── Graphify ────────────────────────────────────────────────
+# graph.json, GRAPH_REPORT.md y manifest.json se commitean (útiles para todos los Claudes)
+# solo se ignoran los archivos de cache (grandes, regenerables)
+graphify-out/cache/
+
 # ─── Misc ────────────────────────────────────────────────────
 correos/views_monolito_backup.py
 split_views.py
