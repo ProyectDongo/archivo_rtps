@@ -63,6 +63,8 @@ Thumbs.db
 desktop.ini
 
 # ─── Misc ────────────────────────────────────────────────────
+correos/views_monolito_backup.py
+split_views.py
 .coverage
 htmlcov/
 .pytest_cache/

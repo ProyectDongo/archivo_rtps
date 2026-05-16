@@ -1,6 +1,7 @@
 Django==5.2.14
 django-tailwind==4.4.2
-pytailwindcss==0.4.0
+# pytailwindcss solo se necesita localmente para compilar CSS (no en producción)
+# El CSS compilado vive en theme/static/css/dist/styles.css y se commitea al repo
 python-dotenv==1.0.1
 whitenoise==6.6.0
 gunicorn==21.2.0
