@@ -5,105 +5,131 @@
 
 {% block extra_head %}
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="{% static 'css/correos.css' %}">
 {% if turnstile_site_key %}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endif %}
 {% endblock %}
 
 {% block body %}
-<div class="login-grid">
+<div class="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-[#1a1f22]">
 
-  <div class="login-marca">
-    <div class="login-logo">
-      <div class="login-logo-pm">RSP</div>
-      <div class="login-logo-text">
-        <span>Río San Pedro</span>
-        <span>Rev. Técnicas</span>
+  {# Panel de marca (izquierda, oculto en mobile) #}
+  <div class="hidden md:flex relative flex-col justify-center items-start px-12 lg:px-16 overflow-hidden
+              bg-gradient-to-br from-[#1a1f22] to-[#14181b]">
+    {# Círculos decorativos de fondo #}
+    <div class="absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full bg-primary opacity-[0.04] pointer-events-none"></div>
+    <div class="absolute -bottom-10 -left-10 w-[300px] h-[300px] rounded-full bg-primary opacity-[0.06] pointer-events-none"></div>
+
+    <div class="relative z-10 flex items-center gap-4 mb-12">
+      <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center
+                  font-black text-2xl text-white tracking-tighter -skew-x-[5deg]">RSP</div>
+      <div class="flex flex-col leading-tight">
+        <span class="font-black text-xl text-white uppercase tracking-[3px]">Río San Pedro</span>
+        <span class="font-light text-[11px] text-white/40 uppercase tracking-[5px]">Rev. Técnicas</span>
       </div>
     </div>
-    <div class="login-linea"></div>
-    <div class="login-titulo">Archivo<br><em>RSP</em></div>
-    <p class="login-sub">
+
+    <div class="relative z-10 w-15 h-1 bg-primary -skew-x-[20deg] mb-6"></div>
+
+    <h1 class="relative z-10 text-4xl lg:text-5xl font-black text-white uppercase tracking-wide leading-tight mb-4">
+      Archivo<br><span class="text-primary">RSP</span>
+    </h1>
+    <p class="relative z-10 text-sm text-white/40 leading-relaxed max-w-xs">
       Almacén seguro de correos, archivos y documentos corporativos.
       Acceso restringido a personal autorizado.
     </p>
   </div>
 
-  <div class="login-form-panel">
-    <div class="login-form-header">
-      <h2>Acceder al archivo</h2>
-      <p>Ingresa tu correo y resuelve el desafío para continuar.</p>
-    </div>
-
-    {% include 'partials/_messages.html' %}
-
-    <form method="post" novalidate autocomplete="off" id="login-form" data-loaded-at="{{ page_loaded_at }}">
-      {% csrf_token %}
-
-      <div class="hp-wrap" aria-hidden="true">
-        <label for="website">Sitio web (no rellenar)</label>
-        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+  {# Panel de formulario (derecha) #}
+  <div class="flex flex-col justify-center bg-white px-8 md:px-12 lg:px-16 py-12">
+    <div class="max-w-sm w-full mx-auto">
+      <div class="mb-10">
+        <h2 class="text-2xl font-bold text-gray-dark mb-2">Acceder al archivo</h2>
+        <p class="text-sm text-gray-soft">Ingresa tu correo y resuelve el desafío para continuar.</p>
       </div>
 
-      <div class="form-group">
-        <label for="email">Correo corporativo</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="tucorreo@gmail.com"
-          autocomplete="email"
-          maxlength="254"
-          value="{{ last_email|default:'' }}"
-          required
-          autofocus
-        >
-      </div>
+      {% include 'partials/_messages.html' %}
 
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <div class="pass-wrap">
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            maxlength="200"
-            required
-          >
-          <button type="button" class="pass-toggle" id="pass-toggle" aria-label="Mostrar contraseña" tabindex="-1">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="pass-icon-eye">
-              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
+      <form method="post" novalidate autocomplete="off" id="login-form" data-loaded-at="{{ page_loaded_at }}">
+        {% csrf_token %}
+
+        {# Honeypot — nunca visible #}
+        <div class="absolute -left-[10000px] top-auto w-px h-px overflow-hidden" aria-hidden="true">
+          <label for="website">Sitio web (no rellenar)</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
         </div>
-      </div>
 
-      <label class="login-remember">
-        <input type="checkbox" name="recordarme" value="1">
-        <span>Recordarme en este dispositivo (30 días)</span>
-      </label>
+        <div class="mb-6">
+          <label for="email" class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-2">
+            Correo corporativo
+          </label>
+          <input
+            type="email" id="email" name="email"
+            placeholder="tucorreo@gmail.com"
+            autocomplete="email" maxlength="254"
+            value="{{ last_email|default:'' }}"
+            required autofocus
+            class="w-full px-4 py-3.5 border-2 border-border rounded-lg text-[15px] text-gray-dark
+                   outline-none transition-colors focus:border-primary placeholder:text-[#c8c8c8]"
+          >
+        </div>
 
-      <input type="hidden" name="page_loaded_at" id="page-loaded-at" value="{{ page_loaded_at }}">
-      {% if turnstile_site_key %}
-      <div class="cf-turnstile-wrap">
-        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
-      </div>
-      {% else %}
-      <p class="form-hint" style="color:#888;font-size:12px"><em>(Captcha en modo dev — sin Turnstile configurado)</em></p>
-      {% endif %}
+        <div class="mb-6">
+          <label for="password" class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-2">
+            Contraseña
+          </label>
+          <div class="relative">
+            <input
+              type="password" id="password" name="password"
+              placeholder="••••••••"
+              autocomplete="current-password" maxlength="200" required
+              class="w-full px-4 py-3.5 pr-11 border-2 border-border rounded-lg text-[15px] text-gray-dark
+                     outline-none transition-colors focus:border-primary placeholder:text-[#c8c8c8]"
+            >
+            <button type="button" id="pass-toggle" aria-label="Mostrar contraseña" tabindex="-1"
+                    class="pass-toggle absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center
+                           justify-center text-gray-soft hover:text-gray-dark hover:bg-off-white
+                           rounded-md transition-colors border-none bg-transparent cursor-pointer">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="pass-icon-eye">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
 
-      <button type="submit" class="btn-acceder" id="btn-acceder">
-        <span class="btn-label">Ver mi bandeja →</span>
-      </button>
-    </form>
+        <label class="flex items-center gap-2 my-3 text-[13px] text-gray-mid cursor-pointer select-none">
+          <input type="checkbox" name="recordarme" value="1"
+                 class="w-4 h-4 cursor-pointer accent-primary">
+          <span>Recordarme en este dispositivo (30 días)</span>
+        </label>
 
-    <p class="login-foot">
-      Solo cuentas autorizadas tienen acceso.<br>
-      Si tu cuenta no aparece, contacta al administrador.
-    </p>
+        <input type="hidden" name="page_loaded_at" id="page-loaded-at" value="{{ page_loaded_at }}">
+
+        {% if turnstile_site_key %}
+        <div class="my-4">
+          <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
+        </div>
+        {% else %}
+        <p class="text-[12px] text-gray-soft italic my-2">
+          (Captcha en modo dev — sin Turnstile configurado)
+        </p>
+        {% endif %}
+
+        <button type="submit" id="btn-acceder"
+                class="w-full mt-2 py-4 bg-primary hover:bg-primary-dark active:scale-[0.98]
+                       disabled:opacity-45 disabled:cursor-not-allowed disabled:bg-gray-mid
+                       text-white font-bold text-[13px] uppercase tracking-[2px]
+                       rounded-lg border-none transition-all cursor-pointer">
+          <span class="btn-label">Ver mi bandeja →</span>
+        </button>
+      </form>
+
+      <p class="mt-8 text-[12px] text-[#bdbdbd] text-center leading-relaxed">
+        Solo cuentas autorizadas tienen acceso.<br>
+        Si tu cuenta no aparece, contacta al administrador.
+      </p>
+    </div>
   </div>
 
 </div>

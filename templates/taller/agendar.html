@@ -4,194 +4,224 @@
 {% block title %}Agendar tu cita — RSP Revisiones{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/taller.css' %}">
 {% if turnstile_site_key %}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endif %}
 {% endblock %}
 
 {% block content %}
-<header class="agendar-hero">
-  <h1>Agendá tu cita en el taller</h1>
-  <p>Elegí los servicios o repuestos que necesitás, picá día y hora, y completá tus datos. Te confirmamos por email y por llamada el día anterior.</p>
-</header>
+<div class="max-w-[1100px] mx-auto px-5 py-4 pb-10">
 
-{% if messages %}
-<div class="msg-block">
-  {% for msg in messages %}
-  <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
-  {% endfor %}
-</div>
-{% endif %}
+  <header class="text-center px-4 pt-8 pb-6 border-b border-[#eee] mb-6">
+    <h1 class="text-[2rem] m-0 mb-2.5 text-gray-dark">Agendá tu cita en el taller</h1>
+    <p class="text-[#666] max-w-[640px] mx-auto leading-relaxed m-0">Elegí los servicios o repuestos que necesitás, picá día y hora, y completá tus datos. Te confirmamos por email y por llamada el día anterior.</p>
+  </header>
 
-<div class="agendar-layout">
-
-  <div class="agendar-main">
-
-    <div class="cat-tabs" role="tablist">
-      <button type="button" class="cat-tab active" data-tipo="servicio" role="tab" aria-selected="true">
-        🔧 Servicios
-      </button>
-      <button type="button" class="cat-tab" data-tipo="repuesto" role="tab" aria-selected="false">
-        🛞 Repuestos
-      </button>
+  {% if messages %}
+  <div class="mb-4">
+    {% for msg in messages %}
+    <div class="px-3.5 py-2.5 rounded-lg mb-2 text-[14px] border
+      {% if msg.tags == 'success' %}bg-[#E8F5E9] text-[#1B5E20] border-[#C8E6C9]
+      {% elif msg.tags == 'error' or msg.tags == 'warning' %}bg-[#FFEBEE] text-[#B71C1C] border-[#FFCDD2]
+      {% else %}bg-[#E3F2FD] text-[#0D47A1] border-[#BBDEFB]{% endif %}">
+      {{ msg }}
     </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
-    <section id="cat-servicio" class="cat-grid" data-tipo-panel="servicio">
-      {% for it in servicios %}
-      {% include 'taller/_catalogo_card.html' with it=it %}
-      {% empty %}
-      <p class="cat-empty">Sin servicios cargados aún.</p>
-      {% endfor %}
-    </section>
+  <div class="grid gap-6 items-start max-[980px]:!grid-cols-1" style="grid-template-columns:1fr 320px">
 
-    <section id="cat-repuesto" class="cat-grid hidden" data-tipo-panel="repuesto">
-      {% for it in repuestos %}
-      {% include 'taller/_catalogo_card.html' with it=it %}
-      {% empty %}
-      <p class="cat-empty">Sin repuestos cargados aún.</p>
-      {% endfor %}
-    </section>
+    <div>
 
-    <form method="post" action="{% url 'confirmar_reserva' %}" id="agendar-form" class="agendar-form" novalidate>
-      {% csrf_token %}
-
-      <input type="text" name="website" tabindex="-1" autocomplete="off"
-             style="position:absolute;left:-9999px;top:-9999px;visibility:hidden" aria-hidden="true">
-
-      <div id="form-items-hidden"></div>
-
-      <h2>📅 Día y hora</h2>
-      <div class="calendario" id="calendario">
-        {% for d in fechas_calendario %}
-        <button type="button" class="cal-day {% if not d.es_laboral %}is-blocked{% endif %}"
-                data-fecha="{{ d.fecha|date:'Y-m-d' }}"
-                {% if not d.es_laboral or d.slots_libres == 0 %}disabled{% endif %}
-                title="{% if d.es_laboral %}{{ d.slots_libres }} slots libres{% else %}{{ d.motivo }}{% endif %}">
-          <span class="cal-dow">{{ d.fecha|date:"D"|truncatechars:3 }}</span>
-          <span class="cal-num">{{ d.fecha|date:"j" }}</span>
-          <span class="cal-mon">{{ d.fecha|date:"M" }}</span>
-          {% if d.es_laboral and d.slots_libres > 0 %}
-          <span class="cal-libres">{{ d.slots_libres }} libres</span>
-          {% elif d.es_laboral %}
-          <span class="cal-libres cal-llena">Lleno</span>
-          {% else %}
-          <span class="cal-libres">{{ d.motivo|truncatechars:14 }}</span>
-          {% endif %}
+      <div class="flex gap-2 mb-4 border-b-2 border-[#eee]" role="tablist">
+        <button type="button" class="cat-tab active" data-tipo="servicio" role="tab" aria-selected="true">
+          🔧 Servicios
         </button>
+        <button type="button" class="cat-tab" data-tipo="repuesto" role="tab" aria-selected="false">
+          🛞 Repuestos
+        </button>
+      </div>
+
+      <section id="cat-servicio" class="cat-grid grid gap-3.5 mb-8" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))" data-tipo-panel="servicio">
+        {% for it in servicios %}
+        {% include 'taller/_catalogo_card.html' with it=it %}
+        {% empty %}
+        <p class="col-span-full text-center py-12 text-[#888]">Sin servicios cargados aún.</p>
         {% endfor %}
-      </div>
+      </section>
 
-      <div id="slots-container" class="slots-grid" hidden>
-        <h3>Horarios disponibles</h3>
-        <div class="slots-grid-inner" id="slots-grid"></div>
-      </div>
+      <section id="cat-repuesto" class="cat-grid hidden grid gap-3.5 mb-8" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))" data-tipo-panel="repuesto">
+        {% for it in repuestos %}
+        {% include 'taller/_catalogo_card.html' with it=it %}
+        {% empty %}
+        <p class="col-span-full text-center py-12 text-[#888]">Sin repuestos cargados aún.</p>
+        {% endfor %}
+      </section>
 
-      <input type="hidden" name="fecha" id="hidden-fecha">
-      <input type="hidden" name="hora_inicio" id="hidden-hora">
+      <form method="post" action="{% url 'confirmar_reserva' %}" id="agendar-form" class="bg-[#fafafa] rounded-xl p-6" novalidate>
+        {% csrf_token %}
 
-      <h2>👤 Tus datos</h2>
-      <div class="form-row">
-        <label class="ff">
-          <span>Nombre completo *</span>
-          <input type="text" name="cliente_nombre" required maxlength="120">
-        </label>
-        <label class="ff">
-          <span>Email *</span>
-          <input type="email" name="cliente_email" required maxlength="254">
-        </label>
-        <label class="ff">
-          <span>Teléfono *</span>
-          <input type="tel" name="cliente_telefono" required maxlength="20"
-                 placeholder="+56912345678">
-        </label>
-      </div>
+        <input type="text" name="website" tabindex="-1" autocomplete="off"
+               style="position:absolute;left:-9999px;top:-9999px;visibility:hidden" aria-hidden="true">
 
-      <h2>🚗 Tu vehículo</h2>
-      <div class="form-row">
-        <label class="ff">
-          <span>Patente *</span>
-          <input type="text" name="patente" required maxlength="10"
-                 placeholder="ABCD12" style="text-transform:uppercase">
-        </label>
-        <label class="ff">
-          <span>Marca *</span>
-          <input type="text" name="marca" required maxlength="40"
-                 placeholder="Toyota, Hyundai, Chevrolet...">
-        </label>
-        <label class="ff">
-          <span>Modelo *</span>
-          <input type="text" name="modelo" required maxlength="60"
-                 placeholder="Hilux, Tucson, Spark...">
-        </label>
-      </div>
-      <div class="form-row">
-        <label class="ff">
-          <span>Año (opcional)</span>
-          <input type="number" name="anio" min="1950" max="{% now 'Y' %}"
-                 placeholder="2020">
-        </label>
-        <label class="ff">
-          <span>Motor (opcional)</span>
-          <input type="text" name="motor" maxlength="40"
-                 placeholder="1.6L, 2.5 Diesel...">
-        </label>
-        <label class="ff">
-          <span>Kilometraje aprox (opcional)</span>
-          <input type="number" name="kilometraje" min="0" placeholder="80000">
-        </label>
-      </div>
-      <label class="ff full">
-        <span>Contexto del problema (opcional, ayuda al diagnóstico)</span>
-        <textarea name="contexto_problema" rows="3" maxlength="2000"
-                  placeholder="Ej: hace ruido al frenar desde hace 2 semanas, peor en bajadas..."></textarea>
-      </label>
+        <div id="form-items-hidden"></div>
 
-      <h2>🛡️ Verificación</h2>
-      <p class="form-hint">Para evitar reservas falsas, resolvé el captcha y mandá la cita.</p>
-
-      <div class="captcha-wrap">
-        <p class="captcha-pregunta">{{ fernet_challenge.pregunta }}</p>
-        <input type="hidden" name="captcha_token" value="{{ fernet_challenge.token }}">
-        <div class="captcha-grid">
-          {% for celda in fernet_challenge.celdas %}
-          <label class="captcha-cell">
-            <input type="checkbox" name="captcha_seleccion[]" value="{{ forloop.counter0 }}">
-            <span class="captcha-cell-inner">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ celda.svg|safe }}</svg>
-            </span>
-          </label>
+        <h2 class="text-[18px] text-gray-dark m-0 mb-3">📅 Día y hora</h2>
+        <div class="grid gap-2 mb-6" id="calendario" style="grid-template-columns:repeat(auto-fill,minmax(95px,1fr))">
+          {% for d in fechas_calendario %}
+          <button type="button" class="cal-day {% if not d.es_laboral %}is-blocked{% endif %}"
+                  data-fecha="{{ d.fecha|date:'Y-m-d' }}"
+                  {% if not d.es_laboral or d.slots_libres == 0 %}disabled{% endif %}
+                  title="{% if d.es_laboral %}{{ d.slots_libres }} slots libres{% else %}{{ d.motivo }}{% endif %}">
+            <span class="cal-dow">{{ d.fecha|date:"D"|truncatechars:3 }}</span>
+            <span class="cal-num">{{ d.fecha|date:"j" }}</span>
+            <span class="cal-mon">{{ d.fecha|date:"M" }}</span>
+            {% if d.es_laboral and d.slots_libres > 0 %}
+            <span class="cal-libres">{{ d.slots_libres }} libres</span>
+            {% elif d.es_laboral %}
+            <span class="cal-libres cal-llena">Lleno</span>
+            {% else %}
+            <span class="cal-libres">{{ d.motivo|truncatechars:14 }}</span>
+            {% endif %}
+          </button>
           {% endfor %}
         </div>
+
+        <div id="slots-container" hidden>
+          <h3 class="text-[14px] text-[#666] m-0 mb-2">Horarios disponibles</h3>
+          <div class="grid gap-1.5 mb-6" style="grid-template-columns:repeat(auto-fill,minmax(80px,1fr))" id="slots-grid"></div>
+        </div>
+
+        <input type="hidden" name="fecha" id="hidden-fecha">
+        <input type="hidden" name="hora_inicio" id="hidden-hora">
+
+        <h2 class="text-[18px] text-gray-dark mt-6 mb-3">👤 Tus datos</h2>
+        <div class="grid gap-3 mb-3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Nombre completo *</span>
+            <input type="text" name="cliente_nombre" required maxlength="120"
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Email *</span>
+            <input type="email" name="cliente_email" required maxlength="254"
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Teléfono *</span>
+            <input type="tel" name="cliente_telefono" required maxlength="20"
+                   placeholder="+56912345678"
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+        </div>
+
+        <h2 class="text-[18px] text-gray-dark mt-6 mb-3">🚗 Tu vehículo</h2>
+        <div class="grid gap-3 mb-3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Patente *</span>
+            <input type="text" name="patente" required maxlength="10"
+                   placeholder="ABCD12" style="text-transform:uppercase"
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Marca *</span>
+            <input type="text" name="marca" required maxlength="40"
+                   placeholder="Toyota, Hyundai, Chevrolet..."
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Modelo *</span>
+            <input type="text" name="modelo" required maxlength="60"
+                   placeholder="Hilux, Tucson, Spark..."
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+        </div>
+        <div class="grid gap-3 mb-3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Año (opcional)</span>
+            <input type="number" name="anio" min="1950" max="{% now 'Y' %}"
+                   placeholder="2020"
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Motor (opcional)</span>
+            <input type="text" name="motor" maxlength="40"
+                   placeholder="1.6L, 2.5 Diesel..."
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+          <label class="block text-[13px]">
+            <span class="block text-[#555] font-semibold mb-1">Kilometraje aprox (opcional)</span>
+            <input type="number" name="kilometraje" min="0" placeholder="80000"
+                   class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]">
+          </label>
+        </div>
+        <label class="block text-[13px] mt-1">
+          <span class="block text-[#555] font-semibold mb-1">Contexto del problema (opcional, ayuda al diagnóstico)</span>
+          <textarea name="contexto_problema" rows="3" maxlength="2000"
+                    placeholder="Ej: hace ruido al frenar desde hace 2 semanas, peor en bajadas..."
+                    class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]"></textarea>
+        </label>
+
+        <h2 class="text-[18px] text-gray-dark mt-6 mb-3">🛡️ Verificación</h2>
+        <p class="text-[12px] text-[#777] mt-0 mb-3">Para evitar reservas falsas, resolvé el captcha y mandá la cita.</p>
+
+        <div class="bg-white p-4 rounded-[10px] border border-[#e5e5e5] mb-3.5">
+          <p class="text-[14px] font-semibold m-0 mb-3 text-gray-dark">{{ fernet_challenge.pregunta }}</p>
+          <input type="hidden" name="captcha_token" value="{{ fernet_challenge.token }}">
+          <div class="grid gap-1.5 max-w-[240px]" style="grid-template-columns:repeat(3,1fr)">
+            {% for celda in fernet_challenge.celdas %}
+            <label class="captcha-cell cursor-pointer relative">
+              <input type="checkbox" name="captcha_seleccion[]" value="{{ forloop.counter0 }}"
+                     class="absolute opacity-0 pointer-events-none">
+              <span class="captcha-cell-inner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ celda.svg|safe }}</svg>
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if turnstile_site_key %}
+        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
+        {% else %}
+        <p class="text-[12px] text-[#888] mt-2"><em>(Turnstile no configurado — modo dev)</em></p>
+        {% endif %}
+
+        <button type="submit"
+                class="w-full py-[14px] bg-primary text-white border-0 rounded-[10px] text-[16px] font-bold cursor-pointer mt-4 font-[inherit] transition-all hover:bg-[#155724] hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
+                id="btn-confirmar" disabled>
+          📤 Confirmar reserva
+        </button>
+        <p class="bg-[#FFF8E1] border border-[#FFE082] rounded-lg px-3.5 py-2.5 text-[#5D4037] mt-3 text-[13px]">
+          ⚠️ Los precios mostrados son <strong>referenciales</strong> — el precio final se ajusta
+          después del diagnóstico del vehículo. Te enviaremos un email de confirmación con todos
+          los detalles.
+        </p>
+      </form>
+    </div>
+
+    <aside class="bg-white border border-[#e5e5e5] rounded-xl p-4 sticky top-[80px] max-[980px]:top-[60px] max-[980px]:z-[5] max-[980px]:max-h-[320px] max-[980px]:overflow-auto"
+           id="cart" aria-live="polite">
+      <h3 class="m-0 mb-3 text-[16px] text-gray-dark">🛒 Tu cotización</h3>
+      <div id="cart-items">
+        <p class="cart-empty">Aún no agregaste nada. Tocá el "+" en los items que necesités.</p>
       </div>
+      <div class="border-t-2 border-[#eee] pt-3" id="cart-totals" hidden>
+        <div class="flex justify-between py-1 text-[14px]">
+          <span>Total referencial</span>
+          <strong class="text-primary text-[16px]" id="cart-total">$0</strong>
+        </div>
+        <div class="flex justify-between py-1 text-[12px] text-[#666]">
+          <span>Tiempo estimado</span>
+          <span id="cart-dur">—</span>
+        </div>
+      </div>
+    </aside>
 
-      {% if turnstile_site_key %}
-      <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
-      {% else %}
-      <p class="form-hint" style="color:#888"><em>(Turnstile no configurado — modo dev)</em></p>
-      {% endif %}
-
-      <button type="submit" class="btn-confirmar" id="btn-confirmar" disabled>
-        📤 Confirmar reserva
-      </button>
-      <p class="form-hint disclaimer">
-        ⚠️ Los precios mostrados son <strong>referenciales</strong> — el precio final se ajusta
-        después del diagnóstico del vehículo. Te enviaremos un email de confirmación con todos
-        los detalles.
-      </p>
-    </form>
   </div>
 
-  <aside class="cart" id="cart" aria-live="polite">
-    <h3>🛒 Tu cotización</h3>
-    <div id="cart-items">
-      <p class="cart-empty">Aún no agregaste nada. Tocá el "+" en los items que necesités.</p>
-    </div>
-    <div class="cart-totals" id="cart-totals" hidden>
-      <div class="cart-line"><span>Total referencial</span><strong id="cart-total">$0</strong></div>
-      <div class="cart-line cart-dur"><span>Tiempo estimado</span><span id="cart-dur">—</span></div>
-    </div>
-  </aside>
 </div>
 
 <script id="catalogo-data" type="application/json">

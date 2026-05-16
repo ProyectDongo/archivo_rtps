@@ -4,140 +4,93 @@
 {% block title %}Reenviar — {{ correo.asunto|truncatechars:40 }}{% endblock %}
 
 {% block content %}
-<a href="{% url 'detalle' correo.id %}" class="back-link">← Volver al correo</a>
+<div class="max-w-3xl mx-auto py-8 px-4">
+  <a href="{% url 'detalle' correo.id %}"
+     class="inline-flex items-center gap-1.5 text-sm text-gray-soft hover:text-gray-dark mb-6 transition-colors">
+    ← Volver al correo
+  </a>
 
-<article class="correo-card">
-  <header class="correo-head">
-    <div class="correo-asunto">📤 Reenviar correo</div>
-    <p class="dash-sub" style="margin-top:.6rem">
-      Vas a reenviar el correo <em>"{{ correo.asunto|default:"(sin asunto)"|truncatechars:80 }}"</em>
-      a un destinatario externo. Las respuestas que reciba el destinatario llegarán
-      <strong>directamente a tu casilla</strong> ({{ request.session.usuario_email }}).
-    </p>
-  </header>
-
-  <div class="correo-body">
-    {% if messages %}
-    <div class="msg-block">
-      {% for msg in messages %}
-      <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <div class="reenvio-summary">
-      <div class="meta-item">
-        <span class="meta-label">Asunto original</span>
-        <span class="meta-value">{{ correo.asunto|default:"(sin asunto)" }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">De</span>
-        <span class="meta-value">{{ correo.remitente|truncatechars:80 }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Fecha</span>
-        <span class="meta-value">
-          {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
-        </span>
-      </div>
-      {% if correo.tiene_adjunto %}
-      <div class="meta-item">
-        <span class="meta-label">Adjuntos</span>
-        <span class="meta-value">📎 {{ correo.adjuntos.count }} archivo{{ correo.adjuntos.count|pluralize:"s" }} (se reenvían tal cual)</span>
-      </div>
-      {% endif %}
+  <div class="bg-white border border-border rounded-xl shadow-card overflow-hidden">
+    <div class="px-7 py-5 border-b border-border">
+      <div class="text-lg font-bold text-gray-dark">📤 Reenviar correo</div>
+      <p class="text-sm text-gray-soft mt-1.5">
+        Vas a reenviar el correo <em>"{{ correo.asunto|default:"(sin asunto)"|truncatechars:80 }}"</em>
+        a un destinatario externo. Las respuestas que reciba el destinatario llegarán
+        <strong>directamente a tu casilla</strong> ({{ request.session.usuario_email }}).
+      </p>
     </div>
 
-    <form method="post" class="reenvio-form" novalidate>
-      {% csrf_token %}
+    <div class="px-7 py-6">
+      {% include 'partials/_messages.html' %}
 
-      <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Destinatario(s) <span style="color:#1e7d32">*</span></span>
-        <input type="text"
-               name="destinatarios"
-               value="{{ destinatarios|default:'' }}"
-               placeholder="cliente@empresa.cl"
-               required
-               maxlength="2000"
-               autocomplete="off"
-               data-emailchips data-max="30"
-               data-suggest-url="{% url 'contactos' %}">
-        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
-          Presioná Enter, Tab, coma o punto-y-coma para agregar cada destinatario. Máximo 30 por reenvío.
-        </small>
-      </label>
-
-      <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Mensaje extra (opcional)</span>
-        <textarea name="mensaje_extra"
-                  rows="4"
-                  maxlength="2000"
-                  placeholder="Hola, te paso este correo para tu revisión..."
-                  style="width:100%;font-family:inherit;font-size:14px;padding:8px 12px;border-radius:8px;border:1px solid #d0d0d0">{{ mensaje_extra|default:'' }}</textarea>
-        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
-          Aparece arriba del correo original en el email que recibirá el destinatario.
-        </small>
-      </label>
-
-      <div class="reenvio-rate" style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px">
-        ℹ️ Reenvíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
-        {% if restantes == 0 %}
-        — <span style="color:#1e7d32;font-weight:600">llegaste al límite</span>.
-        {% else %}
-        — te quedan <strong>{{ restantes }}</strong>.
+      <div class="bg-off-white border border-border rounded-lg px-5 py-4 mb-5 space-y-1.5">
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[90px]">Asunto original</span>
+          <span class="text-gray-dark font-medium">{{ correo.asunto|default:"(sin asunto)" }}</span>
+        </div>
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[90px]">De</span>
+          <span class="text-gray-dark">{{ correo.remitente|truncatechars:80 }}</span>
+        </div>
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[90px]">Fecha</span>
+          <span class="text-gray-dark">
+            {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+          </span>
+        </div>
+        {% if correo.tiene_adjunto %}
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[90px]">Adjuntos</span>
+          <span class="text-gray-dark">📎 {{ correo.adjuntos.count }} archivo{{ correo.adjuntos.count|pluralize:"s" }} (se reenvían tal cual)</span>
+        </div>
         {% endif %}
       </div>
 
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-        <button type="submit" class="btn-acceder" {% if restantes == 0 %}disabled{% endif %}>
-          📤 Reenviar correo
-        </button>
-        <a href="{% url 'detalle' correo.id %}" class="filter-pill">Cancelar</a>
-      </div>
-    </form>
-  </div>
-</article>
+      <form method="post" class="space-y-5" novalidate>
+        {% csrf_token %}
 
-<style>
-.reenvio-summary {
-  background: #fafafa;
-  border: 1px solid #e8e8e8;
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 1.4rem;
-}
-.reenvio-summary .meta-item {
-  margin-bottom: .35rem;
-}
-.reenvio-summary .meta-item:last-child {
-  margin-bottom: 0;
-}
-.msg-block {
-  margin-bottom: 1.2rem;
-}
-.msg {
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-bottom: .5rem;
-  font-size: 14px;
-}
-.msg-success { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
-.msg-error,
-.msg-warning { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
-.msg-info { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }
-.reenvio-form input[type="text"] {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-}
-.reenvio-form input:focus,
-.reenvio-form textarea:focus {
-  outline: none;
-  border-color: #1e7d32;
-  box-shadow: 0 0 0 3px rgba(200,12,15,.12);
-}
-</style>
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-soft mb-2">
+            Destinatario(s) <span class="text-primary">*</span>
+          </label>
+          <input type="text" name="destinatarios" value="{{ destinatarios|default:'' }}"
+                 placeholder="cliente@empresa.cl" required maxlength="2000"
+                 autocomplete="off" autofocus
+                 data-emailchips data-max="30"
+                 data-suggest-url="{% url 'contactos' %}"
+                 class="w-full px-4 py-3 border border-border rounded-lg text-[14px] text-gray-dark outline-none transition-colors focus:border-primary">
+          <p class="text-[12px] text-gray-soft mt-1.5">Presioná Enter, Tab, coma o punto-y-coma para agregar cada destinatario. Máximo 30 por reenvío.</p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-soft mb-2">Mensaje extra (opcional)</label>
+          <textarea name="mensaje_extra" rows="4" maxlength="2000"
+                    placeholder="Hola, te paso este correo para tu revisión..."
+                    class="w-full px-4 py-3 border border-border rounded-lg text-[14px] text-gray-dark outline-none transition-colors focus:border-primary resize-y leading-relaxed font-[inherit]">{{ mensaje_extra|default:'' }}</textarea>
+          <p class="text-[12px] text-gray-soft mt-1.5">Aparece arriba del correo original en el email que recibirá el destinatario.</p>
+        </div>
+
+        <div class="bg-[#FFF8E1] border border-[#FFE082] rounded-lg px-4 py-3 text-[13px] text-gray-dark">
+          ℹ️ Reenvíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
+          {% if restantes == 0 %}
+          — <span class="text-primary font-semibold">llegaste al límite</span>.
+          {% else %}
+          — te quedan <strong>{{ restantes }}</strong>.
+          {% endif %}
+        </div>
+
+        <div class="flex gap-2.5 flex-wrap">
+          <button type="submit" {% if restantes == 0 %}disabled{% endif %}
+                  class="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold text-[13px] uppercase tracking-[2px] rounded-lg border-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            📤 Reenviar correo
+          </button>
+          <a href="{% url 'detalle' correo.id %}"
+             class="px-5 py-3 border border-border text-gray-soft hover:text-gray-dark hover:border-gray-soft rounded-lg text-[13px] font-medium transition-colors">
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

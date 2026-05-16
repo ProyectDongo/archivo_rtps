@@ -32,9 +32,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'tailwind',
+    'theme',
     'correos',
     'taller',
 ]
+
+TAILWIND_APP_NAME = 'theme'
+INTERNAL_IPS = ['127.0.0.1']
 
 # ─── Middleware ─────────────────────────────────────────────────────────────
 MIDDLEWARE = [

@@ -3,102 +3,152 @@
 
 {% block title %}Mi reserva — RSP Revisiones{% endblock %}
 
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/taller.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="reserva-card">
+<div class="max-w-2xl mx-auto py-10 px-4">
+  <div class="bg-white border border-border rounded-xl shadow-card overflow-hidden">
 
-  {% if reserva.estado == 'confirmada_email' or reserva.estado == 'confirmada_llamada' %}
-  <div class="reserva-banner ok">
-    ✅ Reserva confirmada · {{ reserva.fecha|date:"l d \d\e F" }} a las {{ reserva.hora_inicio|time:"H:i" }}
-  </div>
-  {% elif reserva.estado == 'pendiente_email' %}
-  <div class="reserva-banner pend">
-    ⏳ Pendiente de verificación por email
-  </div>
-  {% elif reserva.estado == 'cancelada_cliente' %}
-  <div class="reserva-banner cancel">
-    ❌ Cancelaste esta reserva el {{ reserva.cancelada_en|date:"d/m/Y H:i" }}
-  </div>
-  {% elif reserva.estado == 'cancelada_taller' %}
-  <div class="reserva-banner cancel">
-    ❌ El taller canceló esta reserva. {% if reserva.cancelada_motivo %}Motivo: {{ reserva.cancelada_motivo }}{% endif %}
-  </div>
-  {% elif reserva.estado == 'completada' %}
-  <div class="reserva-banner ok">
-    ✅ Servicio completado — ¡Gracias!
-  </div>
-  {% elif reserva.estado == 'no_show' %}
-  <div class="reserva-banner cancel">
-    ⚠️ Marcada como no-show (no se presentó). Si fue un error, contactanos.
-  </div>
-  {% endif %}
-
-  {% if messages %}
-  <div class="msg-block">
-    {% for msg in messages %}
-    <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <h1>Tu reserva en RSP Revisiones</h1>
-
-  <div class="reserva-resumen">
-    <div class="rr-row"><span class="rr-l">📅 Día</span><strong>{{ reserva.fecha|date:"l d \d\e F \d\e Y" }}</strong></div>
-    <div class="rr-row"><span class="rr-l">🕒 Hora</span><strong>{{ reserva.hora_inicio|time:"H:i" }}</strong> · llegada estimada (último auto recibido a las 18:00)</div>
-    <div class="rr-row"><span class="rr-l">⏱ Tiempo estimado</span>{{ reserva.duracion_estimada_min }} min <em>(no preciso — depende del diagnóstico)</em></div>
-    <div class="rr-row"><span class="rr-l">💰 Total referencial</span><strong>${{ reserva.total_referencial_clp|stringformat:"d" }}</strong></div>
-  </div>
-
-  <h2>Servicios y repuestos</h2>
-  <ul class="reserva-items">
-    {% for it in reserva.items.all %}
-    <li>
-      <span class="ri-name">{{ it.nombre }}</span>
-      <span class="ri-cat">{{ it.get_categoria_display }}</span>
-      {% if it.precio_referencia_clp %}<span class="ri-price">${{ it.precio_referencia_clp|stringformat:"d" }}</span>{% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-
-  <h2>Tus datos</h2>
-  <div class="reserva-resumen">
-    <div class="rr-row"><span class="rr-l">Nombre</span>{{ reserva.cliente_nombre }}</div>
-    <div class="rr-row"><span class="rr-l">Email</span>{{ reserva.cliente_email }}</div>
-    <div class="rr-row"><span class="rr-l">Teléfono</span>{{ reserva.cliente_telefono }}</div>
-  </div>
-
-  <h2>Tu vehículo</h2>
-  <div class="reserva-resumen">
-    <div class="rr-row"><span class="rr-l">Patente</span><strong>{{ reserva.patente }}</strong></div>
-    <div class="rr-row"><span class="rr-l">Vehículo</span>{{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} · {{ reserva.anio }}{% endif %}</div>
-    {% if reserva.motor %}<div class="rr-row"><span class="rr-l">Motor</span>{{ reserva.motor }}</div>{% endif %}
-    {% if reserva.kilometraje %}<div class="rr-row"><span class="rr-l">Kilometraje</span>{{ reserva.kilometraje }} km</div>{% endif %}
-    {% if reserva.contexto_problema %}<div class="rr-row"><span class="rr-l">Contexto</span><em>{{ reserva.contexto_problema }}</em></div>{% endif %}
-  </div>
-
-  {% if puede_cancelar %}
-  <div class="reserva-acciones">
-    <form method="post" action="{% url 'cancelar_reserva' token=token %}"
-          onsubmit="return confirm('¿Seguro que querés cancelar esta reserva?')">
-      {% csrf_token %}
-      <button type="submit" class="btn-cancelar">❌ Cancelar reserva</button>
-    </form>
-    {% if reserva.estado == 'confirmada_email' %}
-    <form method="post" action="{% url 'confirmar_reserva_token' token=token %}">
-      {% csrf_token %}
-      <button type="submit" class="btn-confirmar">✅ Confirmar mi llegada</button>
-    </form>
+    {% if reserva.estado == 'confirmada_email' or reserva.estado == 'confirmada_llamada' %}
+    <div class="bg-[#e8f5e9] border-b border-[#c8e6c9] text-[#1b5e20] px-6 py-3.5 font-semibold text-[15px]">
+      ✅ Reserva confirmada · {{ reserva.fecha|date:"l d \d\e F" }} a las {{ reserva.hora_inicio|time:"H:i" }}
+    </div>
+    {% elif reserva.estado == 'pendiente_email' %}
+    <div class="bg-[#fff8e1] border-b border-[#ffe082] text-[#8a6d00] px-6 py-3.5 font-semibold text-[15px]">
+      ⏳ Pendiente de verificación por email
+    </div>
+    {% elif reserva.estado == 'cancelada_cliente' %}
+    <div class="bg-[#ffebee] border-b border-[#ffcdd2] text-[#b71c1c] px-6 py-3.5 font-semibold text-[15px]">
+      ❌ Cancelaste esta reserva el {{ reserva.cancelada_en|date:"d/m/Y H:i" }}
+    </div>
+    {% elif reserva.estado == 'cancelada_taller' %}
+    <div class="bg-[#ffebee] border-b border-[#ffcdd2] text-[#b71c1c] px-6 py-3.5 font-semibold text-[15px]">
+      ❌ El taller canceló esta reserva.{% if reserva.cancelada_motivo %} Motivo: {{ reserva.cancelada_motivo }}{% endif %}
+    </div>
+    {% elif reserva.estado == 'completada' %}
+    <div class="bg-[#e8f5e9] border-b border-[#c8e6c9] text-[#1b5e20] px-6 py-3.5 font-semibold text-[15px]">
+      ✅ Servicio completado — ¡Gracias!
+    </div>
+    {% elif reserva.estado == 'no_show' %}
+    <div class="bg-[#fff3e0] border-b border-[#ffe0b2] text-[#e65100] px-6 py-3.5 font-semibold text-[15px]">
+      ⚠️ Marcada como no-show (no se presentó). Si fue un error, contactanos.
+    </div>
     {% endif %}
-  </div>
-  {% endif %}
 
-  <p class="form-hint">
-    📞 También recibirás una llamada {% if reserva.estado != 'cancelada_cliente' and reserva.estado != 'cancelada_taller' %}24h antes y 1h antes{% endif %} para confirmar.
-    Si tenés dudas, escribinos a <a href="mailto:info@rtriosanpedro.cl">info@rtriosanpedro.cl</a>.
-  </p>
+    <div class="px-7 py-6 space-y-6">
+      {% include 'partials/_messages.html' %}
+
+      <h1 class="text-2xl font-bold text-gray-dark">Tu reserva en RSP Revisiones</h1>
+
+      <div class="bg-off-white border border-border rounded-lg divide-y divide-border">
+        <div class="flex items-center gap-3 px-5 py-3 text-sm">
+          <span class="text-gray-soft w-36 shrink-0">📅 Día</span>
+          <strong class="text-gray-dark">{{ reserva.fecha|date:"l d \d\e F \d\e Y" }}</strong>
+        </div>
+        <div class="flex items-center gap-3 px-5 py-3 text-sm">
+          <span class="text-gray-soft w-36 shrink-0">🕒 Hora</span>
+          <span class="text-gray-dark"><strong>{{ reserva.hora_inicio|time:"H:i" }}</strong> · llegada estimada</span>
+        </div>
+        <div class="flex items-center gap-3 px-5 py-3 text-sm">
+          <span class="text-gray-soft w-36 shrink-0">⏱ Tiempo estimado</span>
+          <span class="text-gray-dark">{{ reserva.duracion_estimada_min }} min <em class="text-gray-soft">(no preciso)</em></span>
+        </div>
+        <div class="flex items-center gap-3 px-5 py-3 text-sm">
+          <span class="text-gray-soft w-36 shrink-0">💰 Total referencial</span>
+          <strong class="text-gray-dark">${{ reserva.total_referencial_clp|stringformat:"d" }}</strong>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-base font-bold text-gray-dark mb-3">Servicios y repuestos</h2>
+        <ul class="divide-y divide-border border border-border rounded-lg overflow-hidden">
+          {% for it in reserva.items.all %}
+          <li class="flex items-center justify-between gap-3 px-5 py-3 text-sm">
+            <span class="font-medium text-gray-dark">{{ it.nombre }}</span>
+            <span class="text-[11px] text-gray-soft bg-off-white-2 px-2 py-0.5 rounded-full">{{ it.get_categoria_display }}</span>
+            {% if it.precio_referencia_clp %}
+            <span class="text-gray-dark font-semibold ml-auto">${{ it.precio_referencia_clp|stringformat:"d" }}</span>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-base font-bold text-gray-dark mb-3">Tus datos</h2>
+        <div class="bg-off-white border border-border rounded-lg divide-y divide-border">
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Nombre</span>
+            <span class="text-gray-dark">{{ reserva.cliente_nombre }}</span>
+          </div>
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Email</span>
+            <span class="text-gray-dark">{{ reserva.cliente_email }}</span>
+          </div>
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Teléfono</span>
+            <span class="text-gray-dark">{{ reserva.cliente_telefono }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-base font-bold text-gray-dark mb-3">Tu vehículo</h2>
+        <div class="bg-off-white border border-border rounded-lg divide-y divide-border">
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Patente</span>
+            <strong class="text-gray-dark font-mono">{{ reserva.patente }}</strong>
+          </div>
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Vehículo</span>
+            <span class="text-gray-dark">{{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} · {{ reserva.anio }}{% endif %}</span>
+          </div>
+          {% if reserva.motor %}
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Motor</span>
+            <span class="text-gray-dark">{{ reserva.motor }}</span>
+          </div>
+          {% endif %}
+          {% if reserva.kilometraje %}
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Kilometraje</span>
+            <span class="text-gray-dark">{{ reserva.kilometraje }} km</span>
+          </div>
+          {% endif %}
+          {% if reserva.contexto_problema %}
+          <div class="flex gap-3 px-5 py-3 text-sm">
+            <span class="text-gray-soft w-28 shrink-0">Contexto</span>
+            <em class="text-gray-dark">{{ reserva.contexto_problema }}</em>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if puede_cancelar %}
+      <div class="flex gap-3 flex-wrap">
+        <form method="post" action="{% url 'cancelar_reserva' token=token %}"
+              onsubmit="return confirm('¿Seguro que querés cancelar esta reserva?')">
+          {% csrf_token %}
+          <button type="submit"
+                  class="px-5 py-2.5 border border-[#e53935] text-[#e53935] rounded-lg text-[13px] font-semibold cursor-pointer hover:bg-[#ffebee] transition-colors bg-white">
+            ❌ Cancelar reserva
+          </button>
+        </form>
+        {% if reserva.estado == 'confirmada_email' %}
+        <form method="post" action="{% url 'confirmar_reserva_token' token=token %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-[13px] font-semibold cursor-pointer transition-colors border-none">
+            ✅ Confirmar mi llegada
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <p class="text-[12px] text-gray-soft leading-relaxed">
+        📞 También recibirás una llamada {% if reserva.estado != 'cancelada_cliente' and reserva.estado != 'cancelada_taller' %}24h antes y 1h antes{% endif %} para confirmar.
+        Si tenés dudas, escribinos a <a href="mailto:info@rtriosanpedro.cl" class="text-primary hover:underline">info@rtriosanpedro.cl</a>.
+      </p>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -12,24 +12,30 @@ Decisión persistida en localStorage por el JS:
 
 Si el usuario ya decidió, el banner permanece hidden (CSS) y el JS no lo muestra.
 {% endcomment %}
-<link rel="stylesheet" href="{% static 'css/cookie_consent.css' %}">
-<aside class="cookie-banner" id="cookie-banner" hidden role="dialog"
-       aria-labelledby="cookie-banner-title" aria-live="polite">
-  <div class="cookie-banner-content">
-    <h2 id="cookie-banner-title" class="cookie-banner-title">Usamos cookies</h2>
-    <p class="cookie-banner-text">
-      Usamos cookies <strong>estrictamente necesarias</strong> para que el sitio
+<aside id="cookie-banner" hidden role="dialog"
+       aria-labelledby="cookie-banner-title" aria-live="polite"
+       class="fixed bottom-0 left-0 right-0 z-[999] bg-gray-dark text-white
+              border-t border-white/10 px-4 py-4 shadow-modal
+              flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div class="flex-1">
+    <h2 id="cookie-banner-title" class="font-bold text-[15px] mb-1">Usamos cookies</h2>
+    <p class="text-sm text-white/70 leading-relaxed">
+      Usamos cookies <strong class="text-white">estrictamente necesarias</strong> para que el sitio
       funcione (sesión, seguridad, preferencias). Las opcionales nos ayudan a
       entender cómo usás el sitio de forma anónima. Podés rechazar las opcionales
       sin afectar la experiencia.
-      <a href="{% url 'privacidad' %}" class="cookie-banner-link">Política de privacidad</a>
+      <a href="{% url 'privacidad' %}" class="underline text-white/70 hover:text-white transition-colors">Política de privacidad</a>
     </p>
   </div>
-  <div class="cookie-banner-actions">
-    <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-essentials">
+  <div class="flex gap-2.5 shrink-0">
+    <button type="button" id="cookie-essentials"
+            class="px-4 py-2 border border-white/30 text-white/70 text-[13px] font-semibold
+                   rounded-md hover:border-white/60 hover:text-white transition-colors cursor-pointer bg-transparent">
       Solo esenciales
     </button>
-    <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-all">
+    <button type="button" id="cookie-accept-all"
+            class="px-4 py-2 bg-primary hover:bg-primary-dark text-white text-[13px] font-bold
+                   rounded-md border-none cursor-pointer transition-colors">
       Aceptar todas
     </button>
   </div>

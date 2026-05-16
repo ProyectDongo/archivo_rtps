@@ -1,13 +1,13 @@
 <article class="cat-card {% if it.destacado %}is-pop{% endif %}" data-item-id="{{ it.id }}">
   {% if it.destacado %}
-  <span class="cat-pop-badge">⭐ Popular</span>
+  <span class="absolute top-2 right-2 bg-[#FFB300] text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-[2]">⭐ Popular</span>
   {% endif %}
 
-  <div class="cat-card-media">
+  <div class="h-[140px] bg-gradient-to-br from-[#fafafa] to-[#f0f0f0] flex items-center justify-center overflow-hidden">
     {% if it.imagen %}
-    <img src="{{ it.imagen.url }}" alt="{{ it.nombre }}" loading="lazy">
+    <img src="{{ it.imagen.url }}" alt="{{ it.nombre }}" loading="lazy" class="w-full h-full object-cover">
     {% else %}
-    <div class="cat-card-icon" aria-hidden="true">
+    <div class="text-[64px] opacity-85" aria-hidden="true">
       {% if it.icono_lucide == 'droplet' %}🛢️
       {% elif it.icono_lucide == 'gauge' %}📊
       {% elif it.icono_lucide == 'disc' %}💿
@@ -25,28 +25,35 @@
     {% endif %}
   </div>
 
-  <div class="cat-card-body">
-    <h3 class="cat-card-name">{{ it.nombre }}</h3>
-    <p class="cat-card-desc">{{ it.descripcion|truncatechars:90 }}</p>
+  <div class="p-3.5 flex flex-col flex-1">
+    <h3 class="text-[15px] font-bold m-0 mb-1 text-gray-dark">{{ it.nombre }}</h3>
+    <p class="text-[12px] text-[#777] m-0 mb-2.5 leading-[1.4] flex-1">{{ it.descripcion|truncatechars:90 }}</p>
 
-    <div class="cat-card-meta">
+    <div class="flex flex-wrap gap-1 mb-2.5">
       {% if it.duracion_min %}
-      <span class="cat-meta-pill">⏱ {{ it.duracion_min }} min</span>
+      <span class="text-[10px] px-2 py-0.5 bg-[#f5f5f5] rounded-full text-[#555] font-medium">⏱ {{ it.duracion_min }} min</span>
       {% endif %}
-      <span class="cat-meta-pill">{{ it.get_categoria_display }}</span>
+      <span class="text-[10px] px-2 py-0.5 bg-[#f5f5f5] rounded-full text-[#555] font-medium">{{ it.get_categoria_display }}</span>
       {% if it.marca_repuesto %}
-      <span class="cat-meta-pill cat-marca-{{ it.marca_repuesto }}">{{ it.get_marca_repuesto_display }}</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full font-medium
+        {% if it.marca_repuesto == 'oem' %}bg-[#E8F5E9] text-[#1B5E20]
+        {% elif it.marca_repuesto == 'premium' %}bg-[#E3F2FD] text-[#0D47A1]
+        {% elif it.marca_repuesto == 'generico' %}bg-[#FFF3E0] text-[#E65100]
+        {% else %}bg-[#f5f5f5] text-[#555]{% endif %}">{{ it.get_marca_repuesto_display }}</span>
       {% endif %}
       {% if it.disponibilidad != 'en_stock' %}
-      <span class="cat-meta-pill cat-disp-{{ it.disponibilidad }}">{{ it.get_disponibilidad_display }}</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full font-medium
+        {% if it.disponibilidad == 'bajo_pedido' %}bg-[#FFF8E1] text-[#BF360C]
+        {% elif it.disponibilidad == 'consultar' %}bg-[#F3E5F5] text-[#4A148C]
+        {% else %}bg-[#f5f5f5] text-[#555]{% endif %}">{{ it.get_disponibilidad_display }}</span>
       {% endif %}
     </div>
 
-    <div class="cat-card-foot">
+    <div class="flex items-center justify-between gap-2">
       {% if it.precio_referencia_clp %}
-      <div class="cat-precio">Desde <strong>${{ it.precio_referencia_clp|stringformat:"d" }}</strong></div>
+      <div class="text-[13px] text-[#666]">Desde <strong class="text-gray-dark text-[16px] font-bold">${{ it.precio_referencia_clp|stringformat:"d" }}</strong></div>
       {% else %}
-      <div class="cat-precio cat-precio-cons">Cotizar</div>
+      <div class="text-[13px] text-[#777] italic">Cotizar</div>
       {% endif %}
       <button type="button" class="cat-add-btn" data-add-id="{{ it.id }}" aria-label="Agregar {{ it.nombre }}">
         +

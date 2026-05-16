@@ -4,127 +4,122 @@
 {% block title %}Responder — {{ correo.asunto|truncatechars:40 }}{% endblock %}
 
 {% block content %}
-<a href="{% url 'detalle' correo.id %}" class="back-link">← Volver al correo</a>
+<div class="max-w-3xl mx-auto py-8 px-4">
+  <a href="{% url 'detalle' correo.id %}"
+     class="inline-flex items-center gap-1.5 text-sm text-gray-soft hover:text-gray-dark mb-6 transition-colors">
+    ← Volver al correo
+  </a>
 
-<article class="correo-card">
-  <header class="correo-head">
-    <div class="correo-asunto">
-      {% if modo == 'todos' %}↩↩ Responder a todos{% else %}↩ Responder{% endif %}
-    </div>
-    <p class="dash-sub" style="margin-top:.6rem">
-      Vas a responder desde <strong>{{ correo.buzon.email }}</strong>.
-      Las respuestas que reciba el destinatario van a llegar
-      <strong>al mismo buzón</strong> y aparecerán en este archivo.
-    </p>
-    <div style="margin-top:.8rem">
-      {% if modo == 'todos' %}
-      <a href="{% url 'responder_correo' correo.id %}" class="filter-pill">
-        ↩ Solo al remitente
-      </a>
-      {% else %}
-      <a href="{% url 'responder_correo' correo.id %}?modo=todos" class="filter-pill">
-        ↩↩ Responder a todos
-      </a>
-      {% endif %}
-    </div>
-  </header>
-
-  <div class="correo-body">
-    {% if messages %}
-    <div class="msg-block">
-      {% for msg in messages %}
-      <div class="msg msg-{{ msg.tags }}">{{ msg }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <div class="reenvio-summary">
-      <div class="meta-item">
-        <span class="meta-label">En respuesta a</span>
-        <span class="meta-value">{{ correo.asunto|default:"(sin asunto)"|truncatechars:80 }}</span>
+  <div class="bg-white border border-border rounded-xl shadow-card overflow-hidden">
+    <div class="px-7 py-5 border-b border-border">
+      <div class="text-lg font-bold text-gray-dark">
+        {% if modo == 'todos' %}↩↩ Responder a todos{% else %}↩ Responder{% endif %}
       </div>
-      <div class="meta-item">
-        <span class="meta-label">De</span>
-        <span class="meta-value">{{ correo.remitente|truncatechars:80 }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Fecha</span>
-        <span class="meta-value">
-          {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
-        </span>
-      </div>
-    </div>
-
-    <form method="post" class="reenvio-form" novalidate>
-      {% csrf_token %}
-      <input type="hidden" name="modo" value="{{ modo }}">
-
-      <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Para <span style="color:#1e7d32">*</span></span>
-        <input type="text"
-               name="to"
-               value="{{ to|default:'' }}"
-               placeholder="destinatario@empresa.cl"
-               required
-               maxlength="2000"
-               autocomplete="off"
-               data-emailchips data-max="30"
-               data-suggest-url="{% url 'contactos' %}">
-      </label>
-
-      <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Cc</span>
-        <input type="text"
-               name="cc"
-               value="{{ cc|default:'' }}"
-               placeholder="copia@empresa.cl"
-               maxlength="2000"
-               autocomplete="off"
-               data-emailchips data-max="30"
-               data-suggest-url="{% url 'contactos' %}">
-        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
-          Enter, Tab o coma para confirmar cada destinatario. Total To+Cc máximo 30.
-        </small>
-      </label>
-
-      <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Asunto <span style="color:#1e7d32">*</span></span>
-        <input type="text"
-               name="asunto"
-               value="{{ asunto|default:'' }}"
-               required
-               maxlength="500"
-               autocomplete="off">
-      </label>
-
-      <label class="adv-field" style="display:block;margin-bottom:1rem">
-        <span class="adv-label">Mensaje</span>
-        <textarea name="cuerpo"
-                  rows="10"
-                  maxlength="50000"
-                  placeholder="Escribí tu respuesta aquí. El correo original se incluye automáticamente abajo."
-                  style="width:100%;font-family:inherit;font-size:14px;padding:10px 12px;border-radius:8px;border:1px solid #d0d0d0;line-height:1.5">{{ cuerpo|default:'' }}</textarea>
-        <small style="color:#666;font-size:12px;margin-top:4px;display:block">
-          El correo original se cita automáticamente debajo de tu respuesta.
-        </small>
-      </label>
-
-      <div class="reenvio-rate" style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px">
-        ℹ️ Envíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
-        {% if restantes == 0 %}
-        — <span style="color:#1e7d32;font-weight:600">llegaste al límite</span>.
+      <p class="text-sm text-gray-soft mt-1.5">
+        Vas a responder desde <strong>{{ correo.buzon.email }}</strong>.
+        Las respuestas que reciba el destinatario van a llegar
+        <strong>al mismo buzón</strong> y aparecerán en este archivo.
+      </p>
+      <div class="mt-3">
+        {% if modo == 'todos' %}
+        <a href="{% url 'responder_correo' correo.id %}"
+           class="inline-flex items-center gap-1 text-[13px] text-gray-soft border border-border rounded-full px-3 py-1 hover:border-primary hover:text-primary transition-colors">
+          ↩ Solo al remitente
+        </a>
         {% else %}
-        — te quedan <strong>{{ restantes }}</strong>.
+        <a href="{% url 'responder_correo' correo.id %}?modo=todos"
+           class="inline-flex items-center gap-1 text-[13px] text-gray-soft border border-border rounded-full px-3 py-1 hover:border-primary hover:text-primary transition-colors">
+          ↩↩ Responder a todos
+        </a>
         {% endif %}
       </div>
+    </div>
 
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-        <button type="submit" class="btn-acceder" {% if restantes == 0 %}disabled{% endif %}>
-          {% if modo == 'todos' %}↩↩ Enviar respuesta a todos{% else %}↩ Enviar respuesta{% endif %}
-        </button>
-        <a href="{% url 'detalle' correo.id %}" class="filter-pill">Cancelar</a>
+    <div class="px-7 py-6">
+      {% include 'partials/_messages.html' %}
+
+      <div class="bg-off-white border border-border rounded-lg px-5 py-4 mb-5 space-y-1.5">
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[80px]">En respuesta a</span>
+          <span class="text-gray-dark font-medium">{{ correo.asunto|default:"(sin asunto)"|truncatechars:80 }}</span>
+        </div>
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[80px]">De</span>
+          <span class="text-gray-dark">{{ correo.remitente|truncatechars:80 }}</span>
+        </div>
+        <div class="flex gap-3 text-sm">
+          <span class="text-[11px] font-bold uppercase tracking-[2px] text-gray-soft min-w-[80px]">Fecha</span>
+          <span class="text-gray-dark">
+            {% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+          </span>
+        </div>
       </div>
-    </form>
+
+      <form method="post" class="space-y-5" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="modo" value="{{ modo }}">
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-soft mb-2">
+            Para <span class="text-primary">*</span>
+          </label>
+          <input type="text" name="to" value="{{ to|default:'' }}"
+                 placeholder="destinatario@empresa.cl" required maxlength="2000"
+                 autocomplete="off"
+                 data-emailchips data-max="30"
+                 data-suggest-url="{% url 'contactos' %}"
+                 class="w-full px-4 py-3 border border-border rounded-lg text-[14px] text-gray-dark outline-none transition-colors focus:border-primary">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-soft mb-2">Cc</label>
+          <input type="text" name="cc" value="{{ cc|default:'' }}"
+                 placeholder="copia@empresa.cl" maxlength="2000"
+                 autocomplete="off"
+                 data-emailchips data-max="30"
+                 data-suggest-url="{% url 'contactos' %}"
+                 class="w-full px-4 py-3 border border-border rounded-lg text-[14px] text-gray-dark outline-none transition-colors focus:border-primary">
+          <p class="text-[12px] text-gray-soft mt-1.5">Enter, Tab o coma para confirmar cada destinatario. Total To+Cc máximo 30.</p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-soft mb-2">
+            Asunto <span class="text-primary">*</span>
+          </label>
+          <input type="text" name="asunto" value="{{ asunto|default:'' }}"
+                 required maxlength="500" autocomplete="off"
+                 class="w-full px-4 py-3 border border-border rounded-lg text-[14px] text-gray-dark outline-none transition-colors focus:border-primary">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-soft mb-2">Mensaje</label>
+          <textarea name="cuerpo" rows="10" maxlength="50000"
+                    placeholder="Escribí tu respuesta aquí. El correo original se incluye automáticamente abajo."
+                    class="w-full px-4 py-3 border border-border rounded-lg text-[14px] text-gray-dark outline-none transition-colors focus:border-primary resize-y leading-relaxed font-[inherit]">{{ cuerpo|default:'' }}</textarea>
+          <p class="text-[12px] text-gray-soft mt-1.5">El correo original se cita automáticamente debajo de tu respuesta.</p>
+        </div>
+
+        <div class="bg-[#FFF8E1] border border-[#FFE082] rounded-lg px-4 py-3 text-[13px] text-gray-dark">
+          ℹ️ Envíos en las últimas 24h: <strong>{{ usados }}/{{ limite }}</strong>
+          {% if restantes == 0 %}
+          — <span class="text-primary font-semibold">llegaste al límite</span>.
+          {% else %}
+          — te quedan <strong>{{ restantes }}</strong>.
+          {% endif %}
+        </div>
+
+        <div class="flex gap-2.5 flex-wrap">
+          <button type="submit" {% if restantes == 0 %}disabled{% endif %}
+                  class="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold text-[13px] uppercase tracking-[2px] rounded-lg border-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            {% if modo == 'todos' %}↩↩ Enviar respuesta a todos{% else %}↩ Enviar respuesta{% endif %}
+          </button>
+          <a href="{% url 'detalle' correo.id %}"
+             class="px-5 py-3 border border-border text-gray-soft hover:text-gray-dark hover:border-gray-soft rounded-lg text-[13px] font-medium transition-colors">
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
   </div>
-</article>
+</div>
 {% endblock %}

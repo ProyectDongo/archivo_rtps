@@ -4,28 +4,30 @@
 {% block title %}Bandeja — {{ buzon.email }}{% endblock %}
 {% block body_class %}page-inbox{% endblock %}
 
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/inbox_macstyle.css' %}">
-{% endblock %}
+{% block extra_head %}{% endblock %}
 
 {% block content %}
 <div class="inbox-shell">
 {% include 'partials/_inbox_sidebar.html' %}
 
   <section class="inbox-main">
-<header class="inbox-header">
-      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menú lateral" aria-controls="inbox-sidebar">
+
+    {# ── Header ── #}
+    <header class="inbox-header flex items-center gap-3 flex-shrink-0">
+      <button type="button"
+              class="sidebar-toggle lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-gray-soft hover:bg-off-white-2 transition-colors border-none bg-transparent cursor-pointer flex-shrink-0"
+              id="sidebar-toggle" aria-label="Abrir menú lateral" aria-controls="inbox-sidebar">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
 
-      <h1 class="inbox-title">
+      <h1 class="inbox-title flex flex-col min-w-0 flex-1">
         <span class="inbox-title-kicker">Bandeja</span>
-        <span class="inbox-title-email" title="{{ buzon.email }}">{{ buzon.email }}</span>
+        <span class="inbox-title-email truncate" title="{{ buzon.email }}">{{ buzon.email }}</span>
       </h1>
 
       {% if stats %}
-      <button type="button" class="stats-toggle" id="stats-toggle"
+      <button type="button" class="stats-toggle ml-auto flex-shrink-0" id="stats-toggle"
               aria-controls="stats-panel" aria-expanded="false"
               title="Mostrar/ocultar resumen del buzón">
         <span class="stats-toggle-num">{{ stats.total }}</span>
@@ -35,9 +37,11 @@
       </button>
       {% endif %}
     </header>
-{% if stats %}
-    <section class="stats-panel" id="stats-panel" hidden aria-label="Resumen del buzón">
-      <div class="stats-cards">
+
+    {# ── Stats panel ── #}
+    {% if stats %}
+    <section class="stats-panel flex-shrink-0" id="stats-panel" hidden aria-label="Resumen del buzón">
+      <div class="flex flex-wrap gap-3 px-6 py-4">
         <div class="stat-mini">
           <div class="stat-mini-n">{{ stats.total }}</div>
           <div class="stat-mini-l">Correos totales</div>
@@ -57,22 +61,22 @@
         </div>
         {% endif %}
         {% if stats.fecha_mas_antigua %}
-        <div class="stat-mini stat-mini-period">
-          <div class="stat-mini-n stat-mini-n-text">{{ stats.fecha_mas_antigua|date:"M Y" }}</div>
+        <div class="stat-mini">
+          <div class="stat-mini-n text-[14px]">{{ stats.fecha_mas_antigua|date:"M Y" }}</div>
           <div class="stat-mini-l">Histórico desde</div>
         </div>
         {% endif %}
       </div>
 
-      <div class="stats-bottom">
+      <div class="flex gap-6 px-6 pb-4 border-t border-[rgba(0,0,0,.05)] pt-4">
         {% if stats.chart %}
-        <div class="stats-chart" aria-label="Actividad mensual últimos 6 meses">
-          <div class="stats-chart-label">Actividad reciente</div>
-          <div class="chart-bars">
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-gray-soft mb-2">Actividad reciente</div>
+          <div class="flex items-end gap-1 h-14" aria-label="Actividad mensual últimos 6 meses">
             {% for mes, n in stats.chart %}
-            <div class="chart-bar-wrap" title="{{ mes|date:'F Y' }}: {{ n }} correos">
+            <div class="flex-1 flex flex-col items-center gap-0.5" title="{{ mes|date:'F Y' }}: {{ n }} correos">
               <div class="chart-bar" data-h="{% widthratio n stats.chart_max 100 %}"></div>
-              <div class="chart-bar-label">{{ mes|date:"M" }}</div>
+              <div class="text-[9px] text-gray-soft">{{ mes|date:"M" }}</div>
             </div>
             {% endfor %}
           </div>
@@ -80,16 +84,18 @@
         {% endif %}
 
         {% if stats.top_remitentes %}
-        <div class="stats-senders">
-          <div class="stats-chart-label">Top remitentes</div>
-          <div class="dash-senders-list">
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-gray-soft mb-2">Top remitentes</div>
+          <div class="flex flex-col gap-1.5">
             {% for r in stats.top_remitentes %}
-            <button type="button" class="sender-chip" data-remitente="{{ r.remitente }}">
-              <span class="avatar avatar-sm" data-color="{{ r.remitente|avatar_color }}">{{ r.remitente|avatar_iniciales }}</span>
-              <span class="sender-text">
-                <span class="sender-name">{{ r.remitente|truncatechars:30 }}</span>
-                <span class="sender-count">{{ r.n }}</span>
+            <button type="button"
+                    class="sender-chip flex items-center gap-2 w-full text-left bg-transparent border-none cursor-pointer px-2 py-1 rounded-lg hover:bg-off-white-2 transition-colors"
+                    data-remitente="{{ r.remitente }}">
+              <span class="avatar avatar-sm flex-shrink-0" data-color="{{ r.remitente|avatar_color }}">{{ r.remitente|avatar_iniciales }}</span>
+              <span class="flex-1 min-w-0">
+                <span class="block text-[12px] font-medium text-gray-dark truncate">{{ r.remitente|truncatechars:30 }}</span>
               </span>
+              <span class="text-[11px] text-gray-soft font-medium flex-shrink-0">{{ r.n }}</span>
             </button>
             {% endfor %}
           </div>
@@ -98,22 +104,29 @@
       </div>
     </section>
     {% endif %}
-<div class="inbox-toolbar">
-      <form class="toolbar-search" method="get" action="{% url 'inbox' %}" role="search" id="search-form">
-        <svg class="toolbar-search-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+
+    {# ── Toolbar ── #}
+    <div class="inbox-toolbar flex items-center gap-2 flex-shrink-0 relative">
+      <form class="toolbar-search flex-1 flex items-center gap-2" method="get" action="{% url 'inbox' %}" role="search" id="search-form">
+        <svg class="flex-shrink-0 text-gray-soft" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <input type="text" name="q" value="{{ query }}"
-               placeholder='Buscar — usá from:, to:, subject:, has:attachment, before:, after:, label:, is:starred…'
-               autocomplete="off" maxlength="200" aria-label="Buscar correos">
-        <button type="button" class="toolbar-search-help" id="search-help-btn" tabindex="-1"
+               placeholder="Buscar — from:, to:, subject:, has:attachment, before:, after:, label:, is:starred…"
+               autocomplete="off" maxlength="200" aria-label="Buscar correos"
+               class="flex-1 bg-transparent border-none outline-none text-[13px] text-gray-dark placeholder:text-[#c8c8c8] min-w-0">
+        <button type="button"
+                class="toolbar-search-help w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full bg-off-white-2 text-[11px] font-bold text-gray-soft hover:bg-border transition-colors border-none cursor-pointer"
+                id="search-help-btn" tabindex="-1"
                 aria-label="Ayuda de operadores de búsqueda" aria-expanded="false"
                 title="Ayuda: operadores de búsqueda">?</button>
         {% if query %}
-        <a href="{% url_sin_filtros 'q' %}" class="toolbar-search-clear" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">✕</a>
+        <a href="{% url_sin_filtros 'q' %}"
+           class="toolbar-search-clear w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full bg-off-white-2 text-[11px] text-gray-soft hover:bg-border transition-colors"
+           aria-label="Limpiar búsqueda" title="Limpiar búsqueda">✕</a>
         {% endif %}
-{% if carpeta %}<input type="hidden" name="carpeta" value="{{ carpeta }}">{% endif %}
+        {% if carpeta %}<input type="hidden" name="carpeta" value="{{ carpeta }}">{% endif %}
         {% if solo_destacados %}<input type="hidden" name="destacado" value="1">{% endif %}
         {% if solo_adjuntos %}<input type="hidden" name="adjuntos" value="1">{% endif %}
         {% if solo_no_leidos %}<input type="hidden" name="no_leidos" value="1">{% endif %}
@@ -122,21 +135,23 @@
         {% if fecha_hasta %}<input type="hidden" name="hasta" value="{{ fecha_hasta }}">{% endif %}
         {% if orden and orden != 'desc' %}<input type="hidden" name="orden" value="{{ orden }}">{% endif %}
       </form>
-<div class="search-help-pop" id="search-help-pop" hidden role="dialog" aria-label="Operadores de búsqueda">
-        <div class="search-help-title">Operadores de búsqueda</div>
-        <ul class="search-help-list">
-          <li><code>from:cobranza@empresa.cl</code> — del remitente</li>
-          <li><code>to:contacto</code> — al destinatario</li>
-          <li><code>subject:"factura abril"</code> — en el asunto (comillas para frases)</li>
-          <li><code>has:attachment</code> — solo con adjunto</li>
-          <li><code>before:2026-01-01</code> / <code>after:2025-12-01</code> — rango de fechas</li>
-          <li><code>label:Urgente</code> — con esa etiqueta</li>
-          <li><code>is:starred</code> · <code>is:unread</code> · <code>is:read</code></li>
+
+      <div class="search-help-pop absolute top-full left-0 z-50 mt-1 bg-white rounded-xl shadow-modal border border-border p-4 w-80 text-[12px]"
+           id="search-help-pop" hidden role="dialog" aria-label="Operadores de búsqueda">
+        <div class="font-bold text-gray-dark mb-2">Operadores de búsqueda</div>
+        <ul class="space-y-1.5 text-gray-mid list-none p-0 m-0">
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">from:cobranza@empresa.cl</code> — del remitente</li>
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">to:contacto</code> — al destinatario</li>
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">subject:"factura abril"</code> — en el asunto (comillas para frases)</li>
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">has:attachment</code> — solo con adjunto</li>
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">before:2026-01-01</code> / <code class="bg-off-white-2 px-1 rounded text-[11px]">after:2025-12-01</code> — rango de fechas</li>
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">label:Urgente</code> — con esa etiqueta</li>
+          <li><code class="bg-off-white-2 px-1 rounded text-[11px]">is:starred</code> · <code class="bg-off-white-2 px-1 rounded text-[11px]">is:unread</code> · <code class="bg-off-white-2 px-1 rounded text-[11px]">is:read</code></li>
         </ul>
-        <div class="search-help-foot">Combinables: <code>from:juan has:attachment after:2025-01-01</code></div>
+        <div class="mt-2 pt-2 border-t border-border text-gray-soft">Combinables: <code class="bg-off-white-2 px-1 rounded text-[11px]">from:juan has:attachment after:2025-01-01</code></div>
       </div>
 
-      <button type="button" class="toolbar-adv-toggle" id="adv-toggle"
+      <button type="button" class="toolbar-adv-toggle flex-shrink-0" id="adv-toggle"
               aria-controls="toolbar-adv" aria-expanded="false">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -146,8 +161,7 @@
         Filtros
       </button>
 
-      {# Toggle vista hilos / plana — equivalente a la columna de conversación de Gmail #}
-      <a class="toolbar-vista-toggle {% if vista == 'hilos' %}is-on{% endif %}"
+      <a class="toolbar-vista-toggle flex-shrink-0 {% if vista == 'hilos' %}is-on{% endif %}"
          href="{% url 'inbox' %}?vista={% if vista == 'hilos' %}plana{% else %}hilos{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if solo_destacados %}&destacado=1{% endif %}{% if solo_adjuntos %}&adjuntos=1{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}{% if etiqueta_actual %}&etiqueta={{ etiqueta_actual.id }}{% endif %}{% if fecha_desde %}&desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&hasta={{ fecha_hasta }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if ver_pospuestos %}&pospuestos=1{% endif %}"
          title="{% if vista == 'hilos' %}Cambiar a vista plana (un correo por fila){% else %}Agrupar por hilo de conversación{% endif %}">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
@@ -157,32 +171,43 @@
         {% if vista == 'hilos' %}Hilos{% else %}Plano{% endif %}
       </a>
     </div>
-<form class="toolbar-adv" method="get" action="{% url 'inbox' %}" id="toolbar-adv" hidden>
+
+    {# ── Advanced filters ── #}
+    <form class="flex flex-wrap items-end gap-3 px-6 py-3 border-b border-[rgba(0,0,0,.05)] bg-off-white flex-shrink-0"
+          method="get" action="{% url 'inbox' %}" id="toolbar-adv" hidden>
       {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
       {% if carpeta %}<input type="hidden" name="carpeta" value="{{ carpeta }}">{% endif %}
       {% if solo_destacados %}<input type="hidden" name="destacado" value="1">{% endif %}
       {% if solo_adjuntos %}<input type="hidden" name="adjuntos" value="1">{% endif %}
       {% if solo_no_leidos %}<input type="hidden" name="no_leidos" value="1">{% endif %}
       {% if etiqueta_actual %}<input type="hidden" name="etiqueta" value="{{ etiqueta_actual.id }}">{% endif %}
-      <label class="adv-field">
-        <span class="adv-label">Desde</span>
-        <input type="date" name="desde" value="{{ fecha_desde }}" max="{{ fecha_hasta|default:'' }}">
+      <label class="flex flex-col gap-1">
+        <span class="text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Desde</span>
+        <input type="date" name="desde" value="{{ fecha_desde }}" max="{{ fecha_hasta|default:'' }}"
+               class="px-3 py-2 border border-border rounded-lg text-[13px] text-gray-dark outline-none focus:border-primary">
       </label>
-      <label class="adv-field">
-        <span class="adv-label">Hasta</span>
-        <input type="date" name="hasta" value="{{ fecha_hasta }}" min="{{ fecha_desde|default:'' }}">
+      <label class="flex flex-col gap-1">
+        <span class="text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Hasta</span>
+        <input type="date" name="hasta" value="{{ fecha_hasta }}" min="{{ fecha_desde|default:'' }}"
+               class="px-3 py-2 border border-border rounded-lg text-[13px] text-gray-dark outline-none focus:border-primary">
       </label>
-      <label class="adv-field">
-        <span class="adv-label">Orden</span>
-        <select name="orden" onchange="this.form.submit()">
+      <label class="flex flex-col gap-1">
+        <span class="text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Orden</span>
+        <select name="orden" onchange="this.form.submit()"
+                class="px-3 py-2 border border-border rounded-lg text-[13px] text-gray-dark outline-none focus:border-primary bg-white cursor-pointer">
           <option value="desc" {% if orden == 'desc' %}selected{% endif %}>Más recientes primero</option>
           <option value="asc"  {% if orden == 'asc'  %}selected{% endif %}>Más antiguos primero</option>
         </select>
       </label>
-      <button type="submit" class="adv-apply">Aplicar</button>
+      <button type="submit"
+              class="px-5 py-2 bg-primary hover:bg-primary-dark text-white text-[13px] font-semibold rounded-lg border-none cursor-pointer transition-colors">
+        Aplicar
+      </button>
     </form>
-{% if hay_filtros_activos %}
-    <div class="active-filters" role="region" aria-label="Filtros aplicados">
+
+    {# ── Active filters ── #}
+    {% if hay_filtros_activos %}
+    <div class="active-filters flex-shrink-0" role="region" aria-label="Filtros aplicados">
       <span class="active-filters-label">Filtros activos:</span>
 
       {% if query %}
@@ -255,7 +280,9 @@
       <span class="active-filters-count">{{ total }} resultado{{ total|pluralize:"s" }}</span>
     </div>
     {% endif %}
-<div class="bulk-bar" id="bulk-bar" hidden role="region" aria-label="Acciones en masa">
+
+    {# ── Bulk action bar ── #}
+    <div class="bulk-bar flex-shrink-0" id="bulk-bar" hidden role="region" aria-label="Acciones en masa">
       <label class="bulk-bar-checkall" title="Seleccionar / quitar todo en esta página">
         <input type="checkbox" id="bulk-checkall">
         <span class="bulk-bar-count"><span id="bulk-bar-n">0</span> seleccionado<span id="bulk-bar-s">s</span></span>
@@ -277,7 +304,6 @@
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
           Sin destacar
         </button>
-
         <button type="button" class="bulk-btn bulk-btn-danger" data-bulk-accion="eliminar" title="Mover a papelera">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="3 6 5 6 21 6"/>
@@ -289,15 +315,17 @@
         </button>
 
         {% if etiquetas_disponibles %}
-        <div class="bulk-tag-wrap">
+        <div class="bulk-tag-wrap relative">
           <button type="button" class="bulk-btn" id="bulk-tag-btn" title="Asignar etiqueta">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13 21l-9-9V4h8l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>
             Etiquetar
           </button>
-          <div class="bulk-tag-menu" id="bulk-tag-menu" hidden>
+          <div class="bulk-tag-menu absolute bottom-full left-0 mb-1 bg-white border border-border rounded-xl shadow-modal py-1 min-w-[160px] z-50"
+               id="bulk-tag-menu" hidden>
             {% for et in etiquetas_disponibles %}
-            <button type="button" class="bulk-tag-opt" data-etiqueta-id="{{ et.id }}" data-color="{{ et.color }}">
-              <span class="tag-dot" style="background:{{ et.color }}"></span>{{ et.nombre|truncatechars:24 }}
+            <button type="button" class="bulk-tag-opt flex items-center gap-2 w-full px-3 py-2 text-[13px] text-gray-dark hover:bg-off-white-2 border-none bg-transparent cursor-pointer text-left"
+                    data-etiqueta-id="{{ et.id }}" data-color="{{ et.color }}">
+              <span class="tag-dot w-2 h-2 rounded-full flex-shrink-0" style="background:{{ et.color }}"></span>{{ et.nombre|truncatechars:24 }}
             </button>
             {% endfor %}
           </div>
@@ -306,13 +334,15 @@
       </div>
       <button type="button" class="bulk-bar-close" id="bulk-bar-close" title="Cerrar selección" aria-label="Cerrar selección">✕</button>
     </div>
-<div class="inbox-list-wrap">
+
+    {# ── Email list ── #}
+    <div class="inbox-list-wrap flex-1 overflow-y-auto min-h-0">
       <div class="split-list" id="split-list">
         {% if page.object_list %}
         <ul class="correos-list" role="list">
           {% for correo in page.object_list %}
           <li>
-            <a class="correo-row {% if correo.destacado %}is-starred{% endif %} {% if correo.is_leido %}is-read{% endif %}"
+            <a class="correo-row group {% if correo.destacado %}is-starred{% endif %} {% if correo.is_leido %}is-read{% endif %}"
                href="{% url 'detalle' correo.id %}"
                data-correo-id="{{ correo.id }}">
               <input type="checkbox" class="row-check" data-correo-id="{{ correo.id }}"
@@ -342,7 +372,8 @@
               </span>
               {% if correo.tiene_adjunto %}<span class="adj-pill" title="Con adjunto">📎</span>{% endif %}
               <span class="correo-date" title="{{ correo.fecha|fecha_iso }}">{{ correo.fecha|fecha_amigable }}</span>
-              <button type="button" class="row-delete" data-correo-id="{{ correo.id }}"
+              <button type="button" class="row-delete opacity-0 group-hover:opacity-100 transition-opacity"
+                      data-correo-id="{{ correo.id }}"
                       title="Mover a papelera" aria-label="Mover a papelera">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
                      stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -370,17 +401,16 @@
         {% endif %}
 
         {% else %}
-        <div class="estado-vacio">
-          <div class="estado-vacio-icon">📭</div>
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+          <div class="text-5xl mb-4" aria-hidden="true">📭</div>
           {% if hay_filtros_activos %}
-          <p>No hay correos con esos filtros.</p>
+          <p class="text-gray-soft text-[14px]">No hay correos con esos filtros.</p>
           {% else %}
-          <p>Esta bandeja no tiene correos importados aún.</p>
+          <p class="text-gray-soft text-[14px]">Esta bandeja no tiene correos importados aún.</p>
           {% endif %}
         </div>
         {% endif %}
       </div>
-
     </div>
 
   </section>

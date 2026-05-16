@@ -2,55 +2,52 @@
 {% load static %}
 
 {% block title %}Papelera{% endblock %}
-{% block body_class %}page-archivos page-papelera{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/archivos.css' %}">
-{% endblock %}
+{% block body_class %}bg-[#f5f5f7]{% endblock %}
 
 {% block content %}
-<div class="arc-shell">
+<div class="max-w-[1200px] mx-auto px-5 py-4 pb-10">
 
-  <header class="arc-header">
-    <a href="{% url 'escritorio' %}" class="arc-back">← Escritorio</a>
-    <h1 class="arc-title">🗑 Papelera</h1>
-    <span class="arc-count">{{ total }} archivos eliminados</span>
+  <header class="flex items-center gap-4 mb-4 flex-wrap">
+    <a href="{% url 'escritorio' %}" class="text-sm text-primary font-medium px-2 py-1 rounded-md hover:bg-primary/10 transition-colors shrink-0">← Escritorio</a>
+    <h1 class="text-[22px] font-bold tracking-[-0.01em] text-gray-dark m-0 flex-1">🗑 Papelera</h1>
+    <span class="text-sm text-gray-soft tabular-nums">{{ total }} archivos eliminados</span>
   </header>
 
   {% if archivos %}
-  <p class="arc-empty-hint">
+  <p class="text-[#515154] text-[12.5px] max-w-[480px] mb-4 leading-relaxed">
     Estos archivos están en la papelera. Podés <strong>restaurarlos</strong> o, si sos
     administrador, <strong>borrarlos permanentemente</strong> (irreversible).
   </p>
 
-  <main class="arc-main arc-main-full">
-    <ul class="arc-list">
+  <main class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <ul class="list-none m-0 p-0">
       {% for a in archivos %}
-      <li class="arc-item arc-item-papelera">
-        <div class="arc-item-name">
-          <span class="arc-item-icon arc-icon-{{ a.tipo }}">
+      <li class="grid gap-3.5 items-center px-4 py-3 border-b border-border last:border-b-0 hover:bg-black/[.02] transition-colors opacity-[.85]" style="grid-template-columns:1fr auto">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="w-9 h-9 flex items-center justify-center rounded-lg text-lg shrink-0
+            {% if a.tipo == 'contrato' %}bg-amber-500/10{% elif a.tipo == 'factura' %}bg-blue-600/10{% elif a.tipo == 'imagen' %}bg-emerald-600/10{% else %}bg-black/[.04]{% endif %}">
             {% if a.tipo == 'imagen' %}🖼{% elif a.tipo == 'contrato' %}📋{% elif a.tipo == 'factura' %}🧾{% else %}📄{% endif %}
           </span>
-          <span class="arc-item-text">
-            <span class="arc-item-title">{{ a.nombre|truncatechars:60 }}</span>
-            <span class="arc-item-meta">
-              <span class="arc-meta-tag">{{ a.get_tipo_display }}</span>
-              {% if a.perfil %}<span class="arc-meta-tag">{{ a.perfil.email|truncatechars:20 }}</span>{% endif %}
-              <span class="arc-meta-size">{{ a.tamano_legible }}</span>
-              <span class="arc-meta-date">Eliminado: {{ a.eliminado_en|date:"d/m/Y H:i" }}{% if a.eliminado_por %} por {{ a.eliminado_por.email|truncatechars:24 }}{% endif %}</span>
+          <span class="min-w-0 flex flex-col gap-0.5">
+            <span class="text-[13.5px] font-medium text-gray-dark overflow-hidden text-ellipsis whitespace-nowrap">{{ a.nombre|truncatechars:60 }}</span>
+            <span class="text-[11px] text-[#86868b] flex flex-wrap gap-1.5 items-center">
+              <span class="bg-black/[.04] px-1.5 py-px rounded text-gray-soft">{{ a.get_tipo_display }}</span>
+              {% if a.perfil %}<span class="bg-black/[.04] px-1.5 py-px rounded text-gray-soft">{{ a.perfil.email|truncatechars:20 }}</span>{% endif %}
+              <span class="tabular-nums">{{ a.tamano_legible }}</span>
+              <span class="tabular-nums">Eliminado: {{ a.eliminado_en|date:"d/m/Y H:i" }}{% if a.eliminado_por %} por {{ a.eliminado_por.email|truncatechars:24 }}{% endif %}</span>
             </span>
           </span>
         </div>
-        <div class="arc-item-actions">
+        <div class="flex items-center gap-2.5 shrink-0">
           <form method="post" action="{% url 'archivo_restaurar' a.id %}" style="display:inline">
             {% csrf_token %}
-            <button type="submit" class="arc-btn-restore" title="Restaurar">↩ Restaurar</button>
+            <button type="submit" class="text-emerald-600 bg-transparent border border-transparent rounded-md px-2.5 py-1 text-xs inline-flex items-center gap-1 hover:bg-emerald-50 hover:border-emerald-200 transition-colors cursor-pointer" title="Restaurar">↩ Restaurar</button>
           </form>
           {% if usuario_actual.es_admin %}
           <form method="post" action="{% url 'archivo_borrar_permanente' a.id %}" style="display:inline"
                 onsubmit="return confirm('¿Borrar PERMANENTEMENTE «{{ a.nombre|escapejs }}»?\n\nEsta acción NO se puede deshacer.');">
             {% csrf_token %}
-            <button type="submit" class="arc-btn-delete-perm" title="Borrar permanente">🔥 Borrar permanente</button>
+            <button type="submit" class="text-red-700 bg-transparent border border-transparent rounded-md px-2.5 py-1 text-xs inline-flex items-center gap-1 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer" title="Borrar permanente">🔥 Borrar permanente</button>
           </form>
           {% endif %}
         </div>
@@ -59,21 +56,22 @@
     </ul>
 
     {% if paginator.num_pages > 1 %}
-    <nav class="arc-paginacion">
-      {% if page.has_previous %}<a href="?p={{ page.previous_page_number }}">← Anterior</a>{% endif %}
-      <span class="arc-pag-info">Página {{ page.number }} de {{ paginator.num_pages }}</span>
-      {% if page.has_next %}<a href="?p={{ page.next_page_number }}">Siguiente →</a>{% endif %}
+    <nav class="flex items-center justify-center gap-4 p-3.5 border-t border-border bg-[#f5f5f7]">
+      {% if page.has_previous %}<a href="?p={{ page.previous_page_number }}" class="text-primary no-underline text-sm px-3 py-1.5 rounded-md hover:bg-primary/10 transition-colors">← Anterior</a>{% endif %}
+      <span class="text-xs text-gray-soft tabular-nums">Página {{ page.number }} de {{ paginator.num_pages }}</span>
+      {% if page.has_next %}<a href="?p={{ page.next_page_number }}" class="text-primary no-underline text-sm px-3 py-1.5 rounded-md hover:bg-primary/10 transition-colors">Siguiente →</a>{% endif %}
     </nav>
     {% endif %}
   </main>
 
   {% else %}
-  <div class="arc-empty">
-    <div class="arc-empty-icon">🗑</div>
-    <p>La papelera está vacía.</p>
-    <p class="arc-empty-hint">Los correos eliminados aparecen acá durante 30 días antes de purgarse.</p>
-    <a href="{% url 'escritorio' %}" class="arc-btn-primary" style="background:#94a3b8">← Volver al escritorio</a>
+  <div class="text-center py-[60px] px-5">
+    <div class="text-5xl mb-3 opacity-50">🗑</div>
+    <p class="text-gray-soft text-sm my-1 mb-4">La papelera está vacía.</p>
+    <p class="text-[#86868b] text-[12.5px] max-w-[480px] mx-auto mb-4 leading-relaxed">Los archivos eliminados aparecen acá durante 30 días antes de purgarse.</p>
+    <a href="{% url 'escritorio' %}" class="bg-[#94a3b8] text-white rounded-full px-4 py-2 text-sm font-semibold no-underline inline-block hover:brightness-105 transition-all">← Volver al escritorio</a>
   </div>
   {% endif %}
+
 </div>
 {% endblock %}

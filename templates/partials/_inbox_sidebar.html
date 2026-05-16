@@ -1,70 +1,85 @@
 {% load correos_tags %}
-<aside class="inbox-sidebar" id="inbox-sidebar" aria-label="Navegación de bandejas">
-<button type="button" class="sidebar-close" id="sidebar-close" aria-label="Cerrar menú">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+<aside id="inbox-sidebar" aria-label="Navegación de bandejas">
+
+  {# Botón cerrar (solo mobile) #}
+  <button type="button" id="sidebar-close" aria-label="Cerrar menú"
+          class="lg:hidden self-end mr-3 mt-3 p-1.5 rounded-lg text-gray-soft hover:bg-off-white-2 transition-colors">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
   </button>
 
-  <a href="{% url 'escritorio' %}" class="sidebar-back-escritorio" title="Volver al escritorio">
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+  {# Volver al escritorio #}
+  <a href="{% url 'escritorio' %}" title="Volver al escritorio"
+     class="inline-flex items-center gap-1.5 px-4 pt-4 pb-1 text-[12px] text-gray-soft hover:text-gray-dark transition-colors">
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
     <span>Escritorio</span>
   </a>
 
-<a href="{% url 'compose' %}" class="sidebar-compose" title="Redactar correo nuevo">
-    <span class="sidebar-compose-ico" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
-    </span>
-    <span class="sidebar-compose-text">Redactar</span>
+  {# Compose CTA — sidebar-compose es leída por compose_floating.js #}
+  <a href="{% url 'compose' %}"
+     class="sidebar-compose flex items-center gap-2 mx-3 mt-2 mb-1 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white text-[13px] font-semibold rounded-full transition-all active:scale-[.98]"
+     title="Redactar correo nuevo">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+    <span>Redactar</span>
   </a>
 
   {% if cant_borradores %}
-  <div class="sidebar-drafts-wrap">
-    <button type="button" class="sidebar-link sidebar-drafts-btn" id="sidebar-drafts-btn"
+  <div class="mx-2 mb-1">
+    <button type="button" id="sidebar-drafts-btn"
+            class="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-mid rounded-lg hover:bg-off-white-2 transition-colors"
             aria-expanded="false" aria-controls="sidebar-drafts-pop"
             title="Borradores guardados">
-      <span class="sidebar-link-ico" aria-hidden="true">📝</span>
-      <span class="sidebar-link-text">Borradores</span>
-      <span class="sidebar-link-count">{{ cant_borradores }}</span>
+      <span aria-hidden="true" class="text-[14px]">📝</span>
+      <span class="flex-1 text-left">Borradores</span>
+      <span class="min-w-[18px] text-center bg-gray-mid/60 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">{{ cant_borradores }}</span>
     </button>
-    <div class="sidebar-drafts-pop" id="sidebar-drafts-pop" hidden role="listbox" aria-label="Borradores recientes">
+    <div id="sidebar-drafts-pop" hidden role="listbox" aria-label="Borradores recientes"
+         class="mx-1 mt-0.5 border border-border rounded-xl bg-white shadow-card overflow-hidden">
       {% for b in borradores_recientes %}
-      <button type="button" class="sidebar-draft-item" data-borrador-id="{{ b.id }}"
-              title="{{ b.asunto|default:'(sin asunto)' }}">
-        <span class="sidebar-draft-asunto">{{ b.asunto|default:"(sin asunto)"|truncatechars:40 }}</span>
-        <span class="sidebar-draft-meta">
-          <span class="sidebar-draft-to">{{ b.to|truncatechars:30|default:"(sin destinatario)" }}</span>
-          <span class="sidebar-draft-date">{{ b.actualizado|date:"d/m H:i" }}</span>
-        </span>
+      <button type="button"
+              class="w-full text-left px-3 py-2.5 text-[12px] hover:bg-off-white-2 border-b border-border last:border-0 transition-colors"
+              data-borrador-id="{{ b.id }}" title="{{ b.asunto|default:'(sin asunto)' }}">
+        <div class="font-semibold text-gray-dark truncate">{{ b.asunto|default:"(sin asunto)"|truncatechars:40 }}</div>
+        <div class="flex justify-between text-gray-soft mt-0.5">
+          <span class="truncate">{{ b.to|truncatechars:30|default:"(sin destinatario)" }}</span>
+          <span class="ml-2 flex-shrink-0">{{ b.actualizado|date:"d/m H:i" }}</span>
+        </div>
       </button>
       {% endfor %}
       {% if cant_borradores > borradores_recientes|length %}
-      <div class="sidebar-draft-more">+ {{ cant_borradores|add:'-8' }} más</div>
+      <div class="px-3 py-2 text-[11px] text-gray-soft text-center">+ {{ cant_borradores|add:'-8' }} más</div>
       {% endif %}
     </div>
   </div>
   {% endif %}
-<nav class="sidebar-section" aria-label="Cambiar buzón">
-    <div class="sidebar-label">Buzones</div>
-    <ul class="sidebar-buzon-list" id="sidebar-buzon-list" role="list">
+
+  {# Buzones #}
+  <nav class="mt-3" aria-label="Cambiar buzón">
+    <div class="px-4 pb-1 text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Buzones</div>
+    <ul id="sidebar-buzon-list" role="list" class="list-none">
       {% for b in buzones_visibles %}
       {% with no_leidos=no_leidos_por_buzon|dict_get:b.id %}
-<li class="{% if forloop.counter > 4 %}sidebar-buzon-overflow{% endif %}">
-        <form method="post" action="{% url 'cambiar_buzon' %}" class="sidebar-buzon-form">
+      <li class="{% if forloop.counter > 4 %}sidebar-buzon-overflow{% endif %} px-2">
+        <form method="post" action="{% url 'cambiar_buzon' %}">
           {% csrf_token %}
           <input type="hidden" name="buzon_id" value="{{ b.id }}">
           <button type="submit"
-                  class="sidebar-buzon {% if buzon and b.id == buzon.id %}active{% endif %} {% if no_leidos %}has-unread{% endif %}"
+                  class="sidebar-buzon {% if buzon and b.id == buzon.id %}active{% endif %} w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors
+                         {% if buzon and b.id == buzon.id %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
                   title="{{ b.email }}{% if no_leidos %} · {{ no_leidos }} sin leer{% endif %}">
-            <span class="avatar avatar-sm" data-color="{{ b.email|avatar_color }}">{{ b.email|avatar_iniciales }}</span>
-            <span class="sidebar-buzon-name">{{ b.email|truncatechars:24 }}</span>
-            {% if no_leidos %}<span class="sidebar-badge">{{ no_leidos }}</span>{% endif %}
+            <span class="avatar avatar-sm flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold"
+                  data-color="{{ b.email|avatar_color }}">{{ b.email|avatar_iniciales }}</span>
+            <span class="flex-1 text-left truncate">{{ b.email|truncatechars:24 }}</span>
+            {% if no_leidos %}
+            <span class="sidebar-badge ml-auto min-w-[18px] text-center bg-primary text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">{{ no_leidos }}</span>
+            {% endif %}
           </button>
         </form>
       </li>
@@ -72,11 +87,12 @@
       {% endfor %}
     </ul>
     {% if buzones_visibles|length > 4 %}
-    <button type="button" class="sidebar-buzones-toggle" id="sidebar-buzones-toggle"
-            aria-controls="sidebar-buzon-list" aria-expanded="false">
+    <button type="button" id="sidebar-buzones-toggle"
+            aria-controls="sidebar-buzon-list" aria-expanded="false"
+            class="flex items-center gap-1 mx-4 mt-0.5 mb-1 text-[12px] text-gray-soft hover:text-primary transition-colors">
       <span class="toggle-text-more">Ver todos ({{ buzones_visibles|length }})</span>
       <span class="toggle-text-less">Mostrar menos</span>
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
            class="toggle-chev">
         <polyline points="6 9 12 15 18 9"/>
@@ -84,171 +100,226 @@
     </button>
     {% endif %}
   </nav>
-<nav class="sidebar-section" aria-label="Filtrar por carpeta">
-    <div class="sidebar-label">Carpetas</div>
-    <a href="{% url 'inbox' %}?{% if query %}q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}{% if query %}&{% endif %}orden={{ orden }}{% endif %}"
-       class="sidebar-link {% if not carpeta %}active{% endif %}"
-       title="Todos los correos del buzón">
-      <span class="sidebar-link-ico" aria-hidden="true">📋</span>
-      <span class="sidebar-link-text">Todos</span>
-      <span class="sidebar-link-count">{{ counts_carpeta.total }}</span>
-    </a>
-    <a href="{% url 'inbox' %}?carpeta=inbox{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
-       class="sidebar-link {% if carpeta == 'inbox' %}active{% endif %}"
-       title="Solo correos recibidos">
-      <span class="sidebar-link-ico" aria-hidden="true">📥</span>
-      <span class="sidebar-link-text">Recibidos</span>
-      <span class="sidebar-link-count">{{ counts_carpeta.inbox }}</span>
-    </a>
-    <a href="{% url 'inbox' %}?carpeta=enviados{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
-       class="sidebar-link {% if carpeta == 'enviados' %}active{% endif %}"
-       title="Solo correos enviados">
-      <span class="sidebar-link-ico" aria-hidden="true">📤</span>
-      <span class="sidebar-link-text">Enviados</span>
-      <span class="sidebar-link-count">{{ counts_carpeta.enviados }}</span>
-    </a>
-    {% if counts_carpeta.otros %}
-    <a href="{% url 'inbox' %}?carpeta=otros{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
-       class="sidebar-link {% if carpeta == 'otros' %}active{% endif %}"
-       title="Correos sin clasificar">
-      <span class="sidebar-link-ico" aria-hidden="true">🗂️</span>
-      <span class="sidebar-link-text">Otros</span>
-      <span class="sidebar-link-count">{{ counts_carpeta.otros }}</span>
-    </a>
-    {% endif %}
+
+  {# Carpetas #}
+  <nav class="mt-3" aria-label="Filtrar por carpeta">
+    <div class="px-4 pb-1 text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Carpetas</div>
+    <div class="px-2 space-y-0.5">
+      <a href="{% url 'inbox' %}?{% if query %}q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}{% if query %}&{% endif %}orden={{ orden }}{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if not carpeta %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Todos los correos del buzón">
+        <span aria-hidden="true">📋</span>
+        <span class="flex-1">Todos</span>
+        <span class="ml-auto text-[11px] text-gray-soft">{{ counts_carpeta.total }}</span>
+      </a>
+      <a href="{% url 'inbox' %}?carpeta=inbox{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if carpeta == 'inbox' %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Solo correos recibidos">
+        <span aria-hidden="true">📥</span>
+        <span class="flex-1">Recibidos</span>
+        <span class="ml-auto text-[11px] text-gray-soft">{{ counts_carpeta.inbox }}</span>
+      </a>
+      <a href="{% url 'inbox' %}?carpeta=enviados{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if carpeta == 'enviados' %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Solo correos enviados">
+        <span aria-hidden="true">📤</span>
+        <span class="flex-1">Enviados</span>
+        <span class="ml-auto text-[11px] text-gray-soft">{{ counts_carpeta.enviados }}</span>
+      </a>
+      {% if counts_carpeta.otros %}
+      <a href="{% url 'inbox' %}?carpeta=otros{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if carpeta == 'otros' %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Correos sin clasificar">
+        <span aria-hidden="true">🗂️</span>
+        <span class="flex-1">Otros</span>
+        <span class="ml-auto text-[11px] text-gray-soft">{{ counts_carpeta.otros }}</span>
+      </a>
+      {% endif %}
+    </div>
   </nav>
-<nav class="sidebar-section" aria-label="Filtros rápidos">
-    <div class="sidebar-label">Filtros</div>
-    <a href="{% url 'inbox' %}?{% if not solo_no_leidos %}no_leidos=1{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
-       class="sidebar-link sidebar-filter {% if solo_no_leidos %}active{% endif %}"
-       title="Ver solo sin leer">
-      <span class="sidebar-link-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 4h16v16H4z"/><path d="M4 4l8 8 8-8"/>
-        </svg>
-      </span>
-      <span class="sidebar-link-text">Sin leer</span>
-      {% if no_leidos_buzon_actual %}<span class="sidebar-link-count">{{ no_leidos_buzon_actual }}</span>{% endif %}
-    </a>
-    <a href="{% url 'inbox' %}?{% if not solo_destacados %}destacado=1{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}"
-       class="sidebar-link sidebar-filter sidebar-filter-star {% if solo_destacados %}active{% endif %}"
-       title="Ver solo destacados">
-      <span class="sidebar-link-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="14" height="14"
-             fill="{% if solo_destacados %}currentColor{% else %}none{% endif %}"
-             stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
-        </svg>
-      </span>
-      <span class="sidebar-link-text">Destacados</span>
-      {% if cant_destacados %}<span class="sidebar-link-count">{{ cant_destacados }}</span>{% endif %}
-    </a>
-    <a href="{% url 'inbox' %}?{% if not solo_adjuntos %}adjuntos=1{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}"
-       class="sidebar-link sidebar-filter {% if solo_adjuntos %}active{% endif %}"
-       title="Ver solo correos con adjuntos">
-      <span class="sidebar-link-ico" aria-hidden="true">📎</span>
-      <span class="sidebar-link-text">Con adjunto</span>
-    </a>
-    {% if cant_pospuestos or ver_pospuestos %}
-    <a href="{% url 'inbox' %}?{% if not ver_pospuestos %}pospuestos=1{% endif %}"
-       class="sidebar-link sidebar-filter {% if ver_pospuestos %}active{% endif %}"
-       title="Ver correos pospuestos (snooze)">
-      <span class="sidebar-link-ico" aria-hidden="true">💤</span>
-      <span class="sidebar-link-text">Pospuestos</span>
-      {% if cant_pospuestos %}<span class="sidebar-link-count">{{ cant_pospuestos }}</span>{% endif %}
-    </a>
-    {% endif %}
-    <a href="{% url 'papelera_correos' %}"
-       class="sidebar-link sidebar-filter"
-       title="Correos en papelera (recuperables hasta 30 dias)">
-      <span class="sidebar-link-ico" aria-hidden="true">🗑️</span>
-      <span class="sidebar-link-text">Papelera</span>
-    </a>
+
+  {# Filtros rápidos #}
+  <nav class="mt-3" aria-label="Filtros rápidos">
+    <div class="px-4 pb-1 text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Filtros</div>
+    <div class="px-2 space-y-0.5">
+      <a href="{% url 'inbox' %}?{% if not solo_no_leidos %}no_leidos=1{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if solo_no_leidos %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Ver solo sin leer">
+        <span class="flex-shrink-0 text-gray-soft" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16v16H4z"/><path d="M4 4l8 8 8-8"/>
+          </svg>
+        </span>
+        <span class="flex-1">Sin leer</span>
+        {% if no_leidos_buzon_actual %}<span class="ml-auto text-[11px] text-gray-soft">{{ no_leidos_buzon_actual }}</span>{% endif %}
+      </a>
+      <a href="{% url 'inbox' %}?{% if not solo_destacados %}destacado=1{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if solo_destacados %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Ver solo destacados">
+        <span class="flex-shrink-0" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14"
+               fill="{% if solo_destacados %}currentColor{% else %}none{% endif %}"
+               stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
+          </svg>
+        </span>
+        <span class="flex-1">Destacados</span>
+        {% if cant_destacados %}<span class="ml-auto text-[11px] text-gray-soft">{{ cant_destacados }}</span>{% endif %}
+      </a>
+      <a href="{% url 'inbox' %}?{% if not solo_adjuntos %}adjuntos=1{% endif %}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if solo_adjuntos %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Ver solo correos con adjuntos">
+        <span aria-hidden="true">📎</span>
+        <span class="flex-1">Con adjunto</span>
+      </a>
+      {% if cant_pospuestos or ver_pospuestos %}
+      <a href="{% url 'inbox' %}?{% if not ver_pospuestos %}pospuestos=1{% endif %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if ver_pospuestos %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         title="Ver correos pospuestos (snooze)">
+        <span aria-hidden="true">💤</span>
+        <span class="flex-1">Pospuestos</span>
+        {% if cant_pospuestos %}<span class="ml-auto text-[11px] text-gray-soft">{{ cant_pospuestos }}</span>{% endif %}
+      </a>
+      {% endif %}
+      <a href="{% url 'papelera_correos' %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-mid hover:bg-off-white-2 transition-colors"
+         title="Correos en papelera (recuperables hasta 30 dias)">
+        <span aria-hidden="true">🗑️</span>
+        <span class="flex-1">Papelera</span>
+      </a>
+    </div>
   </nav>
-<nav class="sidebar-section" aria-label="Etiquetas">
-    <div class="sidebar-label">Etiquetas</div>
-    {% for et in etiquetas_disponibles %}
-    <a href="{% url 'inbox' %}?etiqueta={{ et.id }}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}"
-       class="sidebar-link sidebar-tag {% if etiqueta_actual.id == et.id %}active{% endif %}"
-       data-color="{{ et.color }}"
-       title="Filtrar por «{{ et.nombre }}»">
-      <span class="sidebar-link-ico tag-dot" aria-hidden="true"></span>
-      <span class="sidebar-link-text">{{ et.nombre|truncatechars:22 }}</span>
-    </a>
-    {% empty %}
-    <div class="sidebar-empty">Sin etiquetas en este buzón</div>
-    {% endfor %}
-    <button type="button" class="sidebar-link sidebar-tag-new" id="btn-new-tag" title="Nueva etiqueta">
-      <span class="sidebar-link-ico" aria-hidden="true">+</span>
-      <span class="sidebar-link-text">Nueva etiqueta</span>
+
+  {# Etiquetas #}
+  <nav class="mt-3" aria-label="Etiquetas">
+    <div class="px-4 pb-1 text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Etiquetas</div>
+    <div class="px-2 space-y-0.5">
+      {% for et in etiquetas_disponibles %}
+      <a href="{% url 'inbox' %}?etiqueta={{ et.id }}{% if carpeta %}&carpeta={{ carpeta }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}{% if orden and orden != 'desc' %}&orden={{ orden }}{% endif %}{% if solo_no_leidos %}&no_leidos=1{% endif %}"
+         class="sidebar-tag flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors {% if etiqueta_actual.id == et.id %}bg-primary-light text-primary font-semibold{% else %}text-gray-mid hover:bg-off-white-2{% endif %}"
+         data-color="{{ et.color }}"
+         title="Filtrar por «{{ et.nombre }}»">
+        <span class="tag-dot w-2 h-2 rounded-full flex-shrink-0" aria-hidden="true"></span>
+        <span>{{ et.nombre|truncatechars:22 }}</span>
+      </a>
+      {% empty %}
+      <div class="px-3 py-2 text-[12px] text-gray-soft">Sin etiquetas en este buzón</div>
+      {% endfor %}
+    </div>
+    <button type="button" id="btn-new-tag" title="Nueva etiqueta"
+            class="flex items-center gap-2.5 mx-2 px-3 py-2 rounded-lg text-[13px] text-gray-soft hover:text-primary hover:bg-off-white-2 transition-colors">
+      <span class="text-base leading-none" aria-hidden="true">+</span>
+      <span>Nueva etiqueta</span>
     </button>
-<div class="new-tag-dialog" id="new-tag-dialog" hidden>
-      <input type="text" id="new-tag-name" maxlength="40" placeholder="Nombre">
-      <div class="color-palette" id="new-tag-colors">
-        <button type="button" data-color="#C80C0F" style="background:#C80C0F" aria-label="Rojo"></button>
-        <button type="button" data-color="#1976D2" style="background:#1976D2" aria-label="Azul"></button>
-        <button type="button" data-color="#388E3C" style="background:#388E3C" aria-label="Verde"></button>
-        <button type="button" data-color="#F57C00" style="background:#F57C00" aria-label="Naranja"></button>
-        <button type="button" data-color="#7B1FA2" style="background:#7B1FA2" aria-label="Morado"></button>
-        <button type="button" data-color="#5D4037" style="background:#5D4037" aria-label="Café"></button>
-        <button type="button" data-color="#455A64" style="background:#455A64" aria-label="Grafito"></button>
-        <button type="button" data-color="#FBC02D" style="background:#FBC02D" aria-label="Amarillo"></button>
+    <div id="new-tag-dialog" hidden
+         class="mx-3 mt-1 p-3 border border-border rounded-xl bg-white shadow-card">
+      <input type="text" id="new-tag-name" maxlength="40" placeholder="Nombre"
+             class="w-full px-3 py-2 border border-border rounded-lg text-[13px] text-gray-dark outline-none focus:border-primary mb-2 transition-colors">
+      <div id="new-tag-colors" class="flex gap-1.5 mb-2 flex-wrap">
+        <button type="button" data-color="#C80C0F" style="background:#C80C0F" aria-label="Rojo"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#1976D2" style="background:#1976D2" aria-label="Azul"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#388E3C" style="background:#388E3C" aria-label="Verde"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#F57C00" style="background:#F57C00" aria-label="Naranja"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#7B1FA2" style="background:#7B1FA2" aria-label="Morado"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#5D4037" style="background:#5D4037" aria-label="Café"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#455A64" style="background:#455A64" aria-label="Grafito"
+                class="w-5 h-5 rounded-full transition-all"></button>
+        <button type="button" data-color="#FBC02D" style="background:#FBC02D" aria-label="Amarillo"
+                class="w-5 h-5 rounded-full transition-all"></button>
       </div>
-      <div class="new-tag-actions">
-        <button type="button" class="new-tag-btn-create" id="new-tag-create">Crear</button>
-        <button type="button" class="new-tag-btn-cancel" id="new-tag-cancel">Cancelar</button>
+      <div class="flex gap-2">
+        <button type="button" id="new-tag-create"
+                class="flex-1 px-3 py-1.5 bg-primary hover:bg-primary-dark text-white text-[12px] font-semibold rounded-lg transition-colors">Crear</button>
+        <button type="button" id="new-tag-cancel"
+                class="px-3 py-1.5 border border-border text-[12px] text-gray-mid rounded-lg hover:bg-off-white-2 transition-colors">Cancelar</button>
       </div>
     </div>
   </nav>
 
-  <nav class="sidebar-section" aria-label="Configuración">
-    <a href="{% url 'firma' %}" class="sidebar-link" title="Editar la firma del buzón actual">
-      <span class="sidebar-link-ico" aria-hidden="true">✒️</span>
-      <span class="sidebar-link-text">Mi firma</span>
-    </a>
+  {# Config #}
+  <nav class="mt-3" aria-label="Configuración">
+    <div class="px-2">
+      <a href="{% url 'firma' %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-mid hover:bg-off-white-2 transition-colors"
+         title="Editar la firma del buzón actual">
+        <span aria-hidden="true">✒️</span>
+        <span>Mi firma</span>
+      </a>
+    </div>
   </nav>
 
-  <nav class="sidebar-section sidebar-connected" aria-label="Conectado con este buzón">
-    <div class="sidebar-label">Conectado con</div>
-
-    <a href="{% url 'agendar' %}" class="sidebar-link" target="_blank" rel="noopener" title="Ir a la agenda del taller">
-      <span class="sidebar-link-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {# Conectado con #}
+  <nav class="mt-3" aria-label="Conectado con este buzón">
+    <div class="px-4 pb-1 text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Conectado con</div>
+    <div class="px-2">
+      <a href="{% url 'agendar' %}"
+         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-mid hover:bg-off-white-2 transition-colors"
+         target="_blank" rel="noopener" title="Ir a la agenda del taller">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#059669" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="3" y="4" width="18" height="18" rx="2"/>
           <line x1="16" y1="2" x2="16" y2="6"/>
           <line x1="8" y1="2" x2="8" y2="6"/>
           <line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
-      </span>
-      <span class="sidebar-link-text">Citas Taller</span>
-    </a>
+        <span>Citas Taller</span>
+      </a>
+    </div>
   </nav>
 
-<nav class="sidebar-section sidebar-appearance" aria-label="Apariencia">
-    <div class="sidebar-label">Apariencia</div>
-    <div class="appearance-row">
-      <span class="appearance-row-label">Tema</span>
-      <div class="seg-toggle" role="group" aria-label="Tema">
-        <button type="button" class="seg-toggle-btn" data-theme-set="light" title="Claro" aria-label="Tema claro">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+  {# Apariencia #}
+  <nav class="mt-3 pb-6" aria-label="Apariencia">
+    <div class="px-4 pb-1 text-[10px] font-bold uppercase tracking-[1.5px] text-gray-soft">Apariencia</div>
+    <div class="px-4 py-1.5 flex items-center justify-between gap-2">
+      <span class="text-[12px] text-gray-mid">Tema</span>
+      <div class="flex rounded-lg border border-border overflow-hidden" role="group" aria-label="Tema">
+        <button type="button"
+                class="px-2.5 py-1.5 text-gray-soft hover:bg-off-white-2 transition-colors"
+                data-theme-set="light" title="Claro" aria-label="Tema claro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
         </button>
-        <button type="button" class="seg-toggle-btn" data-theme-set="dark" title="Oscuro" aria-label="Tema oscuro">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <button type="button"
+                class="px-2.5 py-1.5 text-gray-soft hover:bg-off-white-2 border-l border-border transition-colors"
+                data-theme-set="dark" title="Oscuro" aria-label="Tema oscuro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
         </button>
       </div>
     </div>
-    <div class="appearance-row">
-      <span class="appearance-row-label">Densidad</span>
-      <div class="seg-toggle" role="group" aria-label="Densidad de filas">
-        <button type="button" class="seg-toggle-btn" data-density-set="comfy" title="Cómoda" aria-label="Densidad cómoda">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <div class="px-4 py-1.5 flex items-center justify-between gap-2">
+      <span class="text-[12px] text-gray-mid">Densidad</span>
+      <div class="flex rounded-lg border border-border overflow-hidden" role="group" aria-label="Densidad de filas">
+        <button type="button"
+                class="px-2.5 py-1.5 text-gray-soft hover:bg-off-white-2 transition-colors"
+                data-density-set="comfy" title="Cómoda" aria-label="Densidad cómoda" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
         </button>
-        <button type="button" class="seg-toggle-btn" data-density-set="compact" title="Compacta" aria-label="Densidad compacta">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+        <button type="button"
+                class="px-2.5 py-1.5 text-gray-soft hover:bg-off-white-2 border-l border-border transition-colors"
+                data-density-set="compact" title="Compacta" aria-label="Densidad compacta" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/><line x1="3" y1="21" x2="21" y2="21"/>
+          </svg>
         </button>
       </div>
     </div>
   </nav>
+
 </aside>
-<div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+<div id="sidebar-backdrop" hidden></div>

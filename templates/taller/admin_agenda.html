@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,184 +6,157 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="refresh" content="{{ auto_refresh_seg }}">
   <title>Panel Agenda — RSP</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: #f5f5f5; color: #222; }
-    .pa-head { background: #1e7d32; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .pa-head h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: .5px; }
-    .pa-head .pa-sub { font-size: 13px; opacity: .9; }
-    .pa-head a { color: #fff; text-decoration: underline; font-size: 13px; margin-left: 12px; }
-    .pa-refresh { background: rgba(255,255,255,.18); padding: 4px 10px; border-radius: 99px; font-size: 11px; }
-
-    .pa-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 16px 24px; }
-    .pa-stat { background: #fff; padding: 14px 18px; border-radius: 10px; border: 1px solid #e5e5e5; }
-    .pa-stat .n { font-size: 28px; font-weight: 700; color: #1e7d32; }
-    .pa-stat .l { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: .5px; }
-
-    .pa-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; padding: 0 24px 24px; }
-    @media (max-width: 980px) { .pa-grid { grid-template-columns: 1fr; } }
-    .pa-card { background: #fff; border-radius: 10px; border: 1px solid #e5e5e5; padding: 16px 20px; }
-    .pa-card h2 { margin: 0 0 12px; font-size: 15px; color: #222; }
-
-    .pa-row { display: grid; grid-template-columns: 60px 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; align-items: center; font-size: 13px; }
-    .pa-row:last-child { border-bottom: 0; }
-    .pa-row .h { font-weight: 700; color: #1e7d32; font-size: 15px; }
-    .pa-row .body strong { color: #222; }
-    .pa-row .meta { font-size: 11px; color: #888; }
-
-    .pa-badge { padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .3px; }
-    .pa-b-pend  { background: #FFF3E0; color: #BF360C; }
-    .pa-b-conf  { background: #E3F2FD; color: #0D47A1; }
-    .pa-b-llama { background: #E8F5E9; color: #1B5E20; }
-    .pa-b-canc  { background: #F5F5F5; color: #757575; }
-    .pa-b-comp  { background: #C8E6C9; color: #1B5E20; }
-    .pa-b-noshow { background: #FCE4EC; color: #C2185B; }
-
-    .pa-rem { font-size: 11px; color: #888; margin-left: 6px; }
-    .pa-rem-ok { color: #1B5E20; }
-
-    .pa-confirm-form { display: inline-flex; gap: 6px; align-items: center; }
-    .pa-confirm-btn { background: #1B5E20; color: #fff; border: 0; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
-    .pa-confirm-btn:hover { background: #0e3e12; }
-    .pa-confirm-input { padding: 4px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; font-family: inherit; max-width: 160px; }
-
-    .pa-empty { color: #999; padding: 24px; text-align: center; font-style: italic; font-size: 13px; }
-
-    .pa-week-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; align-items: center; }
-    .pa-week-row.is-hoy { background: #FFF8E1; padding: 8px 8px; margin: 0 -8px; border-radius: 6px; font-weight: 600; }
-    .pa-week-d { color: #666; }
-    .pa-week-n { font-weight: 700; color: #1e7d32; }
-
-    .msg-block { padding: 10px 24px 0; }
-    .msg { padding: 10px 14px; border-radius: 8px; margin-bottom: .4rem; font-size: 13px; }
-    .msg-success { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
-    .msg-error,
-    .msg-warning { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
-
-    .pa-back-link { color: #fff; opacity: .85; text-decoration: none; }
-    .pa-back-link:hover { text-decoration: underline; }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
 </head>
-<body>
-  <header class="pa-head">
+<body class="bg-[#f5f5f5] text-[#222] m-0">
+
+  <header class="bg-primary text-white px-6 py-3.5 flex justify-between items-center flex-wrap gap-2">
     <div>
-      <h1>📊 Panel Agenda · RSP</h1>
-      <div class="pa-sub">{{ now|date:"l d \d\e F" }} · {{ now|time:"H:i" }} hrs</div>
+      <h1 class="m-0 text-lg font-bold tracking-[0.5px]">📊 Panel Agenda · RSP</h1>
+      <div class="text-[13px] opacity-90">{{ now|date:"l d \d\e F" }} · {{ now|time:"H:i" }} hrs</div>
     </div>
-    <div>
-      <span class="pa-refresh">↻ Auto-refresh cada {{ auto_refresh_seg }}s</span>
-      <a class="pa-back-link" href="/{{ request.path|slice:'1:'|cut:'agenda/' }}">← Volver al admin</a>
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="bg-white/20 px-2.5 py-1 rounded-full text-[11px]">↻ Auto-refresh cada {{ auto_refresh_seg }}s</span>
+      <a href="/{{ request.path|slice:'1:'|cut:'agenda/' }}" class="text-white no-underline text-sm opacity-85 hover:underline">← Volver al admin</a>
     </div>
   </header>
 
   {% if messages %}
-  <div class="msg-block">
-    {% for msg in messages %}<div class="msg msg-{{ msg.tags }}">{{ msg }}</div>{% endfor %}
+  <div class="px-6 pt-2.5">
+    {% for msg in messages %}
+    <div class="px-3.5 py-2.5 rounded-lg mb-1.5 text-sm
+      {% if msg.tags == 'success' %}bg-[#E8F5E9] text-[#1B5E20] border border-[#C8E6C9]{% else %}bg-[#FFEBEE] text-[#B71C1C] border border-[#FFCDD2]{% endif %}">
+      {{ msg }}
+    </div>
+    {% endfor %}
   </div>
   {% endif %}
 
-  <div class="pa-stats">
-    <div class="pa-stat"><div class="n">{{ stats.reservas_hoy_total }}</div><div class="l">Hoy · activas</div></div>
-    <div class="pa-stat"><div class="n">{{ stats.reservas_hoy_completas }}</div><div class="l">Hoy · completadas</div></div>
-    <div class="pa-stat"><div class="n">{{ stats.reservas_manana_total }}</div><div class="l">Mañana</div></div>
-    <div class="pa-stat" {% if stats.pendientes_llamada %}style="background:#FFF8E1;border-color:#FFE082"{% endif %}>
-      <div class="n">{{ stats.pendientes_llamada }}</div><div class="l">📞 Sin confirmar (24h)</div>
+  <div class="grid gap-3 px-6 py-4" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div class="bg-white px-[18px] py-3.5 rounded-xl border border-border">
+      <div class="text-[28px] font-bold text-primary">{{ stats.reservas_hoy_total }}</div>
+      <div class="text-[11px] text-gray-soft uppercase tracking-[0.5px]">Hoy · activas</div>
+    </div>
+    <div class="bg-white px-[18px] py-3.5 rounded-xl border border-border">
+      <div class="text-[28px] font-bold text-primary">{{ stats.reservas_hoy_completas }}</div>
+      <div class="text-[11px] text-gray-soft uppercase tracking-[0.5px]">Hoy · completadas</div>
+    </div>
+    <div class="bg-white px-[18px] py-3.5 rounded-xl border border-border">
+      <div class="text-[28px] font-bold text-primary">{{ stats.reservas_manana_total }}</div>
+      <div class="text-[11px] text-gray-soft uppercase tracking-[0.5px]">Mañana</div>
+    </div>
+    <div class="px-[18px] py-3.5 rounded-xl border {% if stats.pendientes_llamada %}bg-[#FFF8E1] border-[#FFE082]{% else %}bg-white border-border{% endif %}">
+      <div class="text-[28px] font-bold text-primary">{{ stats.pendientes_llamada }}</div>
+      <div class="text-[11px] text-gray-soft uppercase tracking-[0.5px]">📞 Sin confirmar (24h)</div>
     </div>
   </div>
 
-  <div class="pa-grid">
+  <div class="grid gap-3.5 px-6 pb-6 max-[980px]:!grid-cols-1" style="grid-template-columns:2fr 1fr">
 
-    <div>
-      <div class="pa-card">
-        <h2>📅 Reservas de hoy ({{ hoy|date:"d/m/Y" }})</h2>
+    <div class="flex flex-col gap-3.5">
+
+      <div class="bg-white rounded-xl border border-border px-5 py-4">
+        <h2 class="mt-0 mb-3 text-[15px] font-semibold text-gray-dark">📅 Reservas de hoy ({{ hoy|date:"d/m/Y" }})</h2>
         {% for r in reservas_hoy %}
-        <div class="pa-row">
-          <div class="h">{{ r.hora_inicio|time:"H:i" }}</div>
-          <div class="body">
-            <strong>{{ r.cliente_nombre }}</strong> · {{ r.cliente_telefono }}<br>
-            <span class="meta">🚗 {{ r.marca }} {{ r.modelo }} · {{ r.patente }} · {{ r.items.count }} item{{ r.items.count|pluralize:"s" }} · ${{ r.total_referencial_clp|stringformat:"d" }}</span>
-          </div>
+        <div class="grid gap-3 py-2.5 border-b border-[#f0f0f0] last:border-b-0 items-center text-sm" style="grid-template-columns:60px 1fr auto">
+          <div class="font-bold text-primary text-[15px]">{{ r.hora_inicio|time:"H:i" }}</div>
           <div>
-            <span class="pa-badge {% if r.estado == 'pendiente_email' %}pa-b-pend{% elif r.estado == 'confirmada_email' %}pa-b-conf{% elif r.estado == 'confirmada_llamada' %}pa-b-llama{% elif r.estado == 'cancelada_cliente' or r.estado == 'cancelada_taller' %}pa-b-canc{% elif r.estado == 'completada' %}pa-b-comp{% elif r.estado == 'no_show' %}pa-b-noshow{% endif %}">
-              {{ r.get_estado_display }}
-            </span>
-            <span class="pa-rem {% if r.reminder_24h_enviado_en %}pa-rem-ok{% endif %}" title="Reminder 24h">{% if r.reminder_24h_enviado_en %}✓24h{% else %}—{% endif %}</span>
-            <span class="pa-rem {% if r.reminder_1h_enviado_en %}pa-rem-ok{% endif %}" title="Reminder 1h">{% if r.reminder_1h_enviado_en %}✓1h{% else %}—{% endif %}</span>
+            <strong class="text-gray-dark">{{ r.cliente_nombre }}</strong> · {{ r.cliente_telefono }}<br>
+            <span class="text-[11px] text-gray-soft">🚗 {{ r.marca }} {{ r.modelo }} · {{ r.patente }} · {{ r.items.count }} item{{ r.items.count|pluralize:"s" }} · ${{ r.total_referencial_clp|stringformat:"d" }}</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-[0.3px]
+              {% if r.estado == 'pendiente_email' %}bg-[#FFF3E0] text-[#BF360C]
+              {% elif r.estado == 'confirmada_email' %}bg-[#E3F2FD] text-[#0D47A1]
+              {% elif r.estado == 'confirmada_llamada' %}bg-[#E8F5E9] text-[#1B5E20]
+              {% elif r.estado == 'cancelada_cliente' or r.estado == 'cancelada_taller' %}bg-[#F5F5F5] text-[#757575]
+              {% elif r.estado == 'completada' %}bg-[#C8E6C9] text-[#1B5E20]
+              {% elif r.estado == 'no_show' %}bg-[#FCE4EC] text-[#C2185B]
+              {% endif %}">{{ r.get_estado_display }}</span>
+            <span class="text-[11px] ml-1.5 {% if r.reminder_24h_enviado_en %}text-[#1B5E20]{% else %}text-gray-soft{% endif %}" title="Reminder 24h">{% if r.reminder_24h_enviado_en %}✓24h{% else %}—{% endif %}</span>
+            <span class="text-[11px] ml-1.5 {% if r.reminder_1h_enviado_en %}text-[#1B5E20]{% else %}text-gray-soft{% endif %}" title="Reminder 1h">{% if r.reminder_1h_enviado_en %}✓1h{% else %}—{% endif %}</span>
           </div>
         </div>
         {% empty %}
-        <div class="pa-empty">No hay reservas para hoy.</div>
+        <p class="text-[#999] py-6 text-center italic text-sm m-0">No hay reservas para hoy.</p>
         {% endfor %}
       </div>
 
-      <div class="pa-card" style="margin-top:14px">
-        <h2>📞 Pendientes de confirmar por llamada (próximas 24h)</h2>
+      <div class="bg-white rounded-xl border border-border px-5 py-4">
+        <h2 class="mt-0 mb-3 text-[15px] font-semibold text-gray-dark">📞 Pendientes de confirmar por llamada (próximas 24h)</h2>
         {% for r in pendientes_llamada %}
-        <div class="pa-row">
-          <div class="h">{{ r.fecha|date:"d/m" }}<br><small style="font-size:11px;color:#888">{{ r.hora_inicio|time:"H:i" }}</small></div>
-          <div class="body">
-            <strong>{{ r.cliente_nombre }}</strong> · <a href="tel:{{ r.cliente_telefono }}">{{ r.cliente_telefono }}</a><br>
-            <span class="meta">🚗 {{ r.marca }} {{ r.modelo }} · {{ r.patente }}</span>
+        <div class="grid gap-3 py-2.5 border-b border-[#f0f0f0] last:border-b-0 items-center text-sm" style="grid-template-columns:60px 1fr auto">
+          <div class="font-bold text-primary text-[15px]">
+            {{ r.fecha|date:"d/m" }}<br>
+            <small class="text-[11px] text-gray-soft font-normal">{{ r.hora_inicio|time:"H:i" }}</small>
           </div>
-          <form class="pa-confirm-form" method="post" action="{% url 'confirmar_llamada' reserva_id=r.id %}">
+          <div>
+            <strong class="text-gray-dark">{{ r.cliente_nombre }}</strong> · <a href="tel:{{ r.cliente_telefono }}" class="text-primary">{{ r.cliente_telefono }}</a><br>
+            <span class="text-[11px] text-gray-soft">🚗 {{ r.marca }} {{ r.modelo }} · {{ r.patente }}</span>
+          </div>
+          <form class="inline-flex gap-1.5 items-center" method="post" action="{% url 'confirmar_llamada' reserva_id=r.id %}">
             {% csrf_token %}
-            <input class="pa-confirm-input" type="text" name="nota" placeholder="Nota (opcional)" maxlength="500">
-            <button type="submit" class="pa-confirm-btn">✓ Confirmé</button>
+            <input class="px-2 py-1 border border-[#ccc] rounded-md text-xs max-w-[160px]" type="text" name="nota" placeholder="Nota (opcional)" maxlength="500">
+            <button type="submit" class="bg-[#1B5E20] text-white border-0 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer hover:bg-[#0e3e12]">✓ Confirmé</button>
           </form>
         </div>
         {% empty %}
-        <div class="pa-empty">🎉 Todas las reservas próximas están confirmadas por llamada.</div>
+        <p class="text-[#999] py-6 text-center italic text-sm m-0">🎉 Todas las reservas próximas están confirmadas por llamada.</p>
         {% endfor %}
       </div>
 
-      <div class="pa-card" style="margin-top:14px">
-        <h2>📅 Reservas de mañana ({{ manana|date:"d/m/Y" }})</h2>
+      <div class="bg-white rounded-xl border border-border px-5 py-4">
+        <h2 class="mt-0 mb-3 text-[15px] font-semibold text-gray-dark">📅 Reservas de mañana ({{ manana|date:"d/m/Y" }})</h2>
         {% for r in reservas_manana %}
-        <div class="pa-row">
-          <div class="h">{{ r.hora_inicio|time:"H:i" }}</div>
-          <div class="body">
-            <strong>{{ r.cliente_nombre }}</strong> · <a href="tel:{{ r.cliente_telefono }}">{{ r.cliente_telefono }}</a><br>
-            <span class="meta">🚗 {{ r.marca }} {{ r.modelo }} · {{ r.patente }} · {{ r.items.count }} item{{ r.items.count|pluralize:"s" }}</span>
-          </div>
+        <div class="grid gap-3 py-2.5 border-b border-[#f0f0f0] last:border-b-0 items-center text-sm" style="grid-template-columns:60px 1fr auto">
+          <div class="font-bold text-primary text-[15px]">{{ r.hora_inicio|time:"H:i" }}</div>
           <div>
-            <span class="pa-badge {% if r.estado == 'pendiente_email' %}pa-b-pend{% elif r.estado == 'confirmada_email' %}pa-b-conf{% elif r.estado == 'confirmada_llamada' %}pa-b-llama{% endif %}">
-              {{ r.get_estado_display }}
-            </span>
+            <strong class="text-gray-dark">{{ r.cliente_nombre }}</strong> · <a href="tel:{{ r.cliente_telefono }}" class="text-primary">{{ r.cliente_telefono }}</a><br>
+            <span class="text-[11px] text-gray-soft">🚗 {{ r.marca }} {{ r.modelo }} · {{ r.patente }} · {{ r.items.count }} item{{ r.items.count|pluralize:"s" }}</span>
           </div>
+          <span class="px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-[0.3px]
+            {% if r.estado == 'pendiente_email' %}bg-[#FFF3E0] text-[#BF360C]
+            {% elif r.estado == 'confirmada_email' %}bg-[#E3F2FD] text-[#0D47A1]
+            {% elif r.estado == 'confirmada_llamada' %}bg-[#E8F5E9] text-[#1B5E20]
+            {% endif %}">{{ r.get_estado_display }}</span>
         </div>
         {% empty %}
-        <div class="pa-empty">Sin reservas para mañana todavía.</div>
+        <p class="text-[#999] py-6 text-center italic text-sm m-0">Sin reservas para mañana todavía.</p>
         {% endfor %}
       </div>
+
     </div>
 
-    <div>
-      <div class="pa-card">
-        <h2>📈 Próximos 7 días</h2>
+    <div class="flex flex-col gap-3.5">
+
+      <div class="bg-white rounded-xl border border-border px-5 py-4">
+        <h2 class="mt-0 mb-3 text-[15px] font-semibold text-gray-dark">📈 Próximos 7 días</h2>
         {% for d in resumen_semana %}
-        <div class="pa-week-row {% if d.es_hoy %}is-hoy{% endif %}">
-          <span class="pa-week-d">
+        <div class="flex justify-between py-2 border-b border-[#f0f0f0] last:border-b-0 text-sm items-center
+          {% if d.es_hoy %}bg-[#FFF8E1] px-2 -mx-2 rounded-md font-semibold{% endif %}">
+          <span class="text-gray-soft">
             {% if d.es_hoy %}<strong>HOY</strong> ·{% endif %}
             {{ d.fecha|date:"l d/m" }}
           </span>
           <span>
-            <span class="pa-week-n">{{ d.total }}</span>
-            {% if d.pendientes %}<small style="color:#BF360C"> · {{ d.pendientes }} pend</small>{% endif %}
+            <span class="font-bold text-primary">{{ d.total }}</span>
+            {% if d.pendientes %}<small class="text-[#BF360C]"> · {{ d.pendientes }} pend</small>{% endif %}
           </span>
         </div>
         {% endfor %}
       </div>
 
-      <div class="pa-card" style="margin-top:14px">
-        <h2>🔗 Accesos rápidos</h2>
-        <ul style="margin:0;padding-left:20px;font-size:13px;line-height:1.8">
-          <li><a href="../taller/reserva/">Todas las reservas</a></li>
-          <li><a href="../taller/itemcatalogo/">Editar catálogo</a></li>
-          <li><a href="../taller/bloqueocalendario/">Feriados / vacaciones</a></li>
-          <li><a href="../taller/reservaintento/">Bitácora del form público</a></li>
-          <li><a href="../auth/user/">Usuarios y grupos</a></li>
+      <div class="bg-white rounded-xl border border-border px-5 py-4">
+        <h2 class="mt-0 mb-3 text-[15px] font-semibold text-gray-dark">🔗 Accesos rápidos</h2>
+        <ul class="m-0 pl-5 text-sm leading-[1.8]">
+          <li><a href="../taller/reserva/" class="text-primary hover:underline">Todas las reservas</a></li>
+          <li><a href="../taller/itemcatalogo/" class="text-primary hover:underline">Editar catálogo</a></li>
+          <li><a href="../taller/bloqueocalendario/" class="text-primary hover:underline">Feriados / vacaciones</a></li>
+          <li><a href="../taller/reservaintento/" class="text-primary hover:underline">Bitácora del form público</a></li>
+          <li><a href="../auth/user/" class="text-primary hover:underline">Usuarios y grupos</a></li>
         </ul>
       </div>
+
     </div>
   </div>
 </body>

@@ -451,7 +451,7 @@ class MultiBuzonTests(TestCase):
         r = c.get('/intranet/bandeja/')
         self.assertEqual(r.status_code, 200)
         html = r.content.decode()
-        self.assertIn('buzon-selector', html)
+        self.assertIn('buzon-form', html)
         self.assertIn('aledezma@rtriosanpedro.cl', html)
         self.assertIn('contacto@rtriosanpedro.cl', html)
         self.assertNotIn('cobranza@rtriosanpedro.cl', html)

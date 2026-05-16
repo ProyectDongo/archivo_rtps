@@ -1,21 +1,26 @@
 {% if usuario_actual %}
-<nav class="app-nav">
-  <a class="app-brand" href="{% url 'inbox' %}">
-    <div class="app-brand-logo">RSP</div>
-    <div class="app-brand-text">
-      <span>Río San Pedro</span>
-      <span>Rev. Técnicas</span>
+<nav class="bg-navy border-b border-white/[.06] px-[clamp(16px,4vw,32px)] flex items-center justify-between h-16 sticky top-0 z-[100] shadow-[0_1px_4px_rgba(0,0,0,.18)]">
+
+  <a class="flex items-center gap-3" href="{% url 'inbox' %}">
+    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center font-black text-base text-white tracking-tight shrink-0">RSP</div>
+    <div class="flex flex-col leading-[1.1]">
+      <span class="font-black text-[15px] text-white tracking-[2px] uppercase">Río San Pedro</span>
+      <span class="font-light text-[10px] text-white/40 tracking-[3px] uppercase">Rev. Técnicas</span>
     </div>
   </a>
 
-  <div class="app-nav-center">
+  <div class="flex-1 flex justify-center px-4">
     {% if buzones_visibles|length > 1 %}
-    <form method="post" action="{% url 'cambiar_buzon' %}" class="buzon-selector" id="buzon-form">
+    <form method="post" action="{% url 'cambiar_buzon' %}" id="buzon-form"
+          class="inline-flex items-center gap-2 bg-white/[.04] border border-white/10 rounded-md px-2.5 py-1 transition-colors hover:border-primary/50">
       {% csrf_token %}
-      <label class="buzon-selector-label" for="buzon-select">Buzón</label>
-      <select id="buzon-select" name="buzon_id">
+      <label class="text-[9px] font-bold tracking-[2px] uppercase text-white/40" for="buzon-select">Buzón</label>
+      <select id="buzon-select" name="buzon_id"
+              class="bg-transparent border-none text-white font-semibold text-xs py-1.5 pl-2 pr-6 rounded cursor-pointer outline-none appearance-none"
+              style="background-image:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 6px center;background-size:12px;max-width:240px">
         {% for b in buzones_visibles %}
-        <option value="{{ b.id }}" {% if buzon_actual and b.id == buzon_actual.id %}selected{% endif %}>
+        <option value="{{ b.id }}" {% if buzon_actual and b.id == buzon_actual.id %}selected{% endif %}
+                style="background:#1a1f22;color:#fff">
           {{ b.email }}{% if b.total_correos %} ({{ b.total_correos }}){% endif %}
         </option>
         {% endfor %}
@@ -23,29 +28,38 @@
       <noscript><button type="submit">Cambiar</button></noscript>
     </form>
     {% elif buzon_actual %}
-    <div class="buzon-actual-static">
-      <span class="buzon-selector-label">Buzón</span>
-      <span class="buzon-actual-email">{{ buzon_actual.email }}</span>
+    <div class="inline-flex items-center gap-2">
+      <span class="text-[9px] font-bold tracking-[2px] uppercase text-white/40">Buzón</span>
+      <span class="text-xs font-semibold text-white">{{ buzon_actual.email }}</span>
     </div>
     {% endif %}
   </div>
 
-  <div class="app-nav-right">
-    <span class="app-nav-user" title="{{ usuario_actual.email }}">
-      <strong>{{ usuario_actual.email }}</strong>
-      {% if usuario_actual.es_admin %}<span class="badge-admin">ADMIN</span>{% endif %}
+  <div class="flex items-center gap-3">
+    <span class="text-[13px] text-white/50 font-medium inline-flex items-center gap-1.5 max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap"
+          title="{{ usuario_actual.email }}">
+      <strong class="text-white font-semibold">{{ usuario_actual.email }}</strong>
+      {% if usuario_actual.es_admin %}
+        <span class="text-[8px] font-extrabold tracking-[1.5px] bg-primary text-white px-1.5 py-0.5 rounded-sm">ADMIN</span>
+      {% endif %}
     </span>
-    <a href="{% url 'cambiar_password' %}" class="btn-salir" title="Cambiar contraseña">
+    <a href="{% url 'cambiar_password' %}"
+       class="bg-transparent border border-white/20 text-white/50 px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-wide uppercase transition-all hover:border-primary hover:text-primary flex items-center"
+       title="Cambiar contraseña">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
     </a>
-    <form method="post" action="{% url 'logout' %}" class="logout-form">
+    <form method="post" action="{% url 'logout' %}" style="display:inline;margin:0;padding:0">
       {% csrf_token %}
-      <button type="submit" class="btn-salir">Salir</button>
+      <button type="submit"
+              class="bg-transparent border border-white/20 text-white/50 px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-wide uppercase transition-all hover:border-primary hover:text-primary cursor-pointer">
+        Salir
+      </button>
     </form>
   </div>
+
 </nav>
 {% endif %}

@@ -1,8 +1,9 @@
 {% load correos_tags %}
-<article class="preview-card" data-correo-id="{{ correo.id }}">
-  <header class="preview-head">
-    <div class="preview-head-top">
-      <button type="button" class="preview-star" data-correo-id="{{ correo.id }}"
+<article class="preview-card flex flex-col min-h-0" data-correo-id="{{ correo.id }}">
+  <header class="preview-head flex-shrink-0">
+    <div class="preview-head-top flex items-start gap-3 flex-wrap">
+      <button type="button" class="preview-star {% if correo.destacado %}is-active{% endif %}"
+              data-correo-id="{{ correo.id }}"
               title="{% if correo.destacado %}Quitar destacado{% else %}Destacar{% endif %}">
         <svg viewBox="0 0 24 24" width="20" height="20"
              fill="{% if correo.destacado %}currentColor{% else %}none{% endif %}"
@@ -10,15 +11,15 @@
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
         </svg>
       </button>
-      <span class="avatar avatar-lg" data-color="{{ correo.remitente|avatar_color }}">{{ correo.remitente|avatar_iniciales }}</span>
-      <div class="preview-meta-main">
+      <span class="avatar avatar-lg flex-shrink-0" data-color="{{ correo.remitente|avatar_color }}">{{ correo.remitente|avatar_iniciales }}</span>
+      <div class="preview-meta-main flex-1 min-w-0">
         <div class="preview-from" title="{{ correo.remitente }}">{{ correo.remitente_nombre|default:correo.remitente }}</div>
         <div class="preview-from-mail" title="{{ correo.remitente_email }}">{{ correo.remitente_email }}</div>
         <div class="preview-date" title="{{ correo.fecha|fecha_iso }}">
           <span class="date-friendly">{{ correo.fecha|fecha_amigable }}</span>{% if correo.fecha %}<span class="date-iso"> · {{ correo.fecha|date:"d/m/Y H:i" }}</span>{% endif %}
         </div>
       </div>
-      <div class="preview-actions">
+      <div class="preview-actions flex-shrink-0">
         <a href="{% url 'responder_correo' correo.id %}" class="preview-reply-btn" title="Responder al remitente">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -115,7 +116,8 @@
     <div class="preview-to" title="{{ correo.destinatario|default:'—' }}">
       <span class="preview-to-l">Para:</span><span class="preview-to-v">{{ correo.destinatario|default:"—" }}</span>
     </div>
-<div class="preview-tags-wrap" data-correo-id="{{ correo.id }}">
+
+    <div class="preview-tags-wrap" data-correo-id="{{ correo.id }}">
       <div class="preview-tags-label">Etiquetas</div>
       <div class="preview-tags-list">
         {% for et in correo.etiquetas.all %}
@@ -128,8 +130,7 @@
         {% endfor %}
         <button type="button" class="tag-add-btn" id="tag-add-btn" data-correo-id="{{ correo.id }}">+ Asignar</button>
       </div>
-      <div class="tag-picker" id="tag-picker" hidden>
-</div>
+      <div class="tag-picker" id="tag-picker" hidden></div>
     </div>
   </header>
 
@@ -137,17 +138,20 @@
     {% if correo.cuerpo_html or correo.cuerpo_texto %}
     <div class="preview-content preview-content-html">{% correo_iframe correo %}</div>
     {% else %}
-    <div class="preview-empty-body">Este correo no tiene cuerpo en texto plano o es solo adjunto.</div>
+    <div class="preview-empty-body flex items-center justify-center py-12 text-gray-soft text-[13px] italic">
+      Este correo no tiene cuerpo en texto plano o es solo adjunto.
+    </div>
     {% endif %}
   </div>
-{% if thread %}
-  <section class="thread-inline" aria-label="Hilo completo de la conversación">
-    <header class="thread-inline-head">
+
+  {% if thread %}
+  <section class="thread-inline flex-shrink-0" aria-label="Hilo completo de la conversación">
+    <header class="thread-inline-head flex items-center gap-2">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
-      <span>{{ thread|length }} mensaje{{ thread|length|pluralize:"s" }} más en este hilo</span>
+      <span class="flex-1 text-[13px] font-medium text-gray-mid">{{ thread|length }} mensaje{{ thread|length|pluralize:"s" }} más en este hilo</span>
       <button type="button" class="thread-inline-expand-all"
               data-state="collapsed">Expandir todo</button>
     </header>
@@ -157,9 +161,9 @@
         <header class="thread-msg-head" tabindex="0" role="button"
                 aria-controls="thread-msg-body-{{ c.id }}"
                 aria-label="Expandir mensaje de {{ c.remitente_nombre|default:c.remitente }}">
-          <span class="avatar avatar-sm" data-color="{{ c.remitente|avatar_color }}">{{ c.remitente|avatar_iniciales }}</span>
-          <div class="thread-msg-meta">
-            <div class="thread-msg-from-row">
+          <span class="avatar avatar-sm flex-shrink-0" data-color="{{ c.remitente|avatar_color }}">{{ c.remitente|avatar_iniciales }}</span>
+          <div class="thread-msg-meta flex-1 min-w-0">
+            <div class="thread-msg-from-row flex items-center gap-2">
               <span class="thread-msg-from" title="{{ c.remitente }}">{{ c.remitente_nombre|default:c.remitente|truncatechars:40 }}</span>
               {% if c.tipo_carpeta == 'enviados' %}
               <span class="thread-msg-tag-enviado">Enviado</span>
@@ -167,7 +171,7 @@
             </div>
             <div class="thread-msg-snippet">{{ c.cuerpo_texto|truncatechars:140 }}</div>
           </div>
-          <div class="thread-msg-side">
+          <div class="thread-msg-side flex items-center gap-2 flex-shrink-0">
             {% if c.tiene_adjunto %}<span class="thread-msg-adj" title="Con adjunto">📎</span>{% endif %}
             <span class="thread-msg-fecha" title="{{ c.fecha|fecha_iso }}">{{ c.fecha|fecha_amigable }}</span>
             <a href="{% url 'detalle' c.id %}" class="thread-msg-open" title="Abrir en pantalla completa" aria-label="Abrir">
@@ -182,19 +186,19 @@
           </div>
         </header>
         <div class="thread-msg-body" id="thread-msg-body-{{ c.id }}" hidden>
-          <div class="thread-msg-to">
-            <span class="thread-msg-to-label">Para:</span>
+          <div class="thread-msg-to flex gap-1.5 text-[11px] text-gray-soft px-4 pt-3">
+            <span class="thread-msg-to-label font-bold uppercase tracking-wider">Para:</span>
             <span class="thread-msg-to-val">{{ c.destinatario|default:"—"|truncatechars:200 }}</span>
           </div>
           {% if c.cuerpo_html or c.cuerpo_texto %}
           <div class="thread-msg-content">{% correo_iframe c %}</div>
           {% else %}
-          <div class="thread-msg-empty">Este mensaje no tiene cuerpo visible.</div>
+          <div class="thread-msg-empty px-4 py-3 text-[12px] text-gray-soft italic">Este mensaje no tiene cuerpo visible.</div>
           {% endif %}
           {% with adjs=c.adjuntos.all %}
           {% if adjs %}
-          <footer class="thread-msg-adjs">
-            <div class="adj-list-label">📎 Adjuntos ({{ adjs|length }})</div>
+          <footer class="thread-msg-adjs px-4 py-3 border-t border-border">
+            <div class="text-[11px] font-semibold text-gray-soft uppercase tracking-wider mb-2">📎 Adjuntos ({{ adjs|length }})</div>
             {% include 'correos/_adjuntos_galeria.html' with adjuntos=adjs %}
           </footer>
           {% endif %}
@@ -205,44 +209,46 @@
     </div>
   </section>
   {% endif %}
-<div class="preview-notas" data-correo-id="{{ correo.id }}">
-    <div class="preview-notas-head">
+
+  <div class="preview-notas flex-shrink-0" data-correo-id="{{ correo.id }}">
+    <div class="preview-notas-head flex items-center justify-between">
       <span class="preview-notas-label">📝 Notas internas</span>
-      <span class="notas-status" id="notas-status"></span>
+      <span class="notas-status text-[12px]" id="notas-status"></span>
     </div>
-    <textarea class="preview-notas-input" data-correo-id="{{ correo.id }}"
+    <textarea class="preview-notas-input w-full" data-correo-id="{{ correo.id }}"
               placeholder="Anotaciones del equipo. Se guardan automáticamente al perder el foco."
               maxlength="5000">{{ correo.notas }}</textarea>
   </div>
 
   {% with adjuntos=correo.adjuntos.all %}
   {% if adjuntos %}
-  <footer class="preview-foot">
-    <div class="adj-list-label">📎 Adjuntos ({{ adjuntos|length }})</div>
+  <footer class="preview-foot flex-shrink-0">
+    <div class="adj-list-label text-[11px] font-semibold text-gray-soft uppercase tracking-wider mb-2">📎 Adjuntos ({{ adjuntos|length }})</div>
     {% include 'correos/_adjuntos_galeria.html' with adjuntos=adjuntos %}
   </footer>
   {% elif correo.tiene_adjunto %}
-  <footer class="preview-foot">
-    <span class="adj-badge-warn">📎 Marcado con adjuntos pero no se importaron archivos</span>
+  <footer class="preview-foot flex-shrink-0">
+    <span class="text-[12px] text-gray-soft italic">📎 Marcado con adjuntos pero no se importaron archivos</span>
   </footer>
   {% endif %}
   {% endwith %}
 
   {% if archivo_vinculos or archivos_para_vincular %}
-  <footer class="preview-foot preview-vinculos">
-    <div class="adj-list-label">
+  <footer class="preview-foot preview-vinculos flex-shrink-0">
+    <div class="text-[11px] font-semibold text-gray-soft uppercase tracking-wider mb-2">
       🔗 Archivos del Archivo
-      {% if archivo_vinculos %}<span class="vinc-count">({{ archivo_vinculos|length }})</span>{% endif %}
+      {% if archivo_vinculos %}<span class="ml-1 text-gray-mid">({{ archivo_vinculos|length }})</span>{% endif %}
     </div>
     {% if archivo_vinculos %}
-    <ul class="vinc-list">
+    <ul class="vinc-list list-none p-0 m-0 space-y-1.5">
       {% for v in archivo_vinculos %}
-      <li class="vinc-row">
-        <a href="{% url 'archivo_descargar' v.archivo.id %}" target="_blank" class="vinc-name">
+      <li class="vinc-row flex items-center gap-3">
+        <a href="{% url 'archivo_descargar' v.archivo.id %}" target="_blank"
+           class="vinc-name flex-1 min-w-0 text-[13px] text-primary hover:underline truncate">
           📄 {{ v.archivo.nombre|truncatechars:60 }}
-          {% if v.archivo.version_num > 1 %}<span class="vinc-ver">v{{ v.archivo.version_num }}</span>{% endif %}
+          {% if v.archivo.version_num > 1 %}<span class="text-[11px] text-gray-soft ml-1">v{{ v.archivo.version_num }}</span>{% endif %}
         </a>
-        <span class="vinc-meta">{{ v.archivo.tamano_legible }} · {{ v.creado|date:"d/m/Y" }}</span>
+        <span class="vinc-meta text-[11px] text-gray-soft flex-shrink-0">{{ v.archivo.tamano_legible }} · {{ v.creado|date:"d/m/Y" }}</span>
         <form method="post" action="{% url 'correo_desvincular_archivo' correo.id v.id %}"
               data-confirm="¿Quitar vínculo con «{{ v.archivo.nombre|escapejs }}»?">
           {% csrf_token %}
@@ -253,17 +259,21 @@
     </ul>
     {% endif %}
     {% if archivos_para_vincular %}
-    <details class="vinc-add">
-      <summary class="vinc-add-toggle">+ Vincular archivo del Archivo</summary>
-      <form method="post" action="{% url 'correo_vincular_archivo' correo.id %}" class="vinc-add-form">
+    <details class="vinc-add mt-3">
+      <summary class="vinc-add-toggle text-[12px] text-primary cursor-pointer hover:underline">+ Vincular archivo del Archivo</summary>
+      <form method="post" action="{% url 'correo_vincular_archivo' correo.id %}" class="vinc-add-form flex items-center gap-2 mt-2">
         {% csrf_token %}
-        <select name="archivo_id" required>
+        <select name="archivo_id" required
+                class="flex-1 px-3 py-2 border border-border rounded-lg text-[13px] text-gray-dark outline-none focus:border-primary bg-white">
           <option value="" disabled selected>— Elegí un archivo —</option>
           {% for a in archivos_para_vincular %}
           <option value="{{ a.id }}">{{ a.nombre|truncatechars:80 }}{% if a.version_num > 1 %} (v{{ a.version_num }}){% endif %}</option>
           {% endfor %}
         </select>
-        <button type="submit" class="vinc-add-btn">Vincular</button>
+        <button type="submit"
+                class="vinc-add-btn px-4 py-2 bg-primary hover:bg-primary-dark text-white text-[12px] font-semibold rounded-lg border-none cursor-pointer transition-colors">
+          Vincular
+        </button>
       </form>
     </details>
     {% endif %}
