@@ -12,23 +12,20 @@
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
              bgcolor="#ffffff" style="max-width:600px;background-color:#ffffff">
 
-        <!-- Brand header -->
-        <tr><td bgcolor="{{ brand_color }}" style="padding:22px 28px;background-color:{{ brand_color }}">
-          <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse">
-            <tr>
-              <td bgcolor="#f0f0f0" style="background-color:#f0f0f0;padding:14px 22px">
-                {% if brand_logo_url %}
-                <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="160"
-                     style="display:block;border:0;max-width:200px;height:auto">
-                {% else %}
-                <span style="font-size:20px;font-weight:900;color:#111111;font-family:Arial,Helvetica,sans-serif">{{ brand_company_name }}</span>
-                {% endif %}
-              </td>
-            </tr>
-          </table>
+        <!-- Logo header -->
+        <tr><td bgcolor="#ffffff" style="padding:28px 36px 24px;background-color:#ffffff">
+          {% if brand_logo_url %}
+          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="190"
+               style="display:block;border:0;max-width:240px;height:auto">
+          {% else %}
+          <span style="font-size:22px;font-weight:900;color:#111111;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.5px">{{ brand_company_name }}</span>
+          {% endif %}
         </td></tr>
 
-        <!-- Body -->
+        <!-- Acento de marca -->
+        <tr><td bgcolor="{{ brand_color }}" height="4" style="background-color:{{ brand_color }};height:4px;font-size:0;line-height:0">&nbsp;</td></tr>
+
+        <!-- Contenido -->
         <tr><td bgcolor="#ffffff" style="padding:32px 40px 24px;background-color:#ffffff">
           {% if cuerpo_usuario|is_html_content %}
           <div style="font-size:15px;line-height:1.7;color:#1f2937;font-family:Arial,Helvetica,sans-serif">{{ cuerpo_usuario|sanitizar_email_html_outbound|safe }}</div>
@@ -37,14 +34,14 @@
           {% endif %}
         </td></tr>
 
-        <!-- Signature -->
+        <!-- Firma -->
         {% if buzon %}
         <tr><td bgcolor="#ffffff" style="padding:0 40px 28px;background-color:#ffffff">
           {% firma_html buzon %}
         </td></tr>
         {% endif %}
 
-        <!-- Quoted attribution -->
+        <!-- Citado: atribución -->
         <tr><td bgcolor="#ffffff" style="padding:0 40px 10px;background-color:#ffffff">
           <div style="border-top:1px solid #eef0f3;padding-top:16px;color:#9ca3af;font-size:12px;font-family:Arial,Helvetica,sans-serif;line-height:1.5">
             El {% if correo_original.fecha %}{{ correo_original.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %},
@@ -52,7 +49,7 @@
           </div>
         </td></tr>
 
-        <!-- Quoted body -->
+        <!-- Citado: cuerpo -->
         <tr><td bgcolor="#f9fafb" style="padding:14px 40px 32px;background-color:#f9fafb">
           <blockquote style="margin:0;padding:0 0 0 14px;border-left:3px solid #d1d5db">
             {% if correo_original.cuerpo_html %}

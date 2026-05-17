@@ -12,24 +12,20 @@
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
              bgcolor="#ffffff" style="max-width:600px;background-color:#ffffff">
 
-        <!-- Brand header: color band + logo -->
-        <tr><td bgcolor="{{ brand_color }}" style="padding:22px 28px;background-color:{{ brand_color }}">
-          <!-- Fondo #f0f0f0 (no blanco puro) da contraste al texto gris del logo -->
-          <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse">
-            <tr>
-              <td bgcolor="#f0f0f0" style="background-color:#f0f0f0;padding:14px 22px">
-                {% if brand_logo_url %}
-                <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="160"
-                     style="display:block;border:0;max-width:200px;height:auto">
-                {% else %}
-                <span style="font-size:20px;font-weight:900;color:#111111;font-family:Arial,Helvetica,sans-serif">{{ brand_company_name }}</span>
-                {% endif %}
-              </td>
-            </tr>
-          </table>
+        <!-- Logo header: blanco puro, fondo nativo del logo, sin contenedores extra -->
+        <tr><td bgcolor="#ffffff" style="padding:28px 36px 24px;background-color:#ffffff">
+          {% if brand_logo_url %}
+          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="190"
+               style="display:block;border:0;max-width:240px;height:auto">
+          {% else %}
+          <span style="font-size:22px;font-weight:900;color:#111111;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.5px">{{ brand_company_name }}</span>
+          {% endif %}
         </td></tr>
 
-        <!-- Body -->
+        <!-- Línea de acento: el color de marca separa header y contenido -->
+        <tr><td bgcolor="{{ brand_color }}" height="4" style="background-color:{{ brand_color }};height:4px;font-size:0;line-height:0">&nbsp;</td></tr>
+
+        <!-- Contenido -->
         <tr><td bgcolor="#ffffff" style="padding:32px 40px 24px;background-color:#ffffff">
           {% if cuerpo_usuario|is_html_content %}
           <div style="font-size:15px;line-height:1.7;color:#1f2937;font-family:Arial,Helvetica,sans-serif">{{ cuerpo_usuario|sanitizar_email_html_outbound|safe }}</div>
@@ -38,7 +34,7 @@
           {% endif %}
         </td></tr>
 
-        <!-- Signature -->
+        <!-- Firma -->
         {% if buzon %}
         <tr><td bgcolor="#ffffff" style="padding:0 40px 32px;background-color:#ffffff">
           {% firma_html buzon %}

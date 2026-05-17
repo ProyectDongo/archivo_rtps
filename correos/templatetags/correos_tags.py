@@ -860,8 +860,8 @@ def render_firma_html(buzon) -> str:
         logo_col = (
             f'<td valign="middle" style="vertical-align:middle;padding-left:28px;text-align:right">'
             f'<img src="{escape(logo_url)}" alt="" '
-            f'style="display:block;max-width:120px;height:auto;border:0" '
-            f'width="120"></td>'
+            f'style="display:block;max-width:90px;height:auto;border:0" '
+            f'width="90"></td>'
         )
 
     # ─── Wrapper ──────────────────────────────────────────────────────────
