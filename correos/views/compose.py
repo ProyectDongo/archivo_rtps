@@ -2,7 +2,6 @@ from ._base import (
     portal_login_required, _audit, _usuario_actual, _buzon_actual,
     _get_ip, logger,
 )
-import base64
 import re
 from django.conf import settings
 from django.contrib import messages
@@ -18,7 +17,7 @@ from datetime import timedelta
 
 from ..models import (
     Adjunto, BorradorAdjunto, BorradorCorreo, Buzon, Correo,
-    CorreoEnviado, Etiqueta, ReenvioCorreo, UsuarioPortal, hash_ip,
+    CorreoEnviado, CorreoLeido, Etiqueta, ReenvioCorreo, UsuarioPortal, hash_ip,
 )
 from ..threading import (
     create_thread_for as thread_create_for,
@@ -328,21 +327,13 @@ def _enviados_recientes(usuario: UsuarioPortal) -> int:
     return CorreoEnviado.objects.filter(usuario=usuario, enviado_en__gte=desde).count()
 
 
-def _logo_data_uri(filename: str) -> str:
-    """Lee un PNG de static/logos/ y devuelve un data URI base64 para embeber en email."""
-    path = settings.BASE_DIR / 'static' / 'logos' / filename
-    try:
-        data = path.read_bytes()
-        return 'data:image/png;base64,' + base64.b64encode(data).decode('ascii')
-    except OSError:
-        return ''
-
-
 def _brand_email_ctx() -> dict:
     """Variables de marca para los templates de email saliente."""
+    logo_url = getattr(settings, 'FIRMA_LOGO_URL', '')
+    firma_logo_url = getattr(settings, 'FIRMA_LOGO_FIRMA_URL', '') or logo_url
     return {
-        'brand_logo_url':       _logo_data_uri('logo_medium.png'),
-        'brand_firma_logo_url': _logo_data_uri('logo_firma.png'),
+        'brand_logo_url':       logo_url,
+        'brand_firma_logo_url': firma_logo_url,
         'brand_color':          getattr(settings, 'BRAND_PRIMARY_COLOR', '#1F7A33'),
         'brand_company_name':   getattr(settings, 'BRAND_COMPANY_NAME', 'Río San Pedro RT'),
     }
