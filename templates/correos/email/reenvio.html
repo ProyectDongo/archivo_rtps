@@ -5,25 +5,42 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>{{ correo.asunto|default:"Correo reenviado" }}</title>
 </head>
-<body style="margin:0;padding:0;background-color:{{ brand_color }};font-family:Arial,Helvetica,sans-serif">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{{ brand_color }}">
-    <tr><td align="center" style="padding:40px 16px 32px" bgcolor="{{ brand_color }}">
+<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0f2f5">
+    <tr><td align="center" style="padding:36px 16px 28px" bgcolor="#f0f2f5">
 
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
              bgcolor="#ffffff" style="max-width:600px;background-color:#ffffff">
 
-        <!-- Logo header -->
-        <tr><td bgcolor="#ffffff" style="padding:28px 40px 24px;background-color:#ffffff;border-bottom:2px solid {{ brand_color }}">
-          {% if brand_logo_url %}
-          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="160"
-               style="display:block;border:0;max-width:220px;height:auto">
-          {% else %}
-          <span style="font-size:20px;font-weight:700;color:#111827;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.5px">{{ brand_company_name }}</span>
-          {% endif %}
+        <!-- Brand header -->
+        <tr><td bgcolor="{{ brand_color }}" style="padding:0;background-color:{{ brand_color }}">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+            <tr>
+              <td bgcolor="{{ brand_color }}" style="padding:20px 24px;background-color:{{ brand_color }}">
+                {% if brand_logo_url %}
+                <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse">
+                  <tr><td bgcolor="#ffffff" style="background-color:#ffffff;padding:10px 16px">
+                    <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="150"
+                         style="display:block;border:0;max-width:190px;height:auto">
+                  </td></tr>
+                </table>
+                {% else %}
+                <span style="font-size:22px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.5px">{{ brand_company_name }}</span>
+                {% endif %}
+              </td>
+              <td bgcolor="{{ brand_color }}" align="right" valign="middle"
+                  style="padding:20px 28px;background-color:{{ brand_color }};vertical-align:middle">
+                <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+                            color:rgba(255,255,255,0.85);font-family:Arial,Helvetica,sans-serif;text-align:right;line-height:1.5">
+                  {{ brand_company_name }}
+                </div>
+              </td>
+            </tr>
+          </table>
         </td></tr>
 
         {% if mensaje_extra %}
-        <!-- Personal note with brand left bar -->
+        <!-- Personal note -->
         <tr><td bgcolor="#ffffff" style="padding:28px 40px 20px;background-color:#ffffff">
           <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse">
             <tr><td bgcolor="#f9fafb" style="background-color:#f9fafb;padding:16px 20px;font-size:15px;line-height:1.7;color:#1f2937;white-space:pre-wrap;border-left:3px solid {{ brand_color }};font-family:Arial,Helvetica,sans-serif">{{ mensaje_extra }}</td></tr>
@@ -37,7 +54,7 @@
         </td></tr>
         {% endif %}
 
-        <!-- Forwarded header -->
+        <!-- Forwarded label + metadata -->
         <tr><td bgcolor="#f9fafb" style="padding:20px 40px 14px;background-color:#f9fafb;border-top:1px solid #eef0f3">
           <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:14px;font-family:Arial,Helvetica,sans-serif">
             Mensaje reenviado
@@ -77,7 +94,7 @@
 
       <!-- Footer -->
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">
-        <tr><td style="padding:16px 0 4px;text-align:center;font-size:11px;color:rgba(255,255,255,0.7);font-family:Arial,Helvetica,sans-serif">
+        <tr><td style="padding:16px 0 4px;text-align:center;font-size:11px;color:#9ca3af;font-family:Arial,Helvetica,sans-serif">
           {{ brand_company_name }} · Respuestas llegarán a {{ reenviado_por }}
         </td></tr>
       </table>
