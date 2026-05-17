@@ -203,8 +203,12 @@ TURNSTILE_SITE_KEY   = os.environ.get('TURNSTILE_SITE_KEY', '')
 TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '')
 
 # ─── Branding ────────────────────────────────────────────────────────────────
-BRAND_PRIMARY_COLOR = os.environ.get('BRAND_PRIMARY_COLOR', '#1e7d32')
-FIRMA_LOGO_URL      = os.environ.get('FIRMA_LOGO_URL', 'https://rtriosanpedro.cl/images/logo_wide.png')
+BRAND_PRIMARY_COLOR   = os.environ.get('BRAND_PRIMARY_COLOR', '#1F7A33')
+BRAND_COMPANY_NAME    = os.environ.get('BRAND_COMPANY_NAME', 'Río San Pedro RT')
+# URL absoluta del logo para emails. Dejar vacío → badge HTML de respaldo.
+# En prod: FIRMA_LOGO_URL=https://portal.rtriosanpedro.cl/static/logos/logo_medium.png
+FIRMA_LOGO_URL        = os.environ.get('FIRMA_LOGO_URL', '')
+FIRMA_LOGO_FIRMA_URL  = os.environ.get('FIRMA_LOGO_FIRMA_URL', '')
 
 # ─── Dominios desechables extra ──────────────────────────────────────────────
 _disp = os.environ.get('DISPOSABLE_DOMAINS_EXTRA', '')
