@@ -772,7 +772,6 @@ def render_firma_html(buzon) -> str:
     """
     Devuelve el HTML de la firma de un buzón con layout MIME-safe (tablas +
     estilos inline) que se ve consistente en Gmail, Outlook, Apple Mail.
-    Iconos en círculos del color de acento del deployment (BRAND_PRIMARY_COLOR).
     Si el buzón no tiene firma activa o no tiene datos, devuelve ''.
     """
     if not buzon or not getattr(buzon, 'firma_activa', True):
@@ -789,57 +788,59 @@ def render_firma_html(buzon) -> str:
     if not (nombre or cargo or telefono or email_v or web or logo_url):
         return ''
 
-    # ─── Datos (columna derecha) ──────────────────────────────────────────
+    # ─── Info column (izquierda con borde de acento) ──────────────────────
     bloques = []
     if nombre:
         bloques.append(
-            f'<div style="font-size:16px;font-weight:700;color:#1a1f22;'
-            f'line-height:1.25;letter-spacing:-0.2px">{escape(nombre)}</div>'
+            f'<div style="font-size:16px;font-weight:700;color:#111827;'
+            f'line-height:1.25;letter-spacing:-0.2px;font-family:Arial,Helvetica,sans-serif">'
+            f'{escape(nombre)}</div>'
         )
     if cargo:
         bloques.append(
-            f'<div style="font-size:11px;font-weight:600;letter-spacing:1.5px;'
-            f'text-transform:uppercase;color:#6b7280;margin-top:3px">'
+            f'<div style="font-size:11px;font-weight:600;letter-spacing:1.2px;'
+            f'text-transform:uppercase;color:{accent};margin-top:4px;'
+            f'font-family:Arial,Helvetica,sans-serif">'
             f'{escape(cargo)}</div>'
         )
 
-    # Línea fina del color de acento debajo del nombre/cargo (bgcolor para Gmail)
+    # Short brand accent line
     bloques.append(
         f'<table cellpadding="0" cellspacing="0" border="0" role="presentation" '
         f'style="border-collapse:collapse;margin:10px 0 12px">'
-        f'<tr><td width="36" height="2" bgcolor="{accent}" '
+        f'<tr><td width="32" height="2" bgcolor="{accent}" '
         f'style="background-color:{accent};height:2px;font-size:0;line-height:0">&nbsp;</td></tr>'
         f'</table>'
     )
 
-    # Filas de contacto
+    # Contact rows — clean single-letter labels in accent color
     contact_rows = []
     if telefono:
         contact_rows.append(
-            f'<tr><td style="padding:3px 0;font-size:13px;color:#394348;'
-            f'line-height:1.4;font-family:-apple-system,BlinkMacSystemFont,'
-            f"'Segoe UI',Helvetica,Arial,sans-serif\">"
-            f'{_icon_circle("&#9742;", accent)}{escape(telefono)}</td></tr>'
+            f'<tr><td style="padding:2px 0;font-size:13px;color:#4b5563;'
+            f'line-height:1.5;font-family:Arial,Helvetica,sans-serif">'
+            f'<span style="display:inline-block;width:14px;color:{accent};'
+            f'font-weight:700;font-size:11px;font-family:Arial,Helvetica,sans-serif">T</span>'
+            f'{escape(telefono)}</td></tr>'
         )
     if email_v:
         contact_rows.append(
-            f'<tr><td style="padding:3px 0;font-size:13px;color:#394348;'
-            f'line-height:1.4;font-family:-apple-system,BlinkMacSystemFont,'
-            f"'Segoe UI',Helvetica,Arial,sans-serif\">"
-            f'{_icon_circle("&#9993;", accent)}'
-            f'<a href="mailto:{escape(email_v)}" style="color:#394348;'
-            f'text-decoration:none">{escape(email_v)}</a></td></tr>'
+            f'<tr><td style="padding:2px 0;font-size:13px;color:#4b5563;'
+            f'line-height:1.5;font-family:Arial,Helvetica,sans-serif">'
+            f'<span style="display:inline-block;width:14px;color:{accent};'
+            f'font-weight:700;font-size:11px;font-family:Arial,Helvetica,sans-serif">E</span>'
+            f'<a href="mailto:{escape(email_v)}" style="color:#4b5563;text-decoration:none;'
+            f'font-family:Arial,Helvetica,sans-serif">{escape(email_v)}</a></td></tr>'
         )
     if web:
-        # Normalizar: si no tiene esquema, agregamos https:// al href.
         href_web = web if web.lower().startswith(('http://', 'https://')) else f'https://{web}'
         contact_rows.append(
-            f'<tr><td style="padding:3px 0;font-size:13px;color:#394348;'
-            f'line-height:1.4;font-family:-apple-system,BlinkMacSystemFont,'
-            f"'Segoe UI',Helvetica,Arial,sans-serif\">"
-            f'{_icon_circle("&#9783;", accent)}'
-            f'<a href="{escape(href_web)}" style="color:#394348;'
-            f'text-decoration:none">{escape(web)}</a></td></tr>'
+            f'<tr><td style="padding:2px 0;font-size:13px;color:#4b5563;'
+            f'line-height:1.5;font-family:Arial,Helvetica,sans-serif">'
+            f'<span style="display:inline-block;width:14px;color:{accent};'
+            f'font-weight:700;font-size:11px;font-family:Arial,Helvetica,sans-serif">W</span>'
+            f'<a href="{escape(href_web)}" style="color:#4b5563;text-decoration:none;'
+            f'font-family:Arial,Helvetica,sans-serif">{escape(web)}</a></td></tr>'
         )
     if contact_rows:
         bloques.append(
@@ -847,31 +848,29 @@ def render_firma_html(buzon) -> str:
             'style="border-collapse:collapse">' + ''.join(contact_rows) + '</table>'
         )
 
-    columna_derecha = (
-        f'<td valign="top" style="vertical-align:top;'
-        f'padding-left:18px;border-left:3px solid {accent}">'
+    info_col = (
+        f'<td valign="top" style="vertical-align:top;padding-left:16px;border-left:3px solid {accent}">'
         + ''.join(bloques)
         + '</td>'
     )
 
-    # ─── Logo (columna izquierda, opcional) ───────────────────────────────
-    columna_logo = ''
+    # ─── Logo column (derecha, opcional) ─────────────────────────────────
+    logo_col = ''
     if logo_url:
-        columna_logo = (
-            f'<td valign="top" style="vertical-align:top;padding-right:20px">'
+        logo_col = (
+            f'<td valign="middle" style="vertical-align:middle;padding-left:28px;text-align:right">'
             f'<img src="{escape(logo_url)}" alt="" '
-            f'style="display:block;max-width:130px;height:auto;border:0" '
-            f'width="130"></td>'
+            f'style="display:block;max-width:100px;height:auto;border:0" '
+            f'width="100"></td>'
         )
 
     # ─── Wrapper ──────────────────────────────────────────────────────────
     html = (
-        '<div style="margin-top:28px;padding-top:18px;'
-        'border-top:1px solid #e8e8e8;font-family:-apple-system,'
-        'BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif">'
+        '<div style="margin-top:24px;padding-top:20px;'
+        'border-top:1px solid #e8e8e8;font-family:Arial,Helvetica,sans-serif">'
         '<table cellpadding="0" cellspacing="0" border="0" role="presentation" '
         'style="border-collapse:collapse">'
-        f'<tr>{columna_logo}{columna_derecha}</tr>'
+        f'<tr>{info_col}{logo_col}</tr>'
         '</table></div>'
     )
     return html

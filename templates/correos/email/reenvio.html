@@ -5,69 +5,84 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>{{ correo.asunto|default:"Correo reenviado" }}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f2f2f2">
-    <tr><td align="center" style="padding:32px 12px 24px" bgcolor="#f2f2f2">
-
-      {% if brand_logo_url %}
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">
-        <tr><td style="padding-bottom:18px">
-          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="130" height="36"
-               style="display:block;border:0;height:36px;max-width:200px">
-        </td></tr>
-      </table>
-      {% endif %}
+<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0f2f5">
+    <tr><td align="center" style="padding:36px 16px 28px" bgcolor="#f0f2f5">
 
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
-             bgcolor="#ffffff" style="max-width:600px;background-color:#ffffff;border:1px solid #e0e0e0">
+             bgcolor="#ffffff" style="max-width:600px;background-color:#ffffff">
 
-        <tr><td bgcolor="{{ brand_color }}" height="4" style="background-color:{{ brand_color }};height:4px;font-size:0;line-height:0">&nbsp;</td></tr>
+        <!-- Top accent bar -->
+        <tr><td bgcolor="{{ brand_color }}" height="3" style="background-color:{{ brand_color }};height:3px;font-size:0;line-height:0">&nbsp;</td></tr>
+
+        <!-- Header: logo -->
+        <tr><td bgcolor="#ffffff" style="padding:22px 40px 18px;background-color:#ffffff;border-bottom:1px solid #eef0f3">
+          {% if brand_logo_url %}
+          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="120"
+               style="display:block;border:0;max-width:150px;height:auto">
+          {% else %}
+          <span style="font-size:15px;font-weight:700;color:#111827;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.3px">{{ brand_company_name }}</span>
+          {% endif %}
+        </td></tr>
 
         {% if mensaje_extra %}
-        <tr><td bgcolor="#ffffff" style="padding:24px 32px 16px;background-color:#ffffff">
-          <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%"
-                 style="border-collapse:collapse;border-left:4px solid {{ brand_color }}">
-            <tr><td bgcolor="#fffbf0" style="background-color:#fffbf0;padding:14px 16px;font-size:14px;line-height:1.6;color:#333333;white-space:pre-wrap">{{ mensaje_extra }}</td></tr>
+        <!-- Personal note with left brand bar -->
+        <tr><td bgcolor="#ffffff" style="padding:28px 40px 20px;background-color:#ffffff">
+          <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse">
+            <tr><td bgcolor="#f9fafb" style="background-color:#f9fafb;padding:16px 20px;font-size:15px;line-height:1.7;color:#1f2937;white-space:pre-wrap;border-left:3px solid {{ brand_color }};font-family:Arial,Helvetica,sans-serif">{{ mensaje_extra }}</td></tr>
           </table>
         </td></tr>
-        <tr><td bgcolor="#ffffff" style="padding:0 32px 24px;border-top:1px solid #f0f0f0;background-color:#ffffff">
+
+        <!-- Signature -->
+        <tr><td bgcolor="#ffffff" style="padding:0 40px 28px;background-color:#ffffff">
           {% if buzon %}{% firma_html buzon %}{% endif %}
-          <div style="font-size:12px;color:#999999;margin-top:8px">Reenviado por {{ reenviado_por }}</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:10px;font-family:Arial,Helvetica,sans-serif">Reenviado por {{ reenviado_por }}</div>
         </td></tr>
         {% endif %}
 
-        <tr><td bgcolor="#ffffff" style="padding:20px 32px 12px;background-color:#ffffff">
-          <div style="color:#999999;font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:12px">
-            Mensaje original reenviado
+        <!-- Forwarded message label -->
+        <tr><td bgcolor="#f9fafb" style="padding:20px 40px 14px;background-color:#f9fafb;border-top:1px solid #eef0f3">
+          <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:14px;font-family:Arial,Helvetica,sans-serif">
+            Mensaje reenviado
           </div>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                 bgcolor="#fafafa" style="font-size:13px;color:#555555;background-color:#fafafa;border:1px solid #ebebeb">
-            <tr><td bgcolor="#fafafa" style="padding:7px 12px;color:#999999;width:70px;white-space:nowrap">De:</td>
-                <td bgcolor="#fafafa" style="padding:7px 12px"><strong>{{ correo.remitente|default:"—" }}</strong></td></tr>
-            <tr><td bgcolor="#fafafa" style="padding:7px 12px;color:#999999;border-top:1px solid #efefef">Para:</td>
-                <td bgcolor="#fafafa" style="padding:7px 12px;border-top:1px solid #efefef">{{ correo.destinatario|default:"—"|truncatechars:200 }}</td></tr>
-            <tr><td bgcolor="#fafafa" style="padding:7px 12px;color:#999999;border-top:1px solid #efefef">Fecha:</td>
-                <td bgcolor="#fafafa" style="padding:7px 12px;border-top:1px solid #efefef">{% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td></tr>
-            <tr><td bgcolor="#fafafa" style="padding:7px 12px;color:#999999;border-top:1px solid #efefef">Asunto:</td>
-                <td bgcolor="#fafafa" style="padding:7px 12px;border-top:1px solid #efefef"><strong>{{ correo.asunto|default:"(sin asunto)" }}</strong></td></tr>
+          <!-- Metadata -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;border-collapse:collapse">
+            <tr>
+              <td style="padding:4px 12px 4px 0;color:#9ca3af;width:52px;font-family:Arial,Helvetica,sans-serif;vertical-align:top">De</td>
+              <td style="padding:4px 0;color:#374151;font-family:Arial,Helvetica,sans-serif"><strong>{{ correo.remitente|default:"—" }}</strong></td>
+            </tr>
+            <tr>
+              <td style="padding:4px 12px 4px 0;color:#9ca3af;font-family:Arial,Helvetica,sans-serif;vertical-align:top">Para</td>
+              <td style="padding:4px 0;color:#374151;font-family:Arial,Helvetica,sans-serif">{{ correo.destinatario|default:"—"|truncatechars:200 }}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 12px 4px 0;color:#9ca3af;font-family:Arial,Helvetica,sans-serif;vertical-align:top">Fecha</td>
+              <td style="padding:4px 0;color:#374151;font-family:Arial,Helvetica,sans-serif">{% if correo.fecha %}{{ correo.fecha|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 12px 4px 0;color:#9ca3af;font-family:Arial,Helvetica,sans-serif;vertical-align:top">Asunto</td>
+              <td style="padding:4px 0;color:#374151;font-family:Arial,Helvetica,sans-serif"><strong>{{ correo.asunto|default:"(sin asunto)" }}</strong></td>
+            </tr>
           </table>
         </td></tr>
 
-        <tr><td bgcolor="#ffffff" style="padding:12px 32px 32px;background-color:#ffffff">
+        <!-- Forwarded content -->
+        <tr><td bgcolor="#ffffff" style="padding:20px 40px 36px;background-color:#ffffff">
           {% if correo.cuerpo_html %}
-          <div style="font-size:14px;line-height:1.6;color:#222222">{{ correo.cuerpo_html|sanitizar_email_html_outbound|safe }}</div>
+          <div style="font-size:14px;line-height:1.7;color:#1f2937;font-family:Arial,Helvetica,sans-serif">{{ correo.cuerpo_html|sanitizar_email_html_outbound|safe }}</div>
           {% elif correo.cuerpo_texto|is_html_content %}
-          <div style="font-size:14px;line-height:1.6;color:#222222">{{ correo.cuerpo_texto|sanitizar_email_html_outbound|safe }}</div>
+          <div style="font-size:14px;line-height:1.7;color:#1f2937;font-family:Arial,Helvetica,sans-serif">{{ correo.cuerpo_texto|sanitizar_email_html_outbound|safe }}</div>
           {% else %}
-          <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;color:#222222">{{ correo.cuerpo_texto|default:"(sin cuerpo)" }}</div>
+          <div style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:#1f2937;font-family:Arial,Helvetica,sans-serif">{{ correo.cuerpo_texto|default:"(sin cuerpo)" }}</div>
           {% endif %}
         </td></tr>
 
       </table>
 
+      <!-- Footer -->
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">
-        <tr><td style="padding:14px 0 4px;text-align:center;font-size:11px;color:#b0b0b0">
-          {{ brand_company_name }} · Portal de Correos · Respuestas llegarán a {{ reenviado_por }}
+        <tr><td style="padding:16px 0 4px;text-align:center;font-size:11px;color:#9ca3af;font-family:Arial,Helvetica,sans-serif">
+          {{ brand_company_name }} · Respuestas llegarán a {{ reenviado_por }}
         </td></tr>
       </table>
 
