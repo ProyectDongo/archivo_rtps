@@ -756,13 +756,14 @@ class CidResolutionTests(TestCase):
         self.assertNotIn('cid:', out)
         self.assertIn(f'/intranet/correo/{self.correo.id}/cid/', out)
 
-    def test_resolver_cid_no_resuelto_queda_intacto(self):
-        from correos.templatetags.correos_tags import _resolver_cid_en_html
-        # cid que no existe entre los adjuntos → bleach lo strippea después
-        # pero acá solo verificamos que _resolver_cid_en_html no lo toca.
+    def test_resolver_cid_no_resuelto_usa_placeholder(self):
+        from correos.templatetags.correos_tags import _resolver_cid_en_html, _CID_PLACEHOLDER
+        # cid que no existe entre los adjuntos → placeholder 1×1 transparente
+        # para evitar 404 y src vacíos en el iframe sandboxed.
         html = '<img src="cid:fantasma">'
         out = _resolver_cid_en_html(html, self.correo)
-        self.assertEqual(out, html)
+        self.assertIn(_CID_PLACEHOLDER, out)
+        self.assertNotIn('cid:', out)
 
     @override_settings(EMAIL_ALLOW_EXTERNAL_IMAGES=False)
     def test_render_correo_html_strip_de_imgs_externas(self):

@@ -353,13 +353,15 @@ def _email_cleaner_outbound():
 # el cliente convirtió HTML a texto plano y la app lo renderea pre-formato.
 _RE_CID_URL = re.compile(r'cid:([^"\'\s>)\]]+)', re.IGNORECASE)
 _RE_CID_BRACKETED = re.compile(r'\[\s*cid\s*:\s*([^\]\s]+)\s*\]', re.IGNORECASE)
+# 1×1 transparent GIF — placeholder para cid: no resueltos (evita 404 y src vacío)
+_CID_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
 
 
 def _resolver_cid_en_html(html: str, correo) -> str:
     """
     Reemplaza `cid:xxx` en HTML por URLs internas autenticadas para los
-    adjuntos del correo dado. Las refs no resueltas quedan tal cual y bleach
-    las strippa (cid: no está en el protocols whitelist del cleaner safe-imgs).
+    adjuntos del correo dado. CIDs no resueltos se reemplazan con un
+    placeholder 1×1 transparente para evitar 404 y src vacíos.
 
     Una sola query a Adjunto: devuelve un dict {content_id: url} y reemplaza
     en bloque.
@@ -370,8 +372,6 @@ def _resolver_cid_en_html(html: str, correo) -> str:
     from django.urls import reverse
     cids = list(correo.adjuntos.exclude(content_id='')
                        .values_list('content_id', flat=True))
-    if not cids:
-        return html
 
     cid_to_url = {
         cid: reverse('adjunto_por_cid',
@@ -381,7 +381,7 @@ def _resolver_cid_en_html(html: str, correo) -> str:
 
     def repl(m):
         cid = m.group(1).strip().rstrip('>"\')')
-        return cid_to_url.get(cid, m.group(0))
+        return cid_to_url.get(cid, _CID_PLACEHOLDER)
 
     return _RE_CID_URL.sub(repl, html)
 
