@@ -856,14 +856,18 @@ def render_firma_html(buzon) -> str:
         + '</td>'
     )
 
-    # ─── Logo column (URL pública; Gmail bloquea data: URIs) ─────────────
-    _firma_logo_url = (
-        getattr(settings, 'FIRMA_LOGO_FIRMA_URL', '') or
-        getattr(settings, 'FIRMA_LOGO_URL', '')
-    )
-    if _firma_logo_url:
+    # ─── Logo column (CID embebido; Gmail bloquea data: URIs y a veces URLs) ──
+    _has_logo = False
+    for _base in (
+        settings.BASE_DIR / 'static' / 'logos',
+        settings.BASE_DIR / 'staticfiles' / 'logos',
+    ):
+        if (_base / 'logo_firma.png').exists() or (_base / 'logo_medium.png').exists():
+            _has_logo = True
+            break
+    if _has_logo:
         logo_inner = (
-            '<img src="' + _firma_logo_url + '" alt="" '
+            '<img src="cid:logo_rsp_firma" alt="" '
             'width="140" style="display:block;border:0;max-width:140px;height:auto">'
         )
     else:

@@ -90,7 +90,11 @@ def safe_send(
         for nombre, contenido, mime in (adjuntos or []):
             msg.attach(nombre, contenido, mime)
 
-        # Imágenes inline (CID) — se envían como partes MIME relacionadas
+        # Imágenes inline (CID) — se envían como partes MIME con Content-ID.
+        # Cuando no hay adjuntos regulares, usamos multipart/related (RFC 2387)
+        # para que Gmail encuentre las imágenes dentro del mismo contenedor HTML.
+        if inline_images and not adjuntos:
+            msg.mixed_subtype = 'related'
         for nombre, contenido, mime, cid in (inline_images or []):
             part = MIMEBase(*mime.split('/', 1))
             part.set_payload(contenido)

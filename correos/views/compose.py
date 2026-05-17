@@ -265,6 +265,7 @@ def reenviar_correo_view(request, correo_id):
     # vuelven al usuario que reenvió, NO al archivo (intencional, distinto
     # de responder).
     asunto = f'Fwd: {correo.asunto or "(sin asunto)"}'
+    brand_ctx, logo_inline = _build_logo_email_data()
     resultado = safe_send(
         asunto=asunto,
         para=destinatarios,
@@ -274,12 +275,12 @@ def reenviar_correo_view(request, correo_id):
             'buzon': correo.buzon,
             'mensaje_extra': nota,
             'reenviado_por': usuario.email,
-            **_brand_email_ctx(),
+            **brand_ctx,
         },
         from_alias=_from_alias_buzon(correo.buzon),
         reply_to=[usuario.email],
         adjuntos=adjuntos_payload,
-        inline_images=inline_payload,
+        inline_images=inline_payload + logo_inline,
     )
 
     # ─── Audit log ─────────────────────────────────────────────────────
@@ -327,16 +328,47 @@ def _enviados_recientes(usuario: UsuarioPortal) -> int:
     return CorreoEnviado.objects.filter(usuario=usuario, enviado_en__gte=desde).count()
 
 
-def _brand_email_ctx() -> dict:
-    """Variables de marca para los templates de email saliente."""
-    logo_url = getattr(settings, 'FIRMA_LOGO_URL', '')
-    firma_logo_url = getattr(settings, 'FIRMA_LOGO_FIRMA_URL', '') or logo_url
-    return {
+def _logo_bytes(filename: str) -> bytes | None:
+    """Lee el PNG desde static/logos/ o staticfiles/logos/ (post-collectstatic)."""
+    for base in (
+        settings.BASE_DIR / 'static' / 'logos',
+        settings.BASE_DIR / 'staticfiles' / 'logos',
+    ):
+        try:
+            return (base / filename).read_bytes()
+        except OSError:
+            continue
+    return None
+
+
+def _build_logo_email_data() -> tuple[dict, list]:
+    """
+    Devuelve (brand_ctx, inline_images) listos para safe_send.
+    Los logos van embebidos como partes MIME CID — no dependen de URL ni SSL.
+    """
+    inline: list = []
+    logo_url = firma_url = ''
+
+    header = _logo_bytes('logo_medium.png')
+    firma  = _logo_bytes('logo_firma.png')
+
+    if header:
+        inline.append(('logo_medium.png', header, 'image/png', 'logo_rsp_header'))
+        logo_url = 'cid:logo_rsp_header'
+
+    firma_bytes = firma or header
+    if firma_bytes:
+        fname = 'logo_firma.png' if firma else 'logo_medium.png'
+        inline.append((fname, firma_bytes, 'image/png', 'logo_rsp_firma'))
+        firma_url = 'cid:logo_rsp_firma'
+
+    brand_ctx = {
         'brand_logo_url':       logo_url,
-        'brand_firma_logo_url': firma_logo_url,
+        'brand_firma_logo_url': firma_url,
         'brand_color':          getattr(settings, 'BRAND_PRIMARY_COLOR', '#1F7A33'),
         'brand_company_name':   getattr(settings, 'BRAND_COMPANY_NAME', 'Río San Pedro RT'),
     }
+    return brand_ctx, inline
 
 
 def _from_alias_buzon(buzon: Buzon) -> str:
@@ -507,6 +539,7 @@ def responder_correo_view(request, correo_id):
             inline_payload.append((adj.nombre_original, content, adj.mime_type, adj.content_id))
 
     # ─── Send ──────────────────────────────────────────────────────────
+    brand_ctx, logo_inline = _build_logo_email_data()
     resultado = safe_send(
         asunto=asunto,
         para=to_addrs,
@@ -517,13 +550,13 @@ def responder_correo_view(request, correo_id):
             'buzon':           correo.buzon,
             'cuerpo_usuario':  cuerpo,
             'enviado_por':     correo.buzon.email,
-            **_brand_email_ctx(),
+            **brand_ctx,
         },
         from_alias=_from_alias_buzon(correo.buzon),
         # NO Reply-To: queremos que las respuestas vuelvan al BUZÓN (no al
         # usuario portal). Gmail sync IMAP las trae al archivo automáticamente.
         headers=headers,
-        inline_images=inline_payload,
+        inline_images=inline_payload + logo_inline,
     )
 
     # ─── Guardar copia en BD como 'enviados' (solo si se mandó OK) ────
@@ -906,12 +939,13 @@ def borrador_enviar_view(request, borrador_id):
         BorradorCorreo.Modo.RESPONDER, BorradorCorreo.Modo.RESPONDER_TODOS
     ) else 'correos/email/compose'
 
+    brand_ctx, logo_inline = _build_logo_email_data()
     contexto = {
         'asunto':         asunto,
         'buzon':          buzon,
         'cuerpo_usuario': cuerpo,
         'enviado_por':    buzon.email,
-        **_brand_email_ctx(),
+        **brand_ctx,
     }
     if template == 'correos/email/respuesta' and b.correo_original:
         contexto['correo_original'] = b.correo_original
@@ -935,6 +969,7 @@ def borrador_enviar_view(request, borrador_id):
         from_alias=_from_alias_buzon(buzon),
         headers=headers,
         adjuntos=adjuntos_draft or None,
+        inline_images=logo_inline or None,
     )
 
     sent_correo = None
@@ -1192,6 +1227,7 @@ def compose_view(request):
     new_msg_id = make_msgid(domain='rtriosanpedro.cl')
     headers = {'Message-ID': new_msg_id}
 
+    brand_ctx, logo_inline = _build_logo_email_data()
     resultado = safe_send(
         asunto=asunto,
         para=to_addrs,
@@ -1202,11 +1238,12 @@ def compose_view(request):
             'buzon':          buzon,
             'cuerpo_usuario': cuerpo,
             'enviado_por':    buzon.email,
-            **_brand_email_ctx(),
+            **brand_ctx,
         },
         from_alias=_from_alias_buzon(buzon),
         headers=headers,
         adjuntos=adjuntos_payload or None,
+        inline_images=logo_inline or None,
     )
 
     sent_correo = None
