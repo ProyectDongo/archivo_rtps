@@ -856,15 +856,16 @@ def render_firma_html(buzon) -> str:
         + '</td>'
     )
 
-    # ─── Logo column (img si hay URL, badge HTML si no) ──────────────────
-    firma_logo_url = (getattr(settings, 'FIRMA_LOGO_FIRMA_URL', '')
-                      or getattr(settings, 'FIRMA_LOGO_URL', ''))
-    if firma_logo_url:
+    # ─── Logo column (base64 embebido, siempre funciona en Gmail) ────────
+    import base64 as _b64
+    _logo_path = settings.BASE_DIR / 'static' / 'logos' / 'logo_firma.png'
+    try:
+        _data = _b64.b64encode(_logo_path.read_bytes()).decode('ascii')
         logo_inner = (
-            f'<img src="{escape(firma_logo_url)}" alt="" '
-            f'width="140" style="display:block;border:0;max-width:140px;height:auto">'
+            '<img src="data:image/png;base64,' + _data + '" alt="" '
+            'width="140" style="display:block;border:0;max-width:140px;height:auto">'
         )
-    else:
+    except OSError:
         logo_inner = _FIRMA_BADGE_HTML
     logo_col = (
         '<td valign="middle" style="vertical-align:middle;padding-left:24px;text-align:right">'
