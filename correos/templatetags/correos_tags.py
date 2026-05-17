@@ -768,35 +768,15 @@ def _icon_circle(unicode_char: str, accent: str) -> str:
     )
 
 
-_FIRMA_SVG_LOGO = (
-    '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="58" viewBox="0 0 140 58" style="display:block">'
-    '<g transform="translate(22,26)">'
-    '<rect transform="rotate(191.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(213.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(236.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(258.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(281.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(303.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(326.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(348.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
-    '<rect transform="rotate(11.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(33.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(56.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(78.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(101.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(123.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(146.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<rect transform="rotate(168.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
-    '<path d="M -18 0 A 18 18 0 0 1 18 0" fill="none" stroke="#1F7A33" stroke-width="4"/>'
-    '<path d="M 18 0 A 18 18 0 0 1 -18 0" fill="none" stroke="#0F3D6B" stroke-width="4"/>'
-    '<circle r="14" fill="#FFFFFF"/>'
-    '<text text-anchor="middle" y="4" font-family="Arial,Helvetica,sans-serif" font-weight="500" font-size="10" fill="#1F2937">RSP</text>'
-    '</g>'
-    '<g transform="translate(52,26)">'
-    '<text y="-3" font-family="Arial,Helvetica,sans-serif" font-weight="500" font-size="13" fill="#1F2937" letter-spacing="0.8">R&#205;O SAN PEDRO</text>'
-    '<text y="11" font-family="Arial,Helvetica,sans-serif" font-weight="500" font-size="7" fill="#1F7A33" letter-spacing="1.5">REVISIONES T&#201;CNICAS</text>'
-    '</g>'
-    '</svg>'
+_FIRMA_BADGE_HTML = (
+    '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse">'
+    '<tr>'
+    '<td width="42" bgcolor="#1F7A33" valign="middle" align="center" '
+    'style="background-color:#1F7A33;width:42px;height:42px;text-align:center;vertical-align:middle;border-bottom:2px solid #0F3D6B">'
+    '<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:900;color:#ffffff;letter-spacing:-1px">RSP</span>'
+    '</td>'
+    '</tr>'
+    '</table>'
 )
 
 
@@ -876,10 +856,10 @@ def render_firma_html(buzon) -> str:
         + '</td>'
     )
 
-    # ─── Logo column (SVG inline, derecha) ───────────────────────────────
+    # ─── Badge column (RSP badge, derecha) ───────────────────────────────
     logo_col = (
         '<td valign="middle" style="vertical-align:middle;padding-left:24px;text-align:right">'
-        + _FIRMA_SVG_LOGO
+        + _FIRMA_BADGE_HTML
         + '</td>'
     )
 
