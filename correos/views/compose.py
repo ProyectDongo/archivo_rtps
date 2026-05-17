@@ -330,9 +330,11 @@ def _enviados_recientes(usuario: UsuarioPortal) -> int:
 def _brand_email_ctx() -> dict:
     """Variables de marca para los templates de email saliente."""
     return {
-        'brand_logo_url':    getattr(settings, 'FIRMA_LOGO_URL', ''),
-        'brand_color':       getattr(settings, 'BRAND_PRIMARY_COLOR', '#C80C0F'),
-        'brand_company_name': getattr(settings, 'BRAND_COMPANY_NAME', 'Río San Pedro RT'),
+        'brand_logo_url':       getattr(settings, 'FIRMA_LOGO_URL', ''),
+        'brand_firma_logo_url': getattr(settings, 'FIRMA_LOGO_FIRMA_URL',
+                                        getattr(settings, 'FIRMA_LOGO_URL', '')),
+        'brand_color':          getattr(settings, 'BRAND_PRIMARY_COLOR', '#1e7d32'),
+        'brand_company_name':   getattr(settings, 'BRAND_COMPANY_NAME', 'Río San Pedro RT'),
     }
 
 

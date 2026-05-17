@@ -856,10 +856,19 @@ def render_firma_html(buzon) -> str:
         + '</td>'
     )
 
-    # ─── Badge column (RSP badge, derecha) ───────────────────────────────
+    # ─── Logo column (img si hay URL, badge HTML si no) ──────────────────
+    firma_logo_url = (getattr(settings, 'FIRMA_LOGO_FIRMA_URL', '')
+                      or getattr(settings, 'FIRMA_LOGO_URL', ''))
+    if firma_logo_url:
+        logo_inner = (
+            f'<img src="{escape(firma_logo_url)}" alt="" '
+            f'width="140" style="display:block;border:0;max-width:140px;height:auto">'
+        )
+    else:
+        logo_inner = _FIRMA_BADGE_HTML
     logo_col = (
         '<td valign="middle" style="vertical-align:middle;padding-left:24px;text-align:right">'
-        + _FIRMA_BADGE_HTML
+        + logo_inner
         + '</td>'
     )
 

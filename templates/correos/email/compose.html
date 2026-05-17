@@ -13,7 +13,11 @@
              bgcolor="#ffffff" style="max-width:600px;background-color:#ffffff">
 
         <!-- Logo header -->
-        <tr><td bgcolor="#ffffff" style="padding:28px 36px 20px;background-color:#ffffff">
+        <tr><td bgcolor="#ffffff" style="padding:24px 36px 16px;background-color:#ffffff">
+          {% if brand_logo_url %}
+          <img src="{{ brand_logo_url }}" alt="{{ brand_company_name }}" width="260"
+               style="display:block;border:0;max-width:280px;height:auto">
+          {% else %}
           <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse">
             <tr>
               <td width="50" bgcolor="#1F7A33" valign="middle" align="center"
@@ -33,6 +37,7 @@
               </td>
             </tr>
           </table>
+          {% endif %}
         </td></tr>
 
         <!-- Doble barra de acento: verde + azul -->

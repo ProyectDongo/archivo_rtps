@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 140" width="460" height="140">
+<title>Río San Pedro Revisiones Técnicas - Opción 1 fiel</title>
+<g transform="translate(70 70)">
+  <g transform="rotate(-90)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(-67.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(-45)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(-22.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(0)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(22.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(45)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(67.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#2E8B3D"/></g>
+  <g transform="rotate(90)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(112.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(135)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(157.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(180)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(202.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(225)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <g transform="rotate(247.5)"><rect x="-4.0" y="-55" width="8" height="9" rx="1.5" fill="#1B4F8C"/></g>
+  <path d="M -45 0 A 45 45 0 0 1 45 0" fill="none" stroke="#2E8B3D" stroke-width="9"/>
+  <path d="M 45 0 A 45 45 0 0 1 -45 0" fill="none" stroke="#1B4F8C" stroke-width="9"/>
+  <circle r="36" fill="#FFFFFF"/>
+  <text text-anchor="middle" y="9.1" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="26" fill="#7B7F85">RSP</text>
+</g>
+<g transform="translate(155 70)">
+  <text y="-2" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="28" fill="#7B7F85" letter-spacing="2.5">RÍO SAN PEDRO</text>
+  <text y="24" font-family="Arial, Helvetica, sans-serif" font-weight="400" font-size="12" fill="#A1A4A9" letter-spacing="8">REVISIONES TÉCNICAS</text>
+</g>
+</svg>
