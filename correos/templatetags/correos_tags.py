@@ -768,6 +768,38 @@ def _icon_circle(unicode_char: str, accent: str) -> str:
     )
 
 
+_FIRMA_SVG_LOGO = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="58" viewBox="0 0 140 58" style="display:block">'
+    '<g transform="translate(22,26)">'
+    '<rect transform="rotate(191.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(213.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(236.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(258.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(281.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(303.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(326.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(348.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#1F7A33"/>'
+    '<rect transform="rotate(11.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(33.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(56.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(78.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(101.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(123.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(146.25) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<rect transform="rotate(168.75) translate(20,0)" x="-2" y="-2.5" width="4" height="5" fill="#0F3D6B"/>'
+    '<path d="M -18 0 A 18 18 0 0 1 18 0" fill="none" stroke="#1F7A33" stroke-width="4"/>'
+    '<path d="M 18 0 A 18 18 0 0 1 -18 0" fill="none" stroke="#0F3D6B" stroke-width="4"/>'
+    '<circle r="14" fill="#FFFFFF"/>'
+    '<text text-anchor="middle" y="4" font-family="Arial,Helvetica,sans-serif" font-weight="500" font-size="10" fill="#1F2937">RSP</text>'
+    '</g>'
+    '<g transform="translate(52,26)">'
+    '<text y="-3" font-family="Arial,Helvetica,sans-serif" font-weight="500" font-size="13" fill="#1F2937" letter-spacing="0.8">R&#205;O SAN PEDRO</text>'
+    '<text y="11" font-family="Arial,Helvetica,sans-serif" font-weight="500" font-size="7" fill="#1F7A33" letter-spacing="1.5">REVISIONES T&#201;CNICAS</text>'
+    '</g>'
+    '</svg>'
+)
+
+
 def render_firma_html(buzon) -> str:
     """
     Devuelve el HTML de la firma de un buzón con layout MIME-safe (tablas +
@@ -782,87 +814,74 @@ def render_firma_html(buzon) -> str:
     telefono = (buzon.firma_telefono or '').strip()
     email_v  = (buzon.firma_email_visible or buzon.email or '').strip()
     web      = (getattr(buzon, 'firma_web', '') or '').strip()
-    logo_url = getattr(settings, 'FIRMA_LOGO_URL', '') or ''
-    accent   = getattr(settings, 'BRAND_PRIMARY_COLOR', '#C80C0F') or '#C80C0F'
 
-    if not (nombre or cargo or telefono or email_v or web or logo_url):
+    if not (nombre or cargo or telefono or email_v or web):
         return ''
 
-    # ─── Info column (izquierda con borde de acento) ──────────────────────
+    # ─── Info column (izquierda con borde verde RSP) ──────────────────────
     bloques = []
     if nombre:
         bloques.append(
-            f'<div style="font-size:16px;font-weight:700;color:#111827;'
-            f'line-height:1.25;letter-spacing:-0.2px;font-family:Arial,Helvetica,sans-serif">'
-            f'{escape(nombre)}</div>'
+            '<div style="font-size:15px;font-weight:500;color:#1F2937;'
+            'line-height:1.3;font-family:Arial,Helvetica,sans-serif">'
+            + escape(nombre) + '</div>'
         )
     if cargo:
         bloques.append(
-            f'<div style="font-size:11px;font-weight:600;letter-spacing:1.2px;'
-            f'text-transform:uppercase;color:{accent};margin-top:4px;'
-            f'font-family:Arial,Helvetica,sans-serif">'
-            f'{escape(cargo)}</div>'
+            '<div style="font-size:10px;font-weight:600;letter-spacing:1.8px;'
+            'text-transform:uppercase;color:#1F7A33;margin-top:4px;'
+            'font-family:Arial,Helvetica,sans-serif">'
+            + escape(cargo) + '</div>'
         )
 
-    # Short brand accent line
-    bloques.append(
-        f'<table cellpadding="0" cellspacing="0" border="0" role="presentation" '
-        f'style="border-collapse:collapse;margin:10px 0 12px">'
-        f'<tr><td width="32" height="2" bgcolor="{accent}" '
-        f'style="background-color:{accent};height:2px;font-size:0;line-height:0">&nbsp;</td></tr>'
-        f'</table>'
-    )
-
-    # Contact rows — clean single-letter labels in accent color
+    # Contact rows
     contact_rows = []
     if telefono:
         contact_rows.append(
-            f'<tr><td style="padding:2px 0;font-size:13px;color:#4b5563;'
-            f'line-height:1.5;font-family:Arial,Helvetica,sans-serif">'
-            f'<span style="display:inline-block;width:14px;color:{accent};'
-            f'font-weight:700;font-size:11px;font-family:Arial,Helvetica,sans-serif">T</span>'
-            f'{escape(telefono)}</td></tr>'
+            '<tr><td style="padding:1px 0;font-size:12px;color:#374151;'
+            'line-height:1.85;font-family:Arial,Helvetica,sans-serif">'
+            '<span style="display:inline-block;width:14px;color:#1F7A33;'
+            'font-weight:700;font-size:10px;font-family:Arial,Helvetica,sans-serif">T</span>'
+            + escape(telefono) + '</td></tr>'
         )
     if email_v:
         contact_rows.append(
-            f'<tr><td style="padding:2px 0;font-size:13px;color:#4b5563;'
-            f'line-height:1.5;font-family:Arial,Helvetica,sans-serif">'
-            f'<span style="display:inline-block;width:14px;color:{accent};'
-            f'font-weight:700;font-size:11px;font-family:Arial,Helvetica,sans-serif">E</span>'
-            f'<a href="mailto:{escape(email_v)}" style="color:#4b5563;text-decoration:none;'
-            f'font-family:Arial,Helvetica,sans-serif">{escape(email_v)}</a></td></tr>'
+            '<tr><td style="padding:1px 0;font-size:12px;color:#374151;'
+            'line-height:1.85;font-family:Arial,Helvetica,sans-serif">'
+            '<span style="display:inline-block;width:14px;color:#1F7A33;'
+            'font-weight:700;font-size:10px;font-family:Arial,Helvetica,sans-serif">E</span>'
+            '<a href="mailto:' + escape(email_v) + '" style="color:#374151;text-decoration:none;'
+            'font-family:Arial,Helvetica,sans-serif">' + escape(email_v) + '</a></td></tr>'
         )
     if web:
         href_web = web if web.lower().startswith(('http://', 'https://')) else f'https://{web}'
         contact_rows.append(
-            f'<tr><td style="padding:2px 0;font-size:13px;color:#4b5563;'
-            f'line-height:1.5;font-family:Arial,Helvetica,sans-serif">'
-            f'<span style="display:inline-block;width:14px;color:{accent};'
-            f'font-weight:700;font-size:11px;font-family:Arial,Helvetica,sans-serif">W</span>'
-            f'<a href="{escape(href_web)}" style="color:#4b5563;text-decoration:none;'
-            f'font-family:Arial,Helvetica,sans-serif">{escape(web)}</a></td></tr>'
+            '<tr><td style="padding:1px 0;font-size:12px;color:#374151;'
+            'line-height:1.85;font-family:Arial,Helvetica,sans-serif">'
+            '<span style="display:inline-block;width:14px;color:#1F7A33;'
+            'font-weight:700;font-size:10px;font-family:Arial,Helvetica,sans-serif">W</span>'
+            '<a href="' + escape(href_web) + '" style="color:#374151;text-decoration:none;'
+            'font-family:Arial,Helvetica,sans-serif">' + escape(web) + '</a></td></tr>'
         )
     if contact_rows:
         bloques.append(
             '<table cellpadding="0" cellspacing="0" border="0" role="presentation" '
-            'style="border-collapse:collapse">' + ''.join(contact_rows) + '</table>'
+            'style="border-collapse:collapse;margin-top:8px">'
+            + ''.join(contact_rows) + '</table>'
         )
 
     info_col = (
-        f'<td valign="top" style="vertical-align:top;padding-left:16px;border-left:3px solid {accent}">'
+        '<td valign="top" style="vertical-align:top;padding-left:16px;border-left:3px solid #1F7A33">'
         + ''.join(bloques)
         + '</td>'
     )
 
-    # ─── Logo column (derecha, opcional) ─────────────────────────────────
-    logo_col = ''
-    if logo_url:
-        logo_col = (
-            f'<td valign="middle" style="vertical-align:middle;padding-left:28px;text-align:right">'
-            f'<img src="{escape(logo_url)}" alt="" '
-            f'style="display:block;max-width:90px;height:auto;border:0" '
-            f'width="90"></td>'
-        )
+    # ─── Logo column (SVG inline, derecha) ───────────────────────────────
+    logo_col = (
+        '<td valign="middle" style="vertical-align:middle;padding-left:24px;text-align:right">'
+        + _FIRMA_SVG_LOGO
+        + '</td>'
+    )
 
     # ─── Wrapper ──────────────────────────────────────────────────────────
     html = (
@@ -870,7 +889,7 @@ def render_firma_html(buzon) -> str:
         'border-top:1px solid #e8e8e8;font-family:Arial,Helvetica,sans-serif">'
         '<table cellpadding="0" cellspacing="0" border="0" role="presentation" '
         'style="border-collapse:collapse">'
-        f'<tr>{info_col}{logo_col}</tr>'
+        '<tr>' + info_col + logo_col + '</tr>'
         '</table></div>'
     )
     return html
