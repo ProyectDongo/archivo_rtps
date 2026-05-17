@@ -1,7 +1,7 @@
 {% extends 'base_app.html' %}
 {% load correos_tags static %}
 
-{% block title %}Bandeja — {{ buzon.email }}{% endblock %}
+{% block title %}{% if no_leidos_buzon_actual %}({{ no_leidos_buzon_actual }}) {% endif %}Bandeja — {{ buzon.email }}{% endblock %}
 {% block body_class %}page-inbox{% endblock %}
 
 {% block extra_head %}{% endblock %}

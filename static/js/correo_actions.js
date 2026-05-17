@@ -2,7 +2,7 @@
    Acciones del correo (star, etiquetas, notas, snooze, hilo, marcar no-leído).
    Operan sobre cualquier .preview-card[data-correo-id] presente en el DOM.
    Pensado para correr en /intranet/correo/N/ (página de detalle).
-   Depende de PM.post / PM.debounce (portal_helpers.js).
+   Depende de PM.post / PM.debounce / PM.toast (portal_helpers.js).
    ========================================================================== */
 (function () {
   'use strict';
@@ -124,6 +124,37 @@
       });
     }
 
+    // ─── Eliminar → undo toast (5s) → AJAX → bandeja ─────────────────────
+    // No usa window.confirm: el usuario tiene 5s para deshacer antes de que
+    // se ejecute el POST. Si deshace, la card vuelve a ser interactiva.
+    const deleteForm = card.querySelector('.preview-delete-form');
+    if (deleteForm) {
+      deleteForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const url = deleteForm.action;
+        card.style.opacity = '0.4';
+        card.style.pointerEvents = 'none';
+        card.style.transition = 'opacity .2s';
+        PM.toast('Correo movido a la papelera', {
+          duration: 5000,
+          action: 'Deshacer',
+          onAction: function () {
+            card.style.opacity = '';
+            card.style.pointerEvents = '';
+          },
+          onEnd: function () {
+            PM.post(url).then(function () {
+              window.location.href = '/intranet/bandeja/';
+            }).catch(function () {
+              card.style.opacity = '';
+              card.style.pointerEvents = '';
+              PM.toast('No se pudo eliminar. Intentá de nuevo.', { duration: 4000 });
+            });
+          },
+        });
+      });
+    }
+
     // ─── Snooze: dropdown con presets + custom ──────────────────────────
     const snzBtn = card.querySelector('.preview-snooze-btn');
     const snzMenu = card.querySelector('.preview-snooze-menu');
@@ -164,8 +195,6 @@
     }
 
     // ─── Hilo inline estilo Gmail: cada thread-msg es colapsable ──────────
-    // Click en thread-msg-head → toggle del body. Enter/Space también.
-    // El "Expandir todo" del header abre/cierra todas las cards de una.
     const threadMsgs = card.querySelectorAll('.thread-msg');
     if (threadMsgs.length) {
       const setExpanded = function (msg, abrir) {
@@ -173,11 +202,6 @@
         if (!body) return;
         body.hidden = !abrir;
         msg.setAttribute('aria-expanded', String(abrir));
-        // Re-medir iframes: cuando un iframe estaba dentro de un nodo
-        // [hidden] (display:none), su scrollHeight era 0 al cargar y quedó
-        // capado a 60px. Ahora que es visible, re-medimos para que crezca
-        // a su altura real. requestAnimationFrame asegura que el layout
-        // se aplicó antes de medir.
         if (abrir && window._resizeEmailIframe) {
           requestAnimationFrame(function () {
             body.querySelectorAll('iframe.email-iframe').forEach(function (iframe) {
@@ -191,7 +215,6 @@
         const head = msg.querySelector('.thread-msg-head');
         if (!head) return;
         const toggle = function (e) {
-          // No interceptar clicks en el botón "abrir en pantalla completa".
           if (e && e.target && e.target.closest('.thread-msg-open')) return;
           const abierto = msg.getAttribute('aria-expanded') === 'true';
           setExpanded(msg, !abierto);
@@ -205,7 +228,6 @@
         });
       });
 
-      // Botón "Expandir todo / Colapsar todo" del header.
       const expandAll = card.querySelector('.thread-inline-expand-all');
       if (expandAll) {
         expandAll.addEventListener('click', function () {
@@ -242,6 +264,43 @@
     });
     card.querySelectorAll('.tag-chip-mini[data-color], .tag-chip[data-color]').forEach(function (el) {
       el.style.backgroundColor = el.dataset.color;
+    });
+
+    // ─── Keyboard shortcuts (solo en página de detalle) ─────────────────
+    // r = responder, f = reenviar, e = eliminar (con undo toast),
+    // u = volver a bandeja, m = marcar no leído
+    if (!document.body.classList.contains('page-detalle')) return;
+    const replyBtn = card.querySelector('.preview-reply-btn');
+    const fwdBtn   = card.querySelector('.preview-fwd-btn');
+
+    document.addEventListener('keydown', function (e) {
+      const t = document.activeElement;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+                t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      switch (e.key) {
+        case 'r':
+          e.preventDefault();
+          if (replyBtn) window.location.href = replyBtn.getAttribute('href');
+          break;
+        case 'f':
+          e.preventDefault();
+          if (fwdBtn) window.location.href = fwdBtn.getAttribute('href');
+          break;
+        case 'e':
+          e.preventDefault();
+          if (deleteForm) deleteForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          break;
+        case 'u':
+          e.preventDefault();
+          window.location.href = '/intranet/bandeja/';
+          break;
+        case 'm':
+          e.preventDefault();
+          if (unreadBtn) unreadBtn.click();
+          break;
+      }
     });
   }
 

@@ -919,14 +919,27 @@ _IFRAME_DOC_TMPL = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base target="_blank">
 <style>
-  html,body{{margin:0;padding:8px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;word-break:break-word;background:#fff}}
-  *{{max-width:100%;box-sizing:border-box}}
-  img{{max-width:100%;height:auto}}
-  a{{color:#1a73e8}}
-  table{{border-collapse:collapse}}
-  td,th{{vertical-align:top}}
-  pre,code{{white-space:pre-wrap;word-break:break-all}}
-  blockquote{{border-left:3px solid #dadada;margin:4px 0;padding:0 0 0 12px;color:#555}}
+  html,body{{margin:0;padding:16px 20px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.65;color:#202124;word-break:break-word;background:#fff;-webkit-text-size-adjust:100%}}
+  *{{max-width:100%!important;box-sizing:border-box}}
+  img{{max-width:100%!important;height:auto!important;display:inline-block;vertical-align:middle}}
+  img[width="1"],img[height="1"],img[width="0"],img[height="0"]{{display:none!important}}
+  a{{color:#1a73e8;text-decoration:none}}
+  a:hover{{text-decoration:underline}}
+  p{{margin:0 0 10px}}
+  p:last-child{{margin-bottom:0}}
+  h1,h2,h3,h4,h5,h6{{margin:16px 0 8px;font-weight:600;line-height:1.3;color:#202124}}
+  h1{{font-size:20px}} h2{{font-size:17px}} h3{{font-size:15px}} h4,h5,h6{{font-size:14px}}
+  table{{border-collapse:collapse;width:auto;max-width:100%!important}}
+  td,th{{vertical-align:top;padding:0}}
+  ul,ol{{padding-left:22px;margin:0 0 10px}}
+  li{{margin-bottom:3px}}
+  blockquote{{border-left:3px solid #dadce0;margin:8px 0;padding:4px 0 4px 14px;color:#5f6368}}
+  blockquote blockquote{{margin-left:0}}
+  pre,code{{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:12.5px;white-space:pre-wrap;word-break:break-all;background:#f1f3f4;border-radius:4px}}
+  pre{{padding:10px 14px;overflow-x:auto}}
+  code{{padding:1px 5px}}
+  hr{{border:none;border-top:1px solid #e0e0e0;margin:16px 0}}
+  .gmail_quote,.moz-cite-prefix,.yahoo_quoted,.x_gmail_quote{{color:#5f6368;font-size:13px}}
 </style>
 </head>
 <body>{body}</body>

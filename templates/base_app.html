@@ -16,6 +16,17 @@
     {% include 'partials/_messages.html' %}
     {% block content %}{% endblock %}
   </main>
+<div id="confirm-modal" class="confirm-modal" hidden role="dialog" aria-modal="true" aria-label="Confirmar acción">
+  <div class="confirm-modal-box">
+    <p class="confirm-modal-msg" id="confirm-modal-msg"></p>
+    <div class="confirm-modal-btns">
+      <button type="button" id="confirm-modal-cancel" class="confirm-modal-btn confirm-modal-btn-cancel">Cancelar</button>
+      <button type="button" id="confirm-modal-ok" class="confirm-modal-btn confirm-modal-btn-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+<div id="toast-area" class="toast-area" aria-live="polite" aria-atomic="false"></div>
+
 <div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Vista de imagen">
     <button type="button" class="lightbox-close" aria-label="Cerrar (Esc)" title="Cerrar (Esc)">✕</button>
     <button type="button" class="lightbox-nav lightbox-prev" aria-label="Anterior (←)" title="Anterior (←)" hidden>

@@ -1,7 +1,7 @@
 {% extends 'base_app.html' %}
 {% load correos_tags %}
 
-{% block title %}{{ correo.asunto|truncatechars:50 }}{% endblock %}
+{% block title %}{% if no_leidos_buzon %}({{ no_leidos_buzon }}) {% endif %}{{ correo.asunto|truncatechars:50 }}{% endblock %}
 {% block body_class %}page-detalle{% endblock %}
 
 {% block content %}

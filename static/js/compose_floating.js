@@ -23,6 +23,21 @@
     asunto: form.querySelector('[name="asunto"]'),
   };
 
+  // ─── Contador de caracteres para el asunto ───────────────────────────
+  if (inputs.asunto) {
+    const maxLen = parseInt(inputs.asunto.getAttribute('maxlength') || '500', 10);
+    const counter = document.createElement('span');
+    counter.className = 'compose-asunto-counter';
+    counter.setAttribute('aria-live', 'polite');
+    inputs.asunto.parentNode.appendChild(counter);
+    const updateCounter = function () {
+      const rem = maxLen - inputs.asunto.value.length;
+      counter.textContent = rem <= 60 ? rem : '';
+      counter.classList.toggle('compose-asunto-counter--warn', rem <= 20);
+    };
+    inputs.asunto.addEventListener('input', updateCounter);
+  }
+
   // Helpers: setear/leer el valor de un input que puede o no ser un chips widget.
   function setRecipientValue(input, csv) {
     const a = window.EmailChips && window.EmailChips.api(input);

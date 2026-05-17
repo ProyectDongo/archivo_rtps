@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Helpers compartidos del portal (CSP-safe, sin dependencias).
+   Helpers compartidos del portal (CSP-safe, sin dependencias externas).
    ========================================================================== */
 
 window.PM = window.PM || {};
@@ -7,11 +7,10 @@ window.PM = window.PM || {};
 (function () {
   'use strict';
 
-  // CSRF token desde <meta name="csrf-token">
   const meta = document.querySelector('meta[name="csrf-token"]');
   PM.csrf = meta ? meta.content : '';
 
-  // Wrapper de fetch que agrega CSRF + same-origin
+  // ─── fetch wrapper con CSRF ────────────────────────────────────────────
   PM.post = function (url, params) {
     const body = new URLSearchParams();
     if (params) Object.keys(params).forEach(function (k) { body.append(k, params[k]); });
@@ -30,7 +29,7 @@ window.PM = window.PM || {};
     });
   };
 
-  // Debounce simple para autosave de notas
+  // ─── Debounce ──────────────────────────────────────────────────────────
   PM.debounce = function (fn, ms) {
     let t;
     return function () {
@@ -40,23 +39,118 @@ window.PM = window.PM || {};
     };
   };
 
-  // Confirm dialog para forms con data-confirm (reemplaza onsubmit inline).
-  // Se delega en document para cubrir forms inyectados dinámicamente.
+  // ─── Toast ────────────────────────────────────────────────────────────
+  // PM.toast(msg, { duration, action, onAction, onEnd })
+  // Devuelve { dismiss() }.
+  PM.toast = function (msg, opts) {
+    opts = opts || {};
+    const area = document.getElementById('toast-area');
+    if (!area) return { dismiss: function () {} };
+
+    const el = document.createElement('div');
+    el.className = 'toast';
+    const msgEl = document.createElement('span');
+    msgEl.textContent = msg;
+    el.appendChild(msgEl);
+
+    let cancelled = false;
+
+    if (opts.action && opts.onAction) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'toast-undo';
+      btn.textContent = opts.action;
+      btn.addEventListener('click', function () {
+        cancelled = true;
+        clearTimeout(timer);
+        opts.onAction();
+        _dismissToast(el);
+      });
+      el.appendChild(btn);
+    }
+
+    area.appendChild(el);
+
+    const timer = setTimeout(function () {
+      _dismissToast(el);
+      if (!cancelled && opts.onEnd) opts.onEnd();
+    }, opts.duration || 4000);
+
+    return {
+      dismiss: function () { clearTimeout(timer); _dismissToast(el); }
+    };
+  };
+
+  function _dismissToast(el) {
+    if (!el.parentNode) return;
+    el.classList.add('toast-out');
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 220);
+  }
+
+  // ─── Confirm modal (reemplaza window.confirm) ──────────────────────────
+  // PM.confirm(msg) → Promise<boolean>
+  PM.confirm = function (msg) {
+    return new Promise(function (resolve) {
+      const modal   = document.getElementById('confirm-modal');
+      const msgEl   = document.getElementById('confirm-modal-msg');
+      const okBtn   = document.getElementById('confirm-modal-ok');
+      const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+      if (!modal) { resolve(window.confirm(msg)); return; }
+
+      msgEl.textContent = msg;
+      modal.hidden = false;
+      okBtn.focus();
+
+      function cleanup(result) {
+        modal.hidden = true;
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        document.removeEventListener('keydown', onKey);
+        resolve(result);
+      }
+      function onOk() { cleanup(true); }
+      function onCancel() { cleanup(false); }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); cleanup(false); }
+        if (e.key === 'Enter')  { e.preventDefault(); cleanup(true); }
+      }
+
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+      document.addEventListener('keydown', onKey);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) cleanup(false);
+      }, { once: true });
+    });
+  };
+
+  // ─── data-confirm → modal async ────────────────────────────────────────
+  let _skipConfirm = false;
   document.addEventListener('submit', function (e) {
-    var form = e.target;
+    const form = e.target;
     if (!form || form.tagName !== 'FORM') return;
-    var msg = form.getAttribute('data-confirm');
-    if (msg && !window.confirm(msg)) e.preventDefault();
+    if (_skipConfirm) return;
+    const msg = form.getAttribute('data-confirm');
+    if (!msg) return;
+    e.preventDefault();
+    PM.confirm(msg).then(function (ok) {
+      if (!ok) return;
+      _skipConfirm = true;
+      if (form.requestSubmit) form.requestSubmit();
+      else form.submit();
+      setTimeout(function () { _skipConfirm = false; }, 100);
+    });
   }, true);
+
 })();
 
-// Auto-resize iframes de email — capture=true captura load de iframes (no burbujean).
-// Sin onload= inline → CSP safe.
+// ─── Auto-resize iframes de email ──────────────────────────────────────────
 function _resizeEmailIframe(iframe) {
   try {
-    var doc = iframe.contentDocument || iframe.contentWindow.document;
-    var h = doc.documentElement.scrollHeight || doc.body.scrollHeight;
-    iframe.style.height = Math.max(h + 16, 60) + 'px';
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    const h = doc.documentElement.scrollHeight || doc.body.scrollHeight;
+    iframe.style.height = Math.max(h + 20, 60) + 'px';
   } catch (e) {}
 }
 window._resizeEmailIframe = _resizeEmailIframe;

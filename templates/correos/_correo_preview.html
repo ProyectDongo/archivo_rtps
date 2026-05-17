@@ -44,8 +44,7 @@
           <span>No leído</span>
         </button>
         <form method="post" action="{% url 'correo_eliminar' correo.id %}"
-              class="preview-delete-form"
-              data-confirm="¿Mover este correo a tu papelera?">
+              class="preview-delete-form">
           {% csrf_token %}
           <button type="submit" class="preview-delete-btn"
                   title="Mover a papelera (recuperable 30 dias)">
