@@ -49,29 +49,49 @@
   </a>
 </div>
 
-<section class="hero">
-  <div class="hero-l">
-    <div class="h-kicker fx-zoom">
-      <span class="h-kicker-dot"></span>
-      <span class="h-kicker-t">Planta de revisión técnica · Chile</span>
+{# Hero fullscreen, foto protagonista #}
+<section class="hero-v2">
+  <div class="hero-v2-overlay"></div>
+  <div class="hero-v2-content">
+    <div class="hero-v2-eyebrow fx-zoom">
+      <span class="hero-v2-dot"></span>
+      <span>Planta de revisión técnica · Región de Atacama</span>
     </div>
-    <div class="h-rule rv d1"></div>
-    <h1 class="hero-h1 fx-blur d1">Revisión técnica<br>con <span class="acc">transparencia</span><br>y excelencia</h1>
-    <p class="hero-sub rv d3">Servicio eficiente y eficaz de revisiones técnicas vehiculares, verificación de gases y pre-revisiones, en concordancia con las normas del Ministerio de Transportes y Telecomunicaciones.</p>
-    <div class="hero-btns rv d4">
-      <a class="btn-p" href="{% url 'agendar' %}">Agendar online →</a>
-      <button type="button" class="btn-g" data-scroll-to="servicios">Ver servicios</button>
+    <h1 class="hero-v2-title fx-blur d1">
+      Revisamos.<br>
+      <span class="hero-v2-title-acc">Certificamos.</span><br>
+      Sin vueltas.
+    </h1>
+    <p class="hero-v2-sub rv d3">
+      Revisión técnica clase A y B, verificación de gases, pre-revisión y especialidades.
+      Bajo normativa MTT, con certificación ISO 9001.
+    </p>
+    <div class="hero-v2-cta rv d4">
+      <a class="hero-v2-btn-p" href="{% url 'agendar' %}">
+        Agendar mi revisión
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a class="hero-v2-btn-g" href="#servicios">
+        <span>Conocé qué hacemos</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </a>
     </div>
   </div>
-  <div class="hero-r fx-zoom d2">
-    <div class="hero-frame">
-      <img class="hero-insig" src="{% static 'img/insignia-light.svg' %}" alt="RT Río San Pedro Revisiones Técnicas"
-           style="max-width:480px;width:100%;height:auto;filter:drop-shadow(0 8px 32px rgba(0,0,0,.45))">
+  {# Stats abajo, formato editorial #}
+  <div class="hero-v2-stats rv d5">
+    <div class="hero-v2-stat">
+      <div class="hero-v2-stat-num">ISO 9001</div>
+      <div class="hero-v2-stat-lbl">Certificación de calidad</div>
     </div>
-    <div class="hero-metrics rv d3">
-      <div class="hm"><div class="hm-n">ISO</div><div class="hm-l">9001 cert.</div></div>
-      <div class="hm"><div class="hm-n">A+B</div><div class="hm-l">Clases</div></div>
-      <div class="hm"><div class="hm-n">6</div><div class="hm-l">Días/sem</div></div>
+    <div class="hero-v2-stat-sep"></div>
+    <div class="hero-v2-stat">
+      <div class="hero-v2-stat-num">A · B</div>
+      <div class="hero-v2-stat-lbl">Todas las clases</div>
+    </div>
+    <div class="hero-v2-stat-sep"></div>
+    <div class="hero-v2-stat">
+      <div class="hero-v2-stat-num">Lun → Sáb</div>
+      <div class="hero-v2-stat-lbl">6 días a la semana</div>
     </div>
   </div>
 </section>
@@ -92,22 +112,6 @@
   </div>
 </section>
 
-<div class="ticker" aria-hidden="true">
-  <div class="tk-track">
-    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase A</div>
-    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase B</div>
-    <div class="ti"><span class="ti-dot"></span>Verificación de Gases</div>
-    <div class="ti"><span class="ti-dot"></span>Pre-Revisión</div>
-    <div class="ti"><span class="ti-dot"></span>Revisión GNC / GLP</div>
-    <div class="ti"><span class="ti-dot"></span>Verificación de Polarizados</div>
-    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase A</div>
-    <div class="ti"><span class="ti-dot"></span>Revisión Técnica Clase B</div>
-    <div class="ti"><span class="ti-dot"></span>Verificación de Gases</div>
-    <div class="ti"><span class="ti-dot"></span>Pre-Revisión</div>
-    <div class="ti"><span class="ti-dot"></span>Revisión GNC / GLP</div>
-    <div class="ti"><span class="ti-dot"></span>Verificación de Polarizados</div>
-  </div>
-</div>
 
 <section class="sec bg-servicios" id="servicios">
   <div class="sec-tag rv"><div class="sec-bar"></div><span class="sec-tag-t">¿Qué hacemos?</span></div>
@@ -223,21 +227,53 @@
 </section>
 
 <section class="sec bg-nosotros" id="nosotros">
-  <div class="nos-grid">
-    <div class="nos-img-box rvl">
-      <img class="nos-img" src="{% static 'img/insignia-light.svg' %}" alt="RT Río San Pedro Revisiones Técnicas"
-           style="max-width:440px;width:100%;height:auto;filter:drop-shadow(0 6px 24px rgba(0,0,0,.4))">
+  <div class="nos-grid-v2">
+    <div class="rvl">
+      <div class="nos-v2-eyebrow">— Quiénes somos</div>
+      <h2 class="nos-v2-title fx-blur">
+        Una planta que <em>responde</em>.
+      </h2>
+      <p class="nos-v2-lead rv d2">
+        No somos una RT más. Estamos para que entres, te revisemos con criterio técnico y
+        salgas con un informe claro — sin sorpresas, sin tecnicismos vacíos.
+      </p>
+      <div class="nos-v2-quote rv d3">
+        <div class="nos-v2-quote-mark">"</div>
+        <div class="nos-v2-quote-txt">
+          Entregar información clara y correcta del estado del vehículo, en concordancia con las
+          normas del Ministerio de Transportes y Telecomunicaciones.
+        </div>
+        <div class="nos-v2-quote-cite">— Nuestra misión</div>
+      </div>
     </div>
-    <div class="rvr">
-      <div class="sec-tag tight"><div class="sec-bar"></div><span class="sec-tag-t">Quiénes somos</span></div>
-      <h2 class="sec-h2 fx-blur tight-h"><em>Sobre</em> Río San Pedro</h2>
-      <p class="nos-txt"><strong>Misión:</strong> Otorgar un servicio eficiente y eficaz en materia de revisiones técnicas y verificación de contaminantes, en concordancia con las normas fijadas por el Ministerio de Transportes y Telecomunicaciones, entregando información clara y correcta del estado del vehículo.</p>
-      <p class="nos-txt" style="margin-top:12px"><strong>Visión:</strong> Ser reconocida como una de las mejores empresas de servicios de revisiones técnicas vehiculares, alcanzando la excelencia en el servicio y atención del cliente en Chile.</p>
-      <div class="nos-vals">
-        <div class="nv fx-tilt d1"><div class="nv-t">Transparencia</div><div class="nv-d">Información clara y objetiva sobre el estado de cada vehículo</div></div>
-        <div class="nv fx-tilt d2"><div class="nv-t">Cumplimiento</div><div class="nv-d">Normas del MTT aplicadas con rigor técnico y responsabilidad</div></div>
-        <div class="nv fx-tilt d3"><div class="nv-t">Excelencia</div><div class="nv-d">Estándares ISO 9001 para una atención de calidad certificada</div></div>
-        <div class="nv fx-tilt d4"><div class="nv-t">Seguridad vial</div><div class="nv-d">Contribuimos a reducir accidentes y contaminación en Chile</div></div>
+    <div class="nos-vals-v2 rvr">
+      <div class="nv-v2 fx-tilt d1">
+        <div class="nv-v2-num">01</div>
+        <div class="nv-v2-content">
+          <div class="nv-v2-t">Transparencia</div>
+          <div class="nv-v2-d">Información clara y objetiva sobre el estado de cada vehículo</div>
+        </div>
+      </div>
+      <div class="nv-v2 fx-tilt d2">
+        <div class="nv-v2-num">02</div>
+        <div class="nv-v2-content">
+          <div class="nv-v2-t">Cumplimiento</div>
+          <div class="nv-v2-d">Normas del MTT aplicadas con rigor técnico y responsabilidad</div>
+        </div>
+      </div>
+      <div class="nv-v2 fx-tilt d3">
+        <div class="nv-v2-num">03</div>
+        <div class="nv-v2-content">
+          <div class="nv-v2-t">Excelencia</div>
+          <div class="nv-v2-d">Estándares ISO 9001 para una atención de calidad certificada</div>
+        </div>
+      </div>
+      <div class="nv-v2 fx-tilt d4">
+        <div class="nv-v2-num">04</div>
+        <div class="nv-v2-content">
+          <div class="nv-v2-t">Seguridad vial</div>
+          <div class="nv-v2-d">Contribuimos a reducir accidentes y contaminación en Chile</div>
+        </div>
       </div>
     </div>
   </div>
