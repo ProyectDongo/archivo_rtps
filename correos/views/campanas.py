@@ -207,6 +207,7 @@ def _campana_guardar(request, usuario: UsuarioPortal, instancia: CampanaCorreo |
     cuerpo_html  = request.POST.get('cuerpo_html') or ''
     emails_extra = (request.POST.get('emails_extra') or '').strip()
     dias_raw     = request.POST.get('dias_del_mes') or '[]'
+    meses_raw    = request.POST.get('meses_activos') or '[]'
     hora         = (request.POST.get('hora_envio') or '09:00').strip()
     activa       = bool(request.POST.get('activa'))
 
@@ -223,6 +224,12 @@ def _campana_guardar(request, usuario: UsuarioPortal, instancia: CampanaCorreo |
         messages.error(request, 'Tenés que elegir al menos un día del mes (1-31).')
         return redirect(request.path)
 
+    try:
+        meses_list = json.loads(meses_raw) if meses_raw.startswith('[') else []
+    except json.JSONDecodeError:
+        meses_list = []
+    meses = sorted({int(m) for m in (meses_list or []) if isinstance(m, (int, str)) and str(m).isdigit() and 1 <= int(m) <= 12})
+
     listas_ids = []
     for v in request.POST.getlist('listas[]') or request.POST.getlist('listas'):
         try:
@@ -233,8 +240,8 @@ def _campana_guardar(request, usuario: UsuarioPortal, instancia: CampanaCorreo |
     if instancia is None:
         campana = CampanaCorreo.objects.create(
             buzon=buzon, nombre=nombre, asunto=asunto, cuerpo_html=cuerpo_html,
-            emails_extra=emails_extra, dias_del_mes=dias, hora_envio=hora,
-            activa=activa, creada_por=usuario,
+            emails_extra=emails_extra, dias_del_mes=dias, meses_activos=meses,
+            hora_envio=hora, activa=activa, creada_por=usuario,
         )
         accion = 'campana_crear'
     else:
@@ -245,6 +252,7 @@ def _campana_guardar(request, usuario: UsuarioPortal, instancia: CampanaCorreo |
         campana.cuerpo_html = cuerpo_html
         campana.emails_extra = emails_extra
         campana.dias_del_mes = dias
+        campana.meses_activos = meses
         campana.hora_envio = hora
         campana.activa = activa
         campana.save()
@@ -386,6 +394,67 @@ def campana_preview_view(request, campana_id: int):
     asunto, html, _ = _construir_email_destinatario(campana, ctx_dest)
     return render(request, 'correos/campana_preview.html', {
         'campana': campana, 'asunto': asunto, 'html': html,
+    })
+
+
+@portal_login_required
+@require_POST
+def campana_ejecutar_view(request, campana_id: int):
+    """
+    Fuerza el envío de la campaña ahora a TODOS los destinatarios que no
+    hayan recibido el correo de hoy. Equivalente a `manage.py enviar_campanas
+    --campana ID --force`. Devuelve JSON con el detalle del envío.
+    """
+    from correos.management.commands.enviar_campanas import ejecutar_campana
+    usuario = _usuario_actual(request)
+    if not _puede_campanas(usuario):
+        raise Http404
+    campana = get_object_or_404(_campanas_visibles(usuario), id=campana_id)
+
+    hoy = timezone.localdate()
+    ok, err, skip, detalle = ejecutar_campana(campana, hoy, dry=False)
+    _audit(request, 'campana_ejecutar', 'campana', campana.id, ok=ok, err=err, skip=skip)
+    return JsonResponse({
+        'ok': True, 'enviados': ok, 'errores': err, 'skip': skip,
+        'detalle': [{'email': e, 'estado': s, 'mensaje': m} for e, s, m in detalle],
+    })
+
+
+@portal_login_required
+def campana_envios_json_view(request, campana_id: int):
+    """
+    Devuelve los últimos N envíos de la campaña en JSON, para que el form
+    de edición haga polling y muestre el log en vivo.
+    """
+    usuario = _usuario_actual(request)
+    if not _puede_campanas(usuario):
+        raise Http404
+    campana = get_object_or_404(_campanas_visibles(usuario), id=campana_id)
+
+    try:
+        limit = min(int(request.GET.get('limit', 100)), 500)
+    except (TypeError, ValueError):
+        limit = 100
+
+    envios = list(
+        campana.envios.order_by('-enviado_en')[:limit]
+        .values('id', 'fecha', 'email', 'nombre', 'estado', 'error_msg', 'enviado_en')
+    )
+    # Formatear fechas a ISO para que JS las parsee fácil
+    for e in envios:
+        e['fecha'] = e['fecha'].isoformat() if e['fecha'] else None
+        e['enviado_en'] = e['enviado_en'].isoformat() if e['enviado_en'] else None
+
+    proxima = campana.proxima_fecha_envio()
+    return JsonResponse({
+        'ok': True,
+        'envios': envios,
+        'total':    campana.envios.count(),
+        'ok_count': campana.envios.filter(estado=EnvioCampana.ESTADO_OK).count(),
+        'err_count': campana.envios.filter(estado=EnvioCampana.ESTADO_ERROR).count(),
+        'proxima_fecha': proxima.isoformat() if proxima else None,
+        'hora_envio':    campana.hora_envio.strftime('%H:%M') if campana.hora_envio else None,
+        'activa':        campana.activa,
     })
 
 

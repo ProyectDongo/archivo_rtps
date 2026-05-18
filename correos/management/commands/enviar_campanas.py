@@ -28,7 +28,15 @@ from django.utils import timezone
 from archivo.email_utils import build_brand_logo
 from correos.models import CampanaCorreo, EnvioCampana
 from correos.templatetags.correos_tags import html_a_texto, render_firma_html, render_firma_texto
-from correos.views.campanas import _render_merge
+
+
+def _render_merge(template_str: str, ctx: dict) -> str:
+    """Render mail merge — duplicado de views/campanas.py para evitar import circular."""
+    from django.template import Context, Template, TemplateSyntaxError
+    try:
+        return Template(template_str).render(Context(ctx))
+    except TemplateSyntaxError:
+        return template_str
 
 logger = logging.getLogger('correos.enviar_campanas')
 
@@ -52,6 +60,7 @@ class Command(BaseCommand):
         ahora_local = timezone.localtime()
         hoy = ahora_local.date()
         dia = hoy.day
+        mes = hoy.month
 
         qs = CampanaCorreo.objects.filter(activa=True).select_related('buzon')
         if campana_id:
@@ -59,8 +68,11 @@ class Command(BaseCommand):
 
         candidatas = []
         for c in qs:
-            if not force and dia not in (c.dias_del_mes or []):
-                continue
+            if not force:
+                if dia not in (c.dias_del_mes or []):
+                    continue
+                if not c.mes_activo(mes):
+                    continue
             if margen_min > 0:
                 hora_envio_dt = ahora_local.replace(
                     hour=c.hora_envio.hour, minute=c.hora_envio.minute, second=0, microsecond=0,
@@ -89,120 +101,127 @@ class Command(BaseCommand):
 
     def _procesar_campana(self, campana: CampanaCorreo, hoy, dry: bool) -> tuple[int, int, int]:
         self.stdout.write(f'  ➤ "{campana.nombre}" (buzón {campana.buzon.email})')
+        ok, err, skip, _detalle = ejecutar_campana(campana, hoy, dry=dry, stdout=self.stdout)
+        return ok, err, skip
 
-        # ─── Construir lista de destinatarios única (email → ctx) ────────────
-        dest_map: dict[str, dict] = {}
 
-        # Listas asignadas
-        for lista in campana.listas.filter(activa=True):
-            for ctc in lista.contactos.filter(activo=True):
-                key = ctc.email.lower().strip()
-                if not key or key in dest_map:
-                    continue
-                dest_map[key] = {
-                    'nombre': ctc.nombre or '',
-                    'email':  ctc.email,
-                    'extra':  ctc.datos_extra or {},
-                }
+def ejecutar_campana(campana, hoy, dry: bool = False, stdout=None):
+    """
+    Lógica de envío reutilizable — usada por el cron y por el endpoint
+    "Ejecutar ahora" de la UI.
 
-        # Emails extras sueltos (sin nombre ni extra)
-        for email in campana.emails_extra_lista():
-            key = email.lower().strip()
+    Returns: (ok, err, skip, detalle_lista) donde detalle_lista es
+    [(email, estado, error_msg), ...] para mostrar en la UI.
+    """
+    from django.conf import settings
+    from email import encoders
+    from email.mime.base import MIMEBase
+    from email.utils import formataddr
+
+    def log(msg):
+        if stdout:
+            stdout.write(msg)
+
+    # Construir destinatarios
+    dest_map: dict[str, dict] = {}
+    for lista in campana.listas.filter(activa=True):
+        for ctc in lista.contactos.filter(activo=True):
+            key = ctc.email.lower().strip()
             if not key or key in dest_map:
                 continue
+            dest_map[key] = {
+                'nombre': ctc.nombre or '',
+                'email':  ctc.email,
+                'extra':  ctc.datos_extra or {},
+            }
+    for email in campana.emails_extra_lista():
+        key = email.lower().strip()
+        if key and key not in dest_map:
             dest_map[key] = {'nombre': '', 'email': email, 'extra': {}}
 
-        if not dest_map:
-            self.stdout.write(self.style.WARNING('    (sin destinatarios — skip)'))
-            return 0, 0, 0
+    if not dest_map:
+        log('    (sin destinatarios — skip)')
+        return 0, 0, 0, []
 
-        self.stdout.write(f'    {len(dest_map)} destinatario(s) total.')
+    log(f'    {len(dest_map)} destinatario(s).')
 
-        # ─── Brand logo embebido (CID) — una sola vez por campaña ────────────
-        brand_ctx, brand_inline = build_brand_logo()
+    brand_ctx, brand_inline = build_brand_logo()
+    firma_html = render_firma_html(campana.buzon) or ''
+    firma_txt  = render_firma_texto(campana.buzon) or ''
 
-        # ─── Firma del buzón ────────────────────────────────────────────────
-        firma_html = render_firma_html(campana.buzon) or ''
-        firma_txt  = render_firma_texto(campana.buzon) or ''
+    ok = err = skip = 0
+    detalle = []
 
-        ok = err = skip = 0
-        from django.conf import settings
-        from email import encoders
-        from email.mime.base import MIMEBase
+    for email, ctx_dest in dest_map.items():
+        if EnvioCampana.objects.filter(campana=campana, fecha=hoy, email=email).exists():
+            skip += 1
+            detalle.append((email, 'skip', 'ya enviado hoy'))
+            continue
 
-        for email, ctx_dest in dest_map.items():
-            # ─── Idempotencia: si ya hay registro para hoy, skip ──────────
-            if EnvioCampana.objects.filter(campana=campana, fecha=hoy, email=email).exists():
-                skip += 1
-                continue
+        asunto = _render_merge(campana.asunto, ctx_dest)
+        cuerpo = _render_merge(campana.cuerpo_html, ctx_dest)
+        html = (
+            '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
+            'line-height:1.5;color:#222">' + cuerpo + '</div>' + firma_html
+        )
+        texto = html_a_texto(cuerpo)
+        if firma_txt:
+            texto = (texto + '\n\n' + firma_txt).strip()
 
-            # ─── Render mail merge ────────────────────────────────────────
-            asunto = _render_merge(campana.asunto, ctx_dest)
-            cuerpo = _render_merge(campana.cuerpo_html, ctx_dest)
-            html = (
-                '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
-                'line-height:1.5;color:#222">' + cuerpo + '</div>' + firma_html
+        if dry:
+            log(f'    [DRY] → {email}  "{asunto[:50]}"')
+            detalle.append((email, 'dry', f'simulado: {asunto[:60]}'))
+            ok += 1
+            continue
+
+        from_email = campana.buzon.email or settings.DEFAULT_FROM_EMAIL
+        firma_nombre = (campana.buzon.firma_nombre or '').strip()
+        if firma_nombre:
+            from_email = formataddr((firma_nombre, campana.buzon.email))
+
+        try:
+            msg = EmailMultiAlternatives(
+                subject=asunto, body=texto, from_email=from_email, to=[email],
             )
-            texto = html_a_texto(cuerpo)
-            if firma_txt:
-                texto = (texto + '\n\n' + firma_txt).strip()
-
-            if dry:
-                self.stdout.write(f'    [DRY] → {email}  asunto="{asunto[:60]}"')
-                ok += 1
-                continue
-
-            # ─── Enviar ─────────────────────────────────────────────────
-            from_email = campana.buzon.email or settings.DEFAULT_FROM_EMAIL
-            firma_nombre = (campana.buzon.firma_nombre or '').strip()
-            if firma_nombre:
-                from email.utils import formataddr
-                from_email = formataddr((firma_nombre, campana.buzon.email))
+            msg.attach_alternative(html, 'text/html')
+            if brand_inline:
+                msg.mixed_subtype = 'related'
+                for nombre, contenido, mime, cid in brand_inline:
+                    part = MIMEBase(*mime.split('/', 1))
+                    part.set_payload(contenido)
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', 'inline', filename=nombre)
+                    part.add_header('Content-ID', f'<{cid}>')
+                    msg.attach(part)
+            msg.send()
 
             try:
-                msg = EmailMultiAlternatives(
-                    subject=asunto,
-                    body=texto,
-                    from_email=from_email,
-                    to=[email],
-                )
-                msg.attach_alternative(html, 'text/html')
-                if brand_inline:
-                    msg.mixed_subtype = 'related'
-                    for nombre, contenido, mime, cid in brand_inline:
-                        part = MIMEBase(*mime.split('/', 1))
-                        part.set_payload(contenido)
-                        encoders.encode_base64(part)
-                        part.add_header('Content-Disposition', 'inline', filename=nombre)
-                        part.add_header('Content-ID', f'<{cid}>')
-                        msg.attach(part)
-                msg.send()
+                with transaction.atomic():
+                    EnvioCampana.objects.create(
+                        campana=campana, fecha=hoy, email=email,
+                        nombre=ctx_dest.get('nombre', ''),
+                        estado=EnvioCampana.ESTADO_OK,
+                    )
+                ok += 1
+                detalle.append((email, 'ok', ''))
+            except IntegrityError:
+                skip += 1
+                detalle.append((email, 'skip', 'race condition'))
 
-                # Loguear éxito (idempotencia se garantiza por unique_together)
-                try:
-                    with transaction.atomic():
-                        EnvioCampana.objects.create(
-                            campana=campana, fecha=hoy, email=email,
-                            nombre=ctx_dest.get('nombre', ''),
-                            estado=EnvioCampana.ESTADO_OK,
-                        )
-                    ok += 1
-                except IntegrityError:
-                    skip += 1  # race condition: otro cron lo envió justo antes
+        except Exception as e:
+            msg_err = str(e)[:500]
+            logger.error('Campaña %s → %s falló: %s', campana.id, email, msg_err)
+            try:
+                with transaction.atomic():
+                    EnvioCampana.objects.create(
+                        campana=campana, fecha=hoy, email=email,
+                        nombre=ctx_dest.get('nombre', ''),
+                        estado=EnvioCampana.ESTADO_ERROR, error_msg=msg_err,
+                    )
+            except IntegrityError:
+                pass
+            err += 1
+            detalle.append((email, 'error', msg_err))
 
-            except Exception as e:
-                msg_err = str(e)[:500]
-                logger.error('Campaña %s → %s falló: %s', campana.id, email, msg_err)
-                try:
-                    with transaction.atomic():
-                        EnvioCampana.objects.create(
-                            campana=campana, fecha=hoy, email=email,
-                            nombre=ctx_dest.get('nombre', ''),
-                            estado=EnvioCampana.ESTADO_ERROR, error_msg=msg_err,
-                        )
-                except IntegrityError:
-                    pass
-                err += 1
-
-        self.stdout.write(f'    → {ok} OK, {err} errores, {skip} skip.')
-        return ok, err, skip
+    log(f'    → {ok} OK, {err} errores, {skip} skip.')
+    return ok, err, skip, detalle

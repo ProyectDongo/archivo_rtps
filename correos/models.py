@@ -1300,6 +1300,10 @@ class CampanaCorreo(models.Model):
     dias_del_mes = models.JSONField(
         default=list, blank=True,
         help_text='Lista de días del mes en que se envía: [1, 15] o [30] o [1, 10, 20, 30].')
+    meses_activos = models.JSONField(
+        default=list, blank=True,
+        help_text='Lista de meses 1-12 en que se envía. Vacío = todos (mensual). '
+                  '[3,6,9,12]=trimestral, [6,12]=semestral, [1]=anual en enero.')
     hora_envio   = models.TimeField(
         default='09:00',
         help_text='Hora local Chile en que arranca el envío. El cron debe correr cerca de esta hora.')
@@ -1328,6 +1332,48 @@ class CampanaCorreo(models.Model):
             return []
         raw = self.emails_extra.replace(';', ',').replace('\n', ',')
         return [e.strip().lower() for e in raw.split(',') if e.strip()]
+
+    def mes_activo(self, mes: int) -> bool:
+        """True si el mes (1-12) está en la programación. Vacío = todos."""
+        meses = self.meses_activos or []
+        return not meses or mes in meses
+
+    def proxima_fecha_envio(self, desde=None):
+        """
+        Devuelve la próxima fecha (date) en que esta campaña debería enviarse,
+        respetando dias_del_mes y meses_activos. None si no hay programación.
+        """
+        import calendar
+        from datetime import date, timedelta
+        from django.utils import timezone
+
+        dias = sorted(d for d in (self.dias_del_mes or []) if 1 <= d <= 31)
+        if not dias or not self.activa:
+            return None
+
+        if desde is None:
+            desde = timezone.localdate()
+
+        # Busca hasta 13 meses adelante (cubre el caso anual)
+        for i in range(13):
+            year  = desde.year + (desde.month - 1 + i) // 12
+            month = (desde.month - 1 + i) % 12 + 1
+            if not self.mes_activo(month):
+                continue
+            ultimo_dia = calendar.monthrange(year, month)[1]
+            for d in dias:
+                if d > ultimo_dia:
+                    continue  # ej: día 31 en febrero
+                cand = date(year, month, d)
+                if cand < desde:
+                    continue
+                if cand == desde:
+                    # Hoy: solo cuenta si la hora aún no pasó
+                    ahora = timezone.localtime().time()
+                    if self.hora_envio <= ahora:
+                        continue
+                return cand
+        return None
 
 
 class EnvioCampana(models.Model):

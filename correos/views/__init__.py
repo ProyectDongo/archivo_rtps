@@ -51,6 +51,7 @@ from .campanas import (
     campanas_list_view,
     campana_crear_view, campana_editar_view, campana_eliminar_view, campana_toggle_view,
     campana_test_view, campana_preview_view,
+    campana_ejecutar_view, campana_envios_json_view,
     lista_crear_view, lista_editar_view, lista_eliminar_view,
     contacto_agregar_view, contacto_eliminar_view,
     contactos_importar_csv_view,
