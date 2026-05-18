@@ -2,6 +2,7 @@
 # siga funcionando sin modificar urls.py.
 from .auth import (
     landing_view, healthz_view, privacidad_view,
+    para_talleres_view, sla_view,
     login_view, logout_view,
     setup_2fa_view, verify_2fa_view,
     mostrar_recovery_codes_view, confirmar_recovery_codes_view,

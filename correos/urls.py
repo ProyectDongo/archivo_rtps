@@ -12,6 +12,8 @@ from . import views
 urlpatterns = [
     path('healthz',                          views.healthz_view,      name='healthz'),
     path('',                                 views.landing_view,      name='landing'),
+    path('para-talleres/',                   views.para_talleres_view, name='para_talleres'),
+    path('sla/',                             views.sla_view,           name='sla'),
     path('privacidad/',                      views.privacidad_view,   name='privacidad'),
     path('intranet/',                        views.login_view,        name='login'),
     path('intranet/captcha/',                views.captcha_regenerar,    name='captcha_regenerar'),

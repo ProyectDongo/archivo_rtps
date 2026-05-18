@@ -1,0 +1,157 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Términos de servicio y SLA — Dongo Proyect{% endblock %}
+
+{% block body %}
+
+<nav class="bg-white border-b border-border px-4 sm:px-12 py-4 flex items-center justify-between">
+  <a href="{% url 'para_talleres' %}" class="flex items-center gap-2.5">
+    <div class="w-9 h-9 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center text-white font-black">D</div>
+    <div class="leading-tight">
+      <div class="font-black text-gray-dark text-sm tracking-tight">Dongo Proyect</div>
+      <div class="text-[10px] text-gray-soft uppercase tracking-[1.5px] font-semibold">Software para talleres</div>
+    </div>
+  </a>
+  <a href="{% url 'para_talleres' %}" class="text-xs text-gray-soft hover:text-primary font-semibold inline-flex items-center gap-1">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Volver
+  </a>
+</nav>
+
+<article class="max-w-3xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
+  <div class="mb-10">
+    <div class="text-xs font-bold uppercase tracking-[3px] text-primary mb-3">Términos legales</div>
+    <h1 class="text-3xl sm:text-4xl font-black text-gray-dark mb-3 leading-tight">Términos de servicio y SLA</h1>
+    <p class="text-sm text-gray-soft">Última actualización: {% now "j \d\e F \d\e Y" %}</p>
+  </div>
+
+  <div class="space-y-8 text-gray-mid leading-relaxed text-[15px]">
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">1. Definiciones</h2>
+      <p><strong class="text-gray-dark">"Servicio"</strong>: el software de portal de correos + agenda online + módulos contratados según plan.</p>
+      <p class="mt-2"><strong class="text-gray-dark">"Proveedor"</strong>: Dongo Proyect (Anghello Jesús Molina Dongo).</p>
+      <p class="mt-2"><strong class="text-gray-dark">"Cliente"</strong>: el taller / empresa que contrata el Servicio.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">2. Disponibilidad (uptime)</h2>
+      <p>Compromiso de uptime medido mensualmente, excluyendo ventanas de mantenimiento programadas (anunciadas con 48h de antelación) y fallas de terceros (Cloudflare, Google Workspace, Hetzner):</p>
+      <ul class="mt-3 space-y-2 list-none">
+        <li class="flex items-start gap-3 bg-off-white-2 rounded-lg px-4 py-3">
+          <span class="font-bold text-primary-dark">Básico</span>
+          <span>Best-effort, sin garantía formal de uptime</span>
+        </li>
+        <li class="flex items-start gap-3 bg-off-white-2 rounded-lg px-4 py-3">
+          <span class="font-bold text-primary-dark">Medio</span>
+          <span>99.0% mensual (≈ 7.3h de downtime aceptable / mes)</span>
+        </li>
+        <li class="flex items-start gap-3 bg-off-white-2 rounded-lg px-4 py-3">
+          <span class="font-bold text-primary-dark">Pro</span>
+          <span>99.5% mensual (≈ 3.6h / mes) + reporte mensual de uptime</span>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">3. Tiempos de respuesta a incidentes</h2>
+      <table class="w-full text-sm border border-border rounded-lg overflow-hidden">
+        <thead class="bg-off-white-2">
+          <tr>
+            <th class="text-left p-3 font-bold text-gray-dark">Severidad</th>
+            <th class="text-left p-3 font-bold text-gray-dark">Básico</th>
+            <th class="text-left p-3 font-bold text-gray-dark">Medio</th>
+            <th class="text-left p-3 font-bold text-gray-dark">Pro</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          <tr>
+            <td class="p-3 font-semibold">Crítica<br><span class="text-xs text-gray-soft font-normal">(portal caído)</span></td>
+            <td class="p-3">Best-effort</td>
+            <td class="p-3">8h hábiles</td>
+            <td class="p-3 font-bold text-primary-dark">4h hábiles</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-semibold">Alta<br><span class="text-xs text-gray-soft font-normal">(feature mayor roto)</span></td>
+            <td class="p-3">Best-effort</td>
+            <td class="p-3">24h hábiles</td>
+            <td class="p-3 font-bold text-primary-dark">8h hábiles</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-semibold">Media<br><span class="text-xs text-gray-soft font-normal">(bug menor, consulta)</span></td>
+            <td class="p-3">Best-effort</td>
+            <td class="p-3">48h hábiles</td>
+            <td class="p-3">24h hábiles</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-xs text-gray-soft mt-2">Horario hábil: lun-vie 9:00-19:00 hora Chile.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">4. Backups y recuperación</h2>
+      <p>Postgres con backup automático diario en el servidor (Hetzner, 7 días de retención). Plan Pro incluye backup offsite a Backblaze B2 (Estados Unidos) con 30 días de retención.</p>
+      <p class="mt-2">RPO (Recovery Point Objective): 24h. RTO (Recovery Time Objective): 8h en Plan Pro, 24h en Plan Medio.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">5. Propiedad de los datos</h2>
+      <p>Todos los datos generados por el Cliente (correos, archivos, contactos, reservas, campañas) son <strong class="text-gray-dark">propiedad del Cliente</strong>. El Proveedor actúa como custodio mientras dure el Servicio.</p>
+      <p class="mt-2">El Cliente puede solicitar export completo en cualquier momento (formato estándar: mbox para correos, CSV/JSON para datos estructurados, archivos en su formato original). Plazo: 5 días hábiles.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">6. Cancelación</h2>
+      <p>Sin contrato de permanencia. El Cliente puede cancelar avisando con <strong class="text-gray-dark">30 días de antelación</strong>. Al cancelar:</p>
+      <ul class="list-disc list-inside mt-2 space-y-1 ml-2">
+        <li>Se entrega export completo de datos (sin costo)</li>
+        <li>Servicio sigue activo hasta el final del período pagado</li>
+        <li>Después de 90 días post-cancelación, datos del servidor se eliminan permanentemente</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">7. Modificaciones del servicio</h2>
+      <p>El Proveedor puede agregar features o mejoras sin costo. Si una mejora requiere cambio del plan contratado, se notificará con 30 días de antelación.</p>
+      <p class="mt-2">Cambios de precio del plan vigente se notifican con 60 días de antelación. El Cliente puede cancelar sin penalización si no acepta el nuevo precio.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">8. Exclusiones</h2>
+      <p>El SLA NO aplica en casos de:</p>
+      <ul class="list-disc list-inside mt-2 space-y-1 ml-2">
+        <li>Mantenimiento programado (avisado con 48h)</li>
+        <li>Fallas de terceros: Cloudflare, Hetzner, Google Workspace</li>
+        <li>Caso fortuito o fuerza mayor (cortes eléctricos masivos, eventos naturales, etc.)</li>
+        <li>Uso indebido del Servicio o ataques originados desde cuentas del Cliente</li>
+        <li>Modificaciones no autorizadas por el Cliente sobre el código o configuración</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-dark mb-3">9. Contacto y soporte</h2>
+      <ul class="list-none space-y-1.5">
+        <li>📧 Email: <a href="mailto:dongo.proyectos@gmail.com" class="text-primary underline hover:text-primary-dark">dongo.proyectos@gmail.com</a></li>
+        <li>📱 WhatsApp: <a href="https://wa.me/56933045056" target="_blank" rel="noopener" class="text-primary underline hover:text-primary-dark">+56 9 3304 5056</a></li>
+      </ul>
+    </section>
+
+    <section class="border-t border-border pt-8 mt-12">
+      <p class="text-xs text-gray-soft">
+        Este documento puede ser actualizado periódicamente. La fecha de "Última actualización" arriba indica la versión vigente.
+        Los términos comerciales específicos (precio, plan, alcance) se documentan en el contrato/cotización particular de cada Cliente.
+      </p>
+    </section>
+
+  </div>
+</article>
+
+<footer class="bg-gray-dark text-white/60 py-8 px-4 sm:px-12">
+  <div class="max-w-3xl mx-auto text-center text-xs">
+    © {% now "Y" %} Dongo Proyect · Chile ·
+    <a href="{% url 'para_talleres' %}" class="hover:text-white transition">Volver al inicio</a>
+  </div>
+</footer>
+
+{% endblock %}
