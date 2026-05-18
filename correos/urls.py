@@ -70,4 +70,19 @@ urlpatterns = [
     path('intranet/papelera/',                                  views.papelera_list_view,             name='papelera'),
     path('intranet/papelera/<int:archivo_id>/restaurar/',       views.archivo_restaurar_view,         name='archivo_restaurar'),
     path('intranet/papelera/<int:archivo_id>/borrar-permanente/', views.archivo_borrar_permanente_view, name='archivo_borrar_permanente'),
+
+    # ─── Campañas de correos automáticos ─────────────────────────────────────
+    path('intranet/campanas/',                                  views.campanas_list_view,             name='campanas'),
+    path('intranet/campanas/nueva/',                            views.campana_crear_view,             name='campana_crear'),
+    path('intranet/campanas/<int:campana_id>/',                 views.campana_editar_view,            name='campana_editar'),
+    path('intranet/campanas/<int:campana_id>/eliminar/',        views.campana_eliminar_view,          name='campana_eliminar'),
+    path('intranet/campanas/<int:campana_id>/toggle/',          views.campana_toggle_view,            name='campana_toggle'),
+    path('intranet/campanas/<int:campana_id>/test/',            views.campana_test_view,              name='campana_test'),
+    path('intranet/campanas/<int:campana_id>/preview/',         views.campana_preview_view,           name='campana_preview'),
+    path('intranet/campanas/listas/nueva/',                     views.lista_crear_view,               name='lista_crear'),
+    path('intranet/campanas/listas/<int:lista_id>/',            views.lista_editar_view,              name='lista_editar'),
+    path('intranet/campanas/listas/<int:lista_id>/eliminar/',   views.lista_eliminar_view,            name='lista_eliminar'),
+    path('intranet/campanas/listas/<int:lista_id>/contactos/',  views.contacto_agregar_view,          name='contacto_agregar'),
+    path('intranet/campanas/listas/<int:lista_id>/import/',     views.contactos_importar_csv_view,    name='contactos_importar'),
+    path('intranet/campanas/contactos/<int:contacto_id>/eliminar/', views.contacto_eliminar_view,     name='contacto_eliminar'),
 ]

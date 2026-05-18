@@ -47,3 +47,11 @@ from .archivos import (
     papelera_list_view, archivo_restaurar_view, archivo_borrar_permanente_view,
     correo_vincular_archivo_view, correo_desvincular_archivo_view,
 )
+from .campanas import (
+    campanas_list_view,
+    campana_crear_view, campana_editar_view, campana_eliminar_view, campana_toggle_view,
+    campana_test_view, campana_preview_view,
+    lista_crear_view, lista_editar_view, lista_eliminar_view,
+    contacto_agregar_view, contacto_eliminar_view,
+    contactos_importar_csv_view,
+)
