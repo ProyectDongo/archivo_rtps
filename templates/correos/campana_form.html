@@ -1,0 +1,217 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{% if campana %}Editar campaña: {{ campana.nombre }}{% else %}Nueva campaña{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+
+  {# Breadcrumb + header #}
+  <div class="mb-6">
+    <a href="{% url 'campanas' %}" class="text-xs text-gray-soft hover:text-primary inline-flex items-center gap-1 mb-2">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a campañas
+    </a>
+    <h1 class="text-2xl font-black text-gray-dark">
+      {% if campana %}Editar campaña{% else %}Nueva campaña{% endif %}
+    </h1>
+  </div>
+
+  {% include 'partials/_messages.html' %}
+
+  <form method="post" class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        action="{% if campana %}{% url 'campana_editar' campana.id %}{% else %}{% url 'campana_crear' %}{% endif %}">
+    {% csrf_token %}
+
+    {# Columna principal (form) #}
+    <div class="lg:col-span-2 space-y-4">
+
+      {# Nombre + buzón #}
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Nombre interno</label>
+        <input type="text" name="nombre" required maxlength="160"
+               value="{{ campana.nombre|default:'' }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
+               placeholder="Ej: Recordatorio mensual de revisiones">
+
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-4">Enviar desde</label>
+        <select name="buzon_id" required
+                class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none bg-white">
+          {% for b in buzones %}
+          <option value="{{ b.id }}" {% if campana and b.id == campana.buzon_id %}selected{% endif %}>{{ b.email }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# Asunto + cuerpo #}
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">
+          Asunto <span class="text-gray-soft normal-case font-normal tracking-normal">— admite {{ '{{ nombre }}' }}, {{ '{{ extra.empresa }}' }}</span>
+        </label>
+        <input type="text" name="asunto" required maxlength="300"
+               value="{{ campana.asunto|default:'' }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
+               placeholder="Hola {{ '{{ nombre }}' }}, te recordamos que…">
+
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-4">
+          Cuerpo (HTML) <span class="text-gray-soft normal-case font-normal tracking-normal">— la firma del buzón se agrega automáticamente</span>
+        </label>
+        <textarea name="cuerpo_html" required rows="14"
+                  class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm font-mono focus:border-primary focus:outline-none"
+                  placeholder="<p>Hola {{ '{{ nombre }}' }},</p>&#10;<p>Te recordamos…</p>">{{ campana.cuerpo_html|default:'' }}</textarea>
+        <p class="text-[11px] text-gray-soft mt-2">
+          Variables disponibles: <code class="bg-off-white-2 px-1 rounded">{{ '{{ nombre }}' }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ '{{ email }}' }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ '{{ extra.empresa }}' }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ '{{ extra.telefono }}' }}</code>, etc.
+        </p>
+      </div>
+
+      {# Destinatarios #}
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-2">Listas asignadas</label>
+        {% if listas %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 mb-4">
+          {% for l in listas %}
+          <label class="inline-flex items-center gap-2 text-sm cursor-pointer p-2 rounded hover:bg-off-white border border-transparent has-[:checked]:bg-primary-light has-[:checked]:border-primary/30">
+            <input type="checkbox" name="listas[]" value="{{ l.id }}" class="accent-primary"
+                   {% if campana and l in campana.listas.all %}checked{% endif %}>
+            <span class="text-gray-dark"><strong>{{ l.nombre }}</strong> <span class="text-gray-soft text-xs">({{ l.n_contactos }})</span></span>
+          </label>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-sm text-gray-soft italic mb-4">No hay listas creadas. <a href="{% url 'lista_crear' %}" class="text-primary hover:underline">Crear una →</a></div>
+        {% endif %}
+
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">
+          Emails sueltos extras <span class="text-gray-soft normal-case font-normal tracking-normal">— coma o newline separados</span>
+        </label>
+        <textarea name="emails_extra" rows="2"
+                  class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
+                  placeholder="cliente1@ejemplo.com, cliente2@ejemplo.com">{{ campana.emails_extra|default:'' }}</textarea>
+      </div>
+    </div>
+
+    {# Sidebar derecho — programación + acciones #}
+    <div class="space-y-4">
+
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-2">Días del mes</label>
+        <div class="grid grid-cols-7 gap-1 mb-3" id="dias-grid">
+          {% for d in "x"|rjust:"31" %}
+          {% with dia=forloop.counter %}
+          <label class="flex items-center justify-center cursor-pointer">
+            <input type="checkbox" class="dia-check sr-only" value="{{ dia }}"
+                   {% if campana and dia in campana.dias_del_mes %}checked{% endif %}>
+            <span class="dia-label w-9 h-9 flex items-center justify-center rounded-lg text-xs font-semibold border border-border bg-white text-gray-mid hover:border-primary hover:text-primary transition">{{ dia }}</span>
+          </label>
+          {% endwith %}
+          {% endfor %}
+        </div>
+        <input type="hidden" name="dias_del_mes" id="dias-input"
+               value="{% if campana %}{{ campana.dias_del_mes|safe }}{% else %}[]{% endif %}">
+        <p class="text-[11px] text-gray-soft">Click para activar/desactivar. Ej: día 1 y 15 → se envía el 1° y el 15 de cada mes.</p>
+
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-4">Hora de envío</label>
+        <input type="time" name="hora_envio"
+               value="{% if campana %}{{ campana.hora_envio|time:'H:i' }}{% else %}09:00{% endif %}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+
+        <label class="inline-flex items-center gap-2 mt-4 cursor-pointer">
+          <input type="checkbox" name="activa" value="1" class="accent-primary w-4 h-4"
+                 {% if not campana or campana.activa %}checked{% endif %}>
+          <span class="text-sm font-semibold text-gray-dark">Campaña activa</span>
+        </label>
+        <p class="text-[11px] text-gray-soft mt-1">Si la desactivás, no se envía hasta que la vuelvas a activar.</p>
+      </div>
+
+      {# Acciones #}
+      <div class="bg-white rounded-xl shadow-card p-5 space-y-2">
+        <button type="submit"
+                class="w-full bg-primary hover:bg-primary-dark text-white py-2.5 rounded-lg text-sm font-bold transition">
+          {% if campana %}Guardar cambios{% else %}Crear campaña{% endif %}
+        </button>
+
+        {% if campana %}
+        <button type="button" id="btn-test"
+                class="w-full bg-white border-2 border-border hover:border-primary text-gray-dark py-2 rounded-lg text-sm font-semibold transition">
+          📧 Enviar prueba…
+        </button>
+        <a href="{% url 'campana_preview' campana.id %}" target="_blank"
+           class="block text-center w-full bg-white border-2 border-border hover:border-primary text-gray-dark py-2 rounded-lg text-sm font-semibold transition">
+          👁 Vista previa
+        </a>
+        {% endif %}
+      </div>
+
+      {% if campana %}
+      {# Stats #}
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <h3 class="text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-3">Envíos</h3>
+        <div class="grid grid-cols-3 gap-2 text-center mb-3">
+          <div>
+            <div class="text-2xl font-black text-gray-dark">{{ stats.total }}</div>
+            <div class="text-[10px] uppercase tracking-wider text-gray-soft">Total</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-primary">{{ stats.ok }}</div>
+            <div class="text-[10px] uppercase tracking-wider text-gray-soft">OK</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-red-600">{{ stats.error }}</div>
+            <div class="text-[10px] uppercase tracking-wider text-gray-soft">Errores</div>
+          </div>
+        </div>
+        {% if envios_recientes %}
+        <div class="border-t border-border pt-3 max-h-48 overflow-y-auto -mx-2">
+          <table class="w-full text-xs">
+            {% for e in envios_recientes %}
+            <tr class="hover:bg-off-white">
+              <td class="px-2 py-1 text-gray-soft">{{ e.fecha|date:"d/m" }}</td>
+              <td class="px-2 py-1 text-gray-dark truncate max-w-[120px]">{{ e.email }}</td>
+              <td class="px-2 py-1 text-right">
+                {% if e.estado == 'ok' %}
+                <span class="text-primary">✓</span>
+                {% else %}
+                <span class="text-red-600" title="{{ e.error_msg }}">✗</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% endif %}
+      </div>
+
+      {# Eliminar #}
+      <form method="post" action="{% url 'campana_eliminar' campana.id %}" data-confirm="¿Eliminar esta campaña? Esto borra también su historial de envíos.">
+        {% csrf_token %}
+        <button type="submit" class="w-full bg-white border border-red-200 text-red-700 hover:bg-red-50 py-2 rounded-lg text-sm font-semibold transition">
+          🗑 Eliminar campaña
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+{# Modal de test #}
+{% if campana %}
+<div id="test-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-modal p-6 max-w-md w-full">
+    <h3 class="text-lg font-bold text-gray-dark mb-3">Enviar prueba</h3>
+    <p class="text-sm text-gray-soft mb-4">Mandamos una versión renderizada con datos demo (<code class="bg-off-white-2 px-1 rounded text-xs">{{ '{{ nombre }}' }}</code> → "Cliente Demo").</p>
+    <input type="email" id="test-email" placeholder="tu-email@ejemplo.com"
+           class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none mb-3">
+    <div id="test-status" class="text-xs text-gray-soft mb-3 hidden"></div>
+    <div class="flex justify-end gap-2">
+      <button type="button" id="test-cancel" class="px-4 py-2 text-sm text-gray-mid hover:text-gray-dark">Cancelar</button>
+      <button type="button" id="test-send" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark">Enviar</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script src="{% static 'js/campana_form.js' %}" defer></script>
+{% endblock %}

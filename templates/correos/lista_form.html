@@ -1,0 +1,151 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{% if lista %}Lista: {{ lista.nombre }}{% else %}Nueva lista{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-8">
+
+  <div class="mb-6">
+    <a href="{% url 'campanas' %}" class="text-xs text-gray-soft hover:text-primary inline-flex items-center gap-1 mb-2">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a campañas
+    </a>
+    <h1 class="text-2xl font-black text-gray-dark">
+      {% if lista %}Editar lista: {{ lista.nombre }}{% else %}Nueva lista de destinatarios{% endif %}
+    </h1>
+  </div>
+
+  {% include 'partials/_messages.html' %}
+
+  {# Form de datos de la lista #}
+  <form method="post" class="bg-white rounded-xl shadow-card p-5 mb-6"
+        action="{% if lista %}{% url 'lista_editar' lista.id %}{% else %}{% url 'lista_crear' %}{% endif %}">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Nombre</label>
+        <input type="text" name="nombre" required maxlength="120"
+               value="{{ lista.nombre|default:'' }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Buzón</label>
+        <select name="buzon_id" required
+                class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none bg-white">
+          {% for b in buzones %}
+          <option value="{{ b.id }}" {% if lista and b.id == lista.buzon_id %}selected{% endif %}>{{ b.email }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-4">Descripción (opcional)</label>
+    <textarea name="descripcion" rows="2"
+              class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">{{ lista.descripcion|default:'' }}</textarea>
+
+    <label class="inline-flex items-center gap-2 mt-4 cursor-pointer">
+      <input type="checkbox" name="activa" value="1" class="accent-primary w-4 h-4"
+             {% if not lista or lista.activa %}checked{% endif %}>
+      <span class="text-sm font-semibold text-gray-dark">Lista activa</span>
+    </label>
+
+    <div class="flex justify-end gap-2 mt-4">
+      <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-bold">
+        {% if lista %}Guardar{% else %}Crear lista{% endif %}
+      </button>
+    </div>
+  </form>
+
+  {% if lista %}
+  {# Importar CSV #}
+  <div class="bg-white rounded-xl shadow-card p-5 mb-6">
+    <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-3">📥 Importar contactos (CSV)</h2>
+    <form method="post" action="{% url 'contactos_importar' lista.id %}" enctype="multipart/form-data" class="space-y-3">
+      {% csrf_token %}
+      <div>
+        <label class="block text-xs text-gray-soft mb-1">Subí un archivo CSV (UTF-8)</label>
+        <input type="file" name="csv" accept=".csv,text/csv"
+               class="block w-full text-sm text-gray-mid file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-primary-light file:text-primary-dark file:font-semibold file:text-xs hover:file:bg-primary/20">
+      </div>
+      <div class="text-center text-xs text-gray-soft">— o —</div>
+      <div>
+        <label class="block text-xs text-gray-soft mb-1">Pegá el contenido CSV:</label>
+        <textarea name="csv_pegado" rows="4" placeholder="email,nombre,empresa,telefono&#10;cliente@x.com,Juan,ACME,+56912345678"
+                  class="w-full px-3 py-2 border-2 border-border rounded-lg text-xs font-mono focus:border-primary focus:outline-none"></textarea>
+      </div>
+      <p class="text-[11px] text-gray-soft">
+        Primera fila = encabezados. Obligatorio: <code class="bg-off-white-2 px-1 rounded">email</code>.
+        Opcional: <code class="bg-off-white-2 px-1 rounded">nombre</code>.
+        Columnas extra (empresa, telefono, etc.) van a "datos_extra" para mail merge.
+      </p>
+      <button type="submit" class="bg-white border-2 border-border hover:border-primary text-gray-dark px-4 py-2 rounded-lg text-sm font-semibold">
+        Importar
+      </button>
+    </form>
+  </div>
+
+  {# Agregar contacto individual #}
+  <div class="bg-white rounded-xl shadow-card p-5 mb-6">
+    <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-3">➕ Agregar contacto</h2>
+    <form method="post" action="{% url 'contacto_agregar' lista.id %}" class="grid grid-cols-1 md:grid-cols-12 gap-2">
+      {% csrf_token %}
+      <input type="email" name="email" required placeholder="cliente@empresa.cl"
+             class="md:col-span-4 px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+      <input type="text" name="nombre" placeholder="Nombre"
+             class="md:col-span-3 px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+      <input type="text" name="datos_extra" placeholder='{"empresa":"ACME","ciudad":"Concepción"}'
+             class="md:col-span-4 px-3 py-2 border-2 border-border rounded-lg text-xs font-mono focus:border-primary focus:outline-none">
+      <button type="submit" class="md:col-span-1 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark">+</button>
+    </form>
+  </div>
+
+  {# Tabla de contactos #}
+  <div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <div class="px-5 py-3 border-b border-border flex items-center justify-between">
+      <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid">Contactos ({{ contactos|length }})</h2>
+    </div>
+    {% if contactos %}
+    <table class="w-full text-sm">
+      <thead class="bg-off-white-2 text-[11px] font-bold uppercase tracking-wider text-gray-soft">
+        <tr>
+          <th class="text-left px-4 py-2">Email</th>
+          <th class="text-left px-4 py-2">Nombre</th>
+          <th class="text-left px-4 py-2">Datos extra</th>
+          <th class="text-right px-4 py-2 w-24"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-border">
+        {% for c in contactos %}
+        <tr class="hover:bg-off-white">
+          <td class="px-4 py-2 text-gray-dark font-mono text-xs">{{ c.email }}</td>
+          <td class="px-4 py-2 text-gray-mid">{{ c.nombre|default:'—' }}</td>
+          <td class="px-4 py-2 text-xs text-gray-soft font-mono">{{ c.datos_extra|truncatechars:50 }}</td>
+          <td class="px-4 py-2 text-right">
+            <form method="post" action="{% url 'contacto_eliminar' c.id %}" style="display:inline" data-confirm="¿Eliminar {{ c.email }}?">
+              {% csrf_token %}
+              <button type="submit" class="text-xs text-red-600 hover:underline">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="px-5 py-8 text-center text-sm text-gray-soft">Sin contactos en esta lista.</div>
+    {% endif %}
+  </div>
+
+  {# Eliminar lista #}
+  <form method="post" action="{% url 'lista_eliminar' lista.id %}" class="mt-6"
+        data-confirm="¿Eliminar esta lista y todos sus contactos? Las campañas que la usen quedarán sin esta lista.">
+    {% csrf_token %}
+    <button type="submit" class="bg-white border border-red-200 text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold">
+      🗑 Eliminar lista
+    </button>
+  </form>
+  {% endif %}
+
+</div>
+{% endblock %}

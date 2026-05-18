@@ -1,0 +1,130 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Campañas de correos automáticos{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8">
+
+  {# Header #}
+  <div class="flex items-start justify-between gap-4 mb-8">
+    <div>
+      <div class="text-[11px] font-semibold tracking-[2px] uppercase text-gray-soft mb-1">Automatización</div>
+      <h1 class="text-3xl font-black text-gray-dark">Campañas de correos</h1>
+      <p class="text-sm text-gray-soft mt-2 max-w-2xl">
+        Configurá envíos recurrentes con destinatarios, días del mes y plantilla.
+        Se mandan automáticamente con la firma del buzón.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'lista_crear' %}"
+         class="inline-flex items-center gap-2 bg-white border border-border rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-dark hover:bg-off-white-2 transition shrink-0">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Nueva lista
+      </a>
+      <a href="{% url 'campana_crear' %}"
+         class="inline-flex items-center gap-2 bg-primary text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-primary-dark transition shrink-0">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva campaña
+      </a>
+    </div>
+  </div>
+
+  {# Mensajes #}
+  {% include 'partials/_messages.html' %}
+
+  {# Campañas activas #}
+  <section class="mb-10">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-gray-dark">Campañas <span class="text-gray-soft font-normal">({{ campanas|length }})</span></h2>
+    </div>
+
+    {% if campanas %}
+    <div class="bg-white rounded-xl shadow-card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-off-white-2 text-[11px] font-bold uppercase tracking-wider text-gray-soft">
+          <tr>
+            <th class="text-left px-4 py-3">Nombre</th>
+            <th class="text-left px-4 py-3">Buzón</th>
+            <th class="text-left px-4 py-3">Días</th>
+            <th class="text-left px-4 py-3">Hora</th>
+            <th class="text-center px-4 py-3">Estado</th>
+            <th class="text-right px-4 py-3">Envíos</th>
+            <th class="text-right px-4 py-3 w-32">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          {% for c in campanas %}
+          <tr class="hover:bg-off-white transition">
+            <td class="px-4 py-3">
+              <a href="{% url 'campana_editar' c.id %}" class="font-semibold text-gray-dark hover:text-primary">{{ c.nombre }}</a>
+              <div class="text-xs text-gray-soft mt-0.5">{{ c.asunto|truncatechars:60 }}</div>
+            </td>
+            <td class="px-4 py-3 text-gray-mid">{{ c.buzon.email }}</td>
+            <td class="px-4 py-3">
+              {% for d in c.dias_del_mes %}<span class="inline-block bg-off-white-2 text-gray-mid text-xs font-semibold px-1.5 py-0.5 rounded mr-0.5">{{ d }}</span>{% endfor %}
+            </td>
+            <td class="px-4 py-3 text-gray-mid font-mono text-xs">{{ c.hora_envio|time:"H:i" }}</td>
+            <td class="px-4 py-3 text-center">
+              {% if c.activa %}
+              <span class="inline-flex items-center gap-1 bg-primary-light text-primary-dark text-[11px] font-bold px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 bg-primary rounded-full"></span> Activa
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 bg-off-white-2 text-gray-soft text-[11px] font-bold px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 bg-gray-soft rounded-full"></span> Pausada
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-right text-xs">
+              <span class="text-primary-dark font-semibold">{{ c.n_envios_ok }}</span>
+              {% if c.n_envios_err %}<span class="text-red-600 font-semibold">/ {{ c.n_envios_err }} err</span>{% endif %}
+            </td>
+            <td class="px-4 py-3 text-right">
+              <a href="{% url 'campana_editar' c.id %}" class="text-xs text-primary hover:underline font-semibold">Editar</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border-2 border-dashed border-border p-12 text-center">
+      <div class="text-gray-soft text-sm mb-3">Todavía no hay campañas creadas.</div>
+      <a href="{% url 'campana_crear' %}" class="text-sm font-semibold text-primary hover:underline">Crear la primera →</a>
+    </div>
+    {% endif %}
+  </section>
+
+  {# Listas de destinatarios #}
+  <section>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-gray-dark">Listas de destinatarios <span class="text-gray-soft font-normal">({{ listas|length }})</span></h2>
+    </div>
+
+    {% if listas %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {% for l in listas %}
+      <a href="{% url 'lista_editar' l.id %}" class="block bg-white rounded-xl shadow-card p-4 hover:shadow-modal transition">
+        <div class="flex items-start justify-between gap-2 mb-1.5">
+          <h3 class="font-semibold text-gray-dark">{{ l.nombre }}</h3>
+          {% if not l.activa %}<span class="text-[10px] font-bold uppercase tracking-wider text-gray-soft">Pausada</span>{% endif %}
+        </div>
+        <div class="text-xs text-gray-soft mb-2">{{ l.buzon.email }}</div>
+        <div class="text-xs text-gray-mid">
+          <strong class="text-gray-dark">{{ l.n_contactos }}</strong> contacto{{ l.n_contactos|pluralize:"s" }}
+        </div>
+        {% if l.descripcion %}<div class="text-xs text-gray-soft mt-2 line-clamp-2">{{ l.descripcion }}</div>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border-2 border-dashed border-border p-8 text-center">
+      <div class="text-gray-soft text-sm mb-3">Sin listas. Las listas son reutilizables entre campañas.</div>
+      <a href="{% url 'lista_crear' %}" class="text-sm font-semibold text-primary hover:underline">Crear lista →</a>
+    </div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}
