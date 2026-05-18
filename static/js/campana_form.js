@@ -13,38 +13,57 @@
 (function () {
   'use strict';
 
-  // ─── Editor Quill para el cuerpo ──────────────────────────────────────────
+  // ─── Editor Quill para el cuerpo (con fallback a contenteditable) ─────────
   let quill = null;
   const editorEl = document.getElementById('campana-editor');
   const hiddenCuerpo = document.getElementById('campana-cuerpo-hidden');
-  if (editorEl && typeof Quill !== 'undefined') {
-    // Convertir el HTML inicial en delta antes de inicializar Quill
-    const inicialHtml = editorEl.innerHTML;
-    editorEl.innerHTML = '';
 
-    quill = new Quill(editorEl, {
-      theme: 'snow',
-      placeholder: editorEl.dataset.placeholder || 'Escribí el mensaje…',
-      modules: {
-        toolbar: [
-          [{ 'header': [2, 3, false] }],
-          ['bold', 'italic', 'underline'],
-          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-          ['link'],
-          [{ 'align': [] }],
-          ['clean'],
-        ],
-      },
-    });
-    if (inicialHtml.trim()) {
-      // Pegar el HTML inicial (de un edit). Quill lo sanea pero respeta estructura básica.
-      quill.clipboard.dangerouslyPasteHTML(inicialHtml);
-    }
-    quill.on('text-change', function () {
+  function initQuillOrFallback() {
+    if (!editorEl) return;
+    if (typeof Quill !== 'undefined') {
+      const inicialHtml = editorEl.innerHTML;
+      editorEl.innerHTML = '';
+      quill = new Quill(editorEl, {
+        theme: 'snow',
+        placeholder: editorEl.dataset.placeholder || 'Escribí el mensaje…',
+        modules: {
+          toolbar: [
+            [{ 'header': [2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['link'],
+            [{ 'align': [] }],
+            ['clean'],
+          ],
+        },
+      });
+      if (inicialHtml.trim()) {
+        quill.clipboard.dangerouslyPasteHTML(inicialHtml);
+      }
+      quill.on('text-change', function () {
+        if (hiddenCuerpo) hiddenCuerpo.value = quill.root.innerHTML;
+      });
       if (hiddenCuerpo) hiddenCuerpo.value = quill.root.innerHTML;
-    });
-    // Sync inicial
-    if (hiddenCuerpo) hiddenCuerpo.value = quill.root.innerHTML;
+    } else {
+      // Fallback: hacer el div editable directamente
+      console.warn('[campanas] Quill no disponible — usando contenteditable como fallback.');
+      editorEl.setAttribute('contenteditable', 'true');
+      editorEl.style.padding = '14px';
+      editorEl.style.minHeight = '280px';
+      editorEl.style.cursor = 'text';
+      editorEl.addEventListener('input', function () {
+        if (hiddenCuerpo) hiddenCuerpo.value = editorEl.innerHTML;
+      });
+      if (hiddenCuerpo) hiddenCuerpo.value = editorEl.innerHTML;
+    }
+  }
+
+  // Quill puede no estar listo si el script de Quill cargó después.
+  // Intentamos init inmediato, si falla esperamos a window.load.
+  if (typeof Quill !== 'undefined') {
+    initQuillOrFallback();
+  } else {
+    window.addEventListener('load', initQuillOrFallback);
   }
 
   // ─── Botones "Insertar variable" arriba del editor ────────────────────────
@@ -58,6 +77,19 @@
         quill.insertText(pos, text, 'user');
         quill.setSelection(pos + text.length, 0);
         quill.focus();
+      } else if (editorEl && editorEl.isContentEditable) {
+        // Fallback: insertar en posición del cursor del contenteditable
+        editorEl.focus();
+        const sel = window.getSelection();
+        if (sel.rangeCount) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(document.createTextNode(text));
+          range.collapse(false);
+        } else {
+          editorEl.innerHTML += text;
+        }
+        if (hiddenCuerpo) hiddenCuerpo.value = editorEl.innerHTML;
       }
     });
   });
@@ -71,9 +103,14 @@
         const input = document.getElementById('campana-asunto');
         if (input) input.value = asunto;
       }
-      if (cuerpo && quill) {
-        quill.setText('');
-        quill.clipboard.dangerouslyPasteHTML(cuerpo);
+      if (cuerpo) {
+        if (quill) {
+          quill.setText('');
+          quill.clipboard.dangerouslyPasteHTML(cuerpo);
+        } else if (editorEl && editorEl.isContentEditable) {
+          editorEl.innerHTML = cuerpo;
+          if (hiddenCuerpo) hiddenCuerpo.value = cuerpo;
+        }
       }
     });
   });
