@@ -230,6 +230,10 @@ class UsuarioPortal(models.Model):
         default=False,
         help_text='Si está marcado, ve TODOS los buzones (la lista de buzones se ignora).',
     )
+    puede_campanas = models.BooleanField(
+        default=False,
+        help_text='Permite crear y gestionar campañas de correos automáticos. Los admins siempre pueden.',
+    )
     activo         = models.BooleanField(default=True)
     creado         = models.DateTimeField(auto_now_add=True)
     ultimo_login   = models.DateTimeField(null=True, blank=True)
@@ -1211,3 +1215,148 @@ class UserDesktopPrefs(models.Model):
 
     def __str__(self):
         return f'Prefs de {self.usuario.email}'
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Campañas de correos automáticos
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ListaDestinatarios(models.Model):
+    """
+    Lista reutilizable de contactos, asociada a un buzón. Una misma lista
+    puede usarse en varias campañas. Ej: "Clientes mensuales", "Flota Verschae".
+    """
+    buzon       = models.ForeignKey(Buzon, on_delete=models.CASCADE, related_name='listas')
+    nombre      = models.CharField(max_length=120)
+    descripcion = models.TextField(blank=True, default='')
+    creada_por  = models.ForeignKey(UsuarioPortal, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='listas_creadas')
+    activa      = models.BooleanField(default=True)
+    creada_en   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Lista de destinatarios'
+        verbose_name_plural = 'Listas de destinatarios'
+        ordering = ['nombre']
+        unique_together = [('buzon', 'nombre')]
+        indexes = [models.Index(fields=['buzon', 'activa'], name='correos_lista_buz_act_idx')]
+
+    def __str__(self):
+        return f'{self.nombre} ({self.contactos.count()})'
+
+
+class ContactoLista(models.Model):
+    """
+    Contacto dentro de una lista. `datos_extra` permite variables para mail
+    merge: {empresa, telefono, ciudad, ...} renderizables como {{ empresa }}
+    en el cuerpo del email.
+    """
+    lista       = models.ForeignKey(ListaDestinatarios, on_delete=models.CASCADE, related_name='contactos')
+    email       = models.EmailField()
+    nombre      = models.CharField(max_length=120, blank=True, default='')
+    datos_extra = models.JSONField(default=dict, blank=True,
+                                   help_text='Variables custom para mail merge: {"empresa": "X", ...}')
+    activo      = models.BooleanField(default=True)
+    creado_en   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Contacto'
+        verbose_name_plural = 'Contactos'
+        ordering = ['email']
+        unique_together = [('lista', 'email')]
+        indexes = [models.Index(fields=['lista', 'activo'], name='correos_ctc_lista_act_idx')]
+
+    def __str__(self):
+        return f'{self.email} ({self.nombre or "-"})'
+
+
+class CampanaCorreo(models.Model):
+    """
+    Campaña recurrente. Se envía automáticamente los `dias_del_mes` a las
+    `hora_envio`, desde el `buzon` configurado. El cuerpo admite variables
+    Django: {{ nombre }}, {{ email }}, {{ extra.empresa }}.
+
+    Idempotencia: el cron NO reenvía si ya hay `EnvioCampana` con (campana,
+    fecha, email) para hoy — seguro contra reinicios del cron en el mismo día.
+    """
+    buzon        = models.ForeignKey(Buzon, on_delete=models.CASCADE, related_name='campanas')
+    nombre       = models.CharField(max_length=160,
+                                    help_text='Solo interno, no se muestra al destinatario.')
+    asunto       = models.CharField(max_length=300,
+                                    help_text='Admite variables: {{ nombre }}, {{ extra.empresa }}.')
+    cuerpo_html  = models.TextField(
+        help_text='Cuerpo del email (HTML). Admite variables tipo {{ nombre }}. La firma '
+                  'del buzón y el logo se agregan automáticamente.')
+    creada_por   = models.ForeignKey(UsuarioPortal, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='campanas_creadas')
+
+    # Destinatarios
+    listas       = models.ManyToManyField(ListaDestinatarios, blank=True, related_name='campanas')
+    emails_extra = models.TextField(
+        blank=True, default='',
+        help_text='Emails sueltos coma-separados o uno por línea. Se suman a las listas.')
+
+    # Programación
+    dias_del_mes = models.JSONField(
+        default=list, blank=True,
+        help_text='Lista de días del mes en que se envía: [1, 15] o [30] o [1, 10, 20, 30].')
+    hora_envio   = models.TimeField(
+        default='09:00',
+        help_text='Hora local Chile en que arranca el envío. El cron debe correr cerca de esta hora.')
+
+    # Estado
+    activa       = models.BooleanField(default=True,
+                                       help_text='Si está apagada, el cron no la envía pero podés editarla.')
+    creada_en    = models.DateTimeField(auto_now_add=True)
+    modificada_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Campaña de correos'
+        verbose_name_plural = 'Campañas de correos'
+        ordering = ['-creada_en']
+        indexes = [
+            models.Index(fields=['buzon', 'activa'], name='correos_camp_buz_act_idx'),
+            models.Index(fields=['activa'], name='correos_camp_act_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.nombre} ({self.buzon.email})'
+
+    def emails_extra_lista(self) -> list[str]:
+        """Parsea `emails_extra` separando por coma, punto y coma o newline."""
+        if not self.emails_extra:
+            return []
+        raw = self.emails_extra.replace(';', ',').replace('\n', ',')
+        return [e.strip().lower() for e in raw.split(',') if e.strip()]
+
+
+class EnvioCampana(models.Model):
+    """
+    Log de envío individual: una fila por (campaña, fecha, destinatario).
+    El unique_together garantiza idempotencia: si el cron corre 2 veces el
+    mismo día, no se manda el correo dos veces al mismo destinatario.
+    """
+    ESTADO_OK     = 'ok'
+    ESTADO_ERROR  = 'error'
+    ESTADOS = [(ESTADO_OK, 'OK'), (ESTADO_ERROR, 'Error')]
+
+    campana       = models.ForeignKey(CampanaCorreo, on_delete=models.CASCADE, related_name='envios')
+    fecha         = models.DateField(help_text='Fecha de envío (fecha local del cron).')
+    email         = models.EmailField()
+    nombre        = models.CharField(max_length=120, blank=True, default='')
+    estado        = models.CharField(max_length=10, choices=ESTADOS)
+    error_msg     = models.TextField(blank=True, default='')
+    enviado_en    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Envío de campaña'
+        verbose_name_plural = 'Envíos de campañas'
+        ordering = ['-enviado_en']
+        unique_together = [('campana', 'fecha', 'email')]
+        indexes = [
+            models.Index(fields=['campana', '-fecha'], name='correos_env_camp_fec_idx'),
+            models.Index(fields=['campana', 'estado'], name='correos_env_camp_est_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.campana.nombre} → {self.email} ({self.fecha} {self.estado})'
