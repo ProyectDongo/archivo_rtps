@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" baseProfile="tiny-ps" version="1.2" viewBox="0 0 64 64">
+  <title>RT Río San Pedro</title>
+  <rect width="64" height="64" fill="#ffffff"/>
+  <g transform="translate(32,32)">
+    <!-- Anillo exterior derecho — verde brand -->
+    <path d="M -22 0 A 22 22 0 0 1 22 0" fill="none" stroke="#1F7A33" stroke-width="5"/>
+    <!-- Anillo exterior izquierdo — azul navy -->
+    <path d="M 22 0 A 22 22 0 0 1 -22 0" fill="none" stroke="#0F3D6B" stroke-width="5"/>
+    <!-- Engranaje verde — 8 dientes superiores -->
+    <rect transform="rotate(191.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(213.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(236.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(258.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(281.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(303.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(326.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <rect transform="rotate(348.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#1F7A33"/>
+    <!-- Engranaje azul — 8 dientes inferiores -->
+    <rect transform="rotate(11.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(33.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(56.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(78.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(101.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(123.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(146.25) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <rect transform="rotate(168.75) translate(25,0)" x="-2.2" y="-2.5" width="4.4" height="5" fill="#0F3D6B"/>
+    <!-- Círculo central blanco -->
+    <circle r="18" fill="#ffffff" stroke="#1F2937" stroke-width="0.5"/>
+    <!-- Texto RSP (paths para Tiny PS — Tiny PS no permite <text>) -->
+    <!-- R -->
+    <path d="M -11 -5 L -11 5 L -9 5 L -9 1 L -7.5 1 L -6 5 L -4 5 L -5.5 1 C -4.5 0.5 -4 -0.5 -4 -2 C -4 -3.8 -5.2 -5 -7 -5 Z M -9 -3.5 L -7 -3.5 C -6.4 -3.5 -6 -3 -6 -2 C -6 -1 -6.4 -0.5 -7 -0.5 L -9 -0.5 Z" fill="#1F2937"/>
+    <!-- S -->
+    <path d="M -2.5 -5 C -4 -5 -5 -4 -5 -2.5 C -5 -1 -4.2 -0.3 -2.8 0.2 L -1.5 0.7 C -1 0.9 -0.7 1.2 -0.7 1.8 C -0.7 2.5 -1.2 3 -2 3 C -2.8 3 -3.3 2.5 -3.3 1.7 L -5.2 1.7 C -5.2 3.5 -4 5 -2 5 C 0 5 1.2 4 1.2 2.3 C 1.2 0.9 0.4 0.1 -1 -0.4 L -2.3 -0.9 C -2.8 -1.1 -3.1 -1.4 -3.1 -2 C -3.1 -2.6 -2.7 -3 -2 -3 C -1.3 -3 -0.9 -2.6 -0.9 -2 L 1 -2 C 1 -3.8 -0.2 -5 -2.5 -5 Z" fill="#1F2937"/>
+    <!-- P -->
+    <path d="M 4 -5 L 4 5 L 6 5 L 6 1.5 L 7.5 1.5 C 9.4 1.5 10.5 0.2 10.5 -1.7 C 10.5 -3.7 9.4 -5 7.5 -5 Z M 6 -3.5 L 7.3 -3.5 C 8.1 -3.5 8.5 -3 8.5 -1.7 C 8.5 -0.5 8.1 0 7.3 0 L 6 0 Z" fill="#1F2937"/>
+  </g>
+</svg>
