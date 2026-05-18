@@ -46,8 +46,8 @@
           <tr>
             <th class="text-left px-4 py-3">Nombre</th>
             <th class="text-left px-4 py-3">Buzón</th>
-            <th class="text-left px-4 py-3">Días</th>
-            <th class="text-left px-4 py-3">Hora</th>
+            <th class="text-left px-4 py-3">Programación</th>
+            <th class="text-left px-4 py-3">Próximo envío</th>
             <th class="text-center px-4 py-3">Estado</th>
             <th class="text-right px-4 py-3">Envíos</th>
             <th class="text-right px-4 py-3 w-32">Acciones</th>
@@ -60,11 +60,31 @@
               <a href="{% url 'campana_editar' c.id %}" class="font-semibold text-gray-dark hover:text-primary">{{ c.nombre }}</a>
               <div class="text-xs text-gray-soft mt-0.5">{{ c.asunto|truncatechars:60 }}</div>
             </td>
-            <td class="px-4 py-3 text-gray-mid">{{ c.buzon.email }}</td>
+            <td class="px-4 py-3 text-gray-mid text-xs">{{ c.buzon.email }}</td>
             <td class="px-4 py-3">
-              {% for d in c.dias_del_mes %}<span class="inline-block bg-off-white-2 text-gray-mid text-xs font-semibold px-1.5 py-0.5 rounded mr-0.5">{{ d }}</span>{% endfor %}
+              <div class="text-xs">
+                <span class="text-gray-soft">Días:</span>
+                {% for d in c.dias_del_mes %}<span class="inline-block bg-off-white-2 text-gray-mid text-[10px] font-semibold px-1.5 py-0.5 rounded mr-0.5">{{ d }}</span>{% endfor %}
+              </div>
+              <div class="text-xs mt-1">
+                <span class="text-gray-soft">Meses:</span>
+                {% if c.meses_activos %}
+                  {% for m in c.meses_activos %}<span class="inline-block bg-cyan-50 text-cyan-700 text-[10px] font-semibold px-1.5 py-0.5 rounded mr-0.5">{{ m }}</span>{% endfor %}
+                {% else %}
+                  <span class="text-[10px] text-gray-soft italic">todos</span>
+                {% endif %}
+              </div>
             </td>
-            <td class="px-4 py-3 text-gray-mid font-mono text-xs">{{ c.hora_envio|time:"H:i" }}</td>
+            <td class="px-4 py-3 text-xs">
+              {% with prox=c.proxima_fecha_envio %}
+              {% if prox %}
+                <div class="text-gray-dark font-semibold">{{ prox|date:"d M Y" }}</div>
+                <div class="text-gray-soft font-mono">{{ c.hora_envio|time:"H:i" }}</div>
+              {% else %}
+                <div class="text-gray-soft italic">—</div>
+              {% endif %}
+              {% endwith %}
+            </td>
             <td class="px-4 py-3 text-center">
               {% if c.activa %}
               <span class="inline-flex items-center gap-1 bg-primary-light text-primary-dark text-[11px] font-bold px-2 py-0.5 rounded-full">
