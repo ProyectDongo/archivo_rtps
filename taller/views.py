@@ -32,7 +32,6 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from correos import captcha as fernet_captcha
 from correos.models import hash_ip
 
 from . import anti_bot
@@ -101,7 +100,6 @@ def agendar_view(request):
         'repuestos':       items_por_tipo['repuesto'],
         'fechas_calendario': fechas_calendario,
         'turnstile_site_key': getattr(settings, 'TURNSTILE_SITE_KEY', ''),
-        'fernet_challenge': fernet_captcha.generar_challenge(),
         # Categorías para chips
         'categorias_servicios': [
             (c.value, c.label) for c in ItemCatalogo.Categoria
@@ -176,17 +174,7 @@ def confirmar_reserva_view(request):
         messages.error(request, 'Verificación anti-bot falló. Recargá la página y volvé a intentar.')
         return redirect('agendar')
 
-    # ─── Capa 5: captcha Fernet (visual) ───────────────────────────────
-    captcha_token = request.POST.get('captcha_token') or ''
-    captcha_sel   = request.POST.getlist('captcha_seleccion[]')
-    try:
-        fernet_captcha.verificar(captcha_token, captcha_sel)
-    except fernet_captcha.CaptchaError:
-        _log_intento(request, ip_h, '', 'captcha_fail')
-        messages.error(request, 'Captcha incorrecto o expirado. Resolvelo de nuevo.')
-        return redirect('agendar')
-
-    # ─── Capa 6: validación de campos ──────────────────────────────────
+    # ─── Capa 5: validación de campos ──────────────────────────────────
     email     = (request.POST.get('cliente_email') or '').strip().lower()
     nombre    = (request.POST.get('cliente_nombre') or '').strip()[:120]
     telefono  = (request.POST.get('cliente_telefono') or '').strip()[:20]

@@ -163,30 +163,16 @@
                     class="w-full px-3 py-[9px] [border:1.5px_solid_#d5d5d5] rounded-lg text-[14px] font-[inherit] bg-white focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(30,125,50,.12)]"></textarea>
         </label>
 
-        <h2 class="text-[18px] text-gray-dark mt-6 mb-3">🛡️ Verificación</h2>
-        <p class="text-[12px] text-[#777] mt-0 mb-3">Para evitar reservas falsas, resolvé el captcha y mandá la cita.</p>
-
-        <div class="bg-white p-4 rounded-[10px] border border-[#e5e5e5] mb-3.5">
-          <p class="text-[14px] font-semibold m-0 mb-3 text-gray-dark">{{ fernet_challenge.pregunta }}</p>
-          <input type="hidden" name="captcha_token" value="{{ fernet_challenge.token }}">
-          <div class="grid gap-1.5 max-w-[240px]" style="grid-template-columns:repeat(3,1fr)">
-            {% for celda in fernet_challenge.celdas %}
-            <label class="captcha-cell cursor-pointer relative">
-              <input type="checkbox" name="captcha_seleccion[]" value="{{ forloop.counter0 }}"
-                     class="absolute opacity-0 pointer-events-none">
-              <span class="captcha-cell-inner">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ celda.svg|safe }}</svg>
-              </span>
-            </label>
-            {% endfor %}
-          </div>
-        </div>
-
         {% if turnstile_site_key %}
-        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
-        {% else %}
-        <p class="text-[12px] text-[#888] mt-2"><em>(Turnstile no configurado — modo dev)</em></p>
+        <div class="bg-white p-4 rounded-[10px] border border-[#e5e5e5] mb-3.5">
+          <p class="text-[12px] text-[#777] m-0 mb-3 flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Verificación de seguridad
+          </p>
+          <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
+        </div>
         {% endif %}
 
         <button type="submit"
