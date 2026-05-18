@@ -1,0 +1,128 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{% if item %}Editar {{ item.nombre }}{% else %}Nuevo {{ tipo }}{% endif %} — Taller{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-8">
+
+  <div class="mb-6">
+    <a href="{% url 'taller_items_list' tipo=tipo %}" class="text-xs text-gray-soft hover:text-primary inline-flex items-center gap-1 mb-2">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a {{ tipo }}s
+    </a>
+    <h1 class="text-2xl font-black text-gray-dark">
+      {% if item %}Editar {{ tipo }}{% else %}Nuevo {{ tipo }}{% endif %}
+    </h1>
+  </div>
+
+  {% include 'partials/_messages.html' %}
+
+  <form method="post" class="bg-white rounded-xl shadow-card p-6 space-y-5"
+        action="{% if item %}{% url 'taller_item_editar' tipo=tipo item_id=item.id %}{% else %}{% url 'taller_item_crear' tipo=tipo %}{% endif %}">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Nombre *</label>
+        <input type="text" name="nombre" required maxlength="120"
+               value="{{ item.nombre|default:'' }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
+               placeholder="Ej: Cambio de aceite y filtro">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Categoría *</label>
+        <select name="categoria" required
+                class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm bg-white focus:border-primary focus:outline-none">
+          {% for val, lbl in categorias %}
+          <option value="{{ val }}" {% if item and item.categoria == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Disponibilidad</label>
+        <select name="disponibilidad"
+                class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm bg-white focus:border-primary focus:outline-none">
+          {% for val, lbl in disponibilidades %}
+          <option value="{{ val }}" {% if item and item.disponibilidad == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Descripción</label>
+      <textarea name="descripcion" rows="3" maxlength="2000"
+                class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
+                placeholder="Detalles del servicio, qué incluye, qué excluye…">{{ item.descripcion|default:'' }}</textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Precio ref. (CLP)</label>
+        <input type="number" name="precio_referencia_clp" min="0" step="100"
+               value="{{ item.precio_referencia_clp|default:0 }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Duración (min)</label>
+        <input type="number" name="duracion_min" min="0" step="5"
+               value="{{ item.duracion_min|default:30 }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+        <p class="text-[10px] text-gray-soft mt-1">0 = solo repuesto sin instalación</p>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Orden</label>
+        <input type="number" name="orden" step="1"
+               value="{{ item.orden|default:0 }}"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+        <p class="text-[10px] text-gray-soft mt-1">Menor = aparece antes</p>
+      </div>
+    </div>
+
+    {% if tipo == 'repuesto' %}
+    <div>
+      <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Marca</label>
+      <select name="marca_repuesto"
+              class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm bg-white focus:border-primary focus:outline-none">
+        <option value="">— sin especificar —</option>
+        {% for val, lbl in marcas %}
+        <option value="{{ val }}" {% if item and item.marca_repuesto == val %}selected{% endif %}>{{ lbl }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div>
+      <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">Ícono (Lucide)</label>
+      <input type="text" name="icono_lucide" maxlength="40"
+             value="{{ item.icono_lucide|default:'wrench' }}"
+             class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm font-mono focus:border-primary focus:outline-none"
+             placeholder="wrench">
+      <p class="text-[11px] text-gray-soft mt-1">Nombre del ícono <a href="https://lucide.dev/icons/" target="_blank" rel="noopener" class="text-primary underline">lucide.dev</a> (ej: wrench, oil-can, battery, gauge).</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-6 pt-4 border-t border-border">
+      <label class="inline-flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" name="activo" value="1" class="accent-primary w-4 h-4"
+               {% if not item or item.activo %}checked{% endif %}>
+        <span class="text-sm font-semibold text-gray-dark">Activo</span>
+        <span class="text-xs text-gray-soft">(visible en catálogo público)</span>
+      </label>
+      <label class="inline-flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" name="destacado" value="1" class="accent-amber-500 w-4 h-4"
+               {% if item and item.destacado %}checked{% endif %}>
+        <span class="text-sm font-semibold text-gray-dark">⭐ Destacado</span>
+        <span class="text-xs text-gray-soft">("Popular" en el catálogo)</span>
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-4 border-t border-border">
+      <a href="{% url 'taller_items_list' tipo=tipo %}" class="px-4 py-2 text-sm text-gray-mid hover:text-gray-dark">Cancelar</a>
+      <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg text-sm font-bold transition">
+        {% if item %}Guardar cambios{% else %}Crear{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

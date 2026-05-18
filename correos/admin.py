@@ -58,7 +58,7 @@ class UsuarioPortalForm(forms.ModelForm):
 
     class Meta:
         model = UsuarioPortal
-        fields = ('email', 'es_admin', 'puede_campanas', 'activo', 'buzones')
+        fields = ('email', 'es_admin', 'puede_campanas', 'puede_taller', 'activo', 'buzones')
 
     def clean(self):
         cleaned = super().clean()
@@ -92,9 +92,9 @@ class UsuarioPortalForm(forms.ModelForm):
 @admin.register(UsuarioPortal)
 class UsuarioPortalAdmin(admin.ModelAdmin):
     form = UsuarioPortalForm
-    list_display  = ('email', 'es_admin', 'puede_campanas', 'activo', 'estado_2fa',
+    list_display  = ('email', 'es_admin', 'puede_campanas', 'puede_taller', 'activo', 'estado_2fa',
                      'cantidad_buzones', 'ultimo_login', 'creado')
-    list_filter   = ('es_admin', 'puede_campanas', 'activo', 'totp_activo', 'buzones')
+    list_filter   = ('es_admin', 'puede_campanas', 'puede_taller', 'activo', 'totp_activo', 'buzones')
     search_fields = ('email',)
     readonly_fields = ('creado', 'ultimo_login', 'totp_activo',
                        'recovery_codes_restantes')
@@ -117,10 +117,11 @@ class UsuarioPortalAdmin(admin.ModelAdmin):
             'description': 'Si "Es admin" está marcado, ve TODOS los buzones (esta lista se ignora).',
         }),
         ('Permisos especiales', {
-            'fields': ('puede_campanas',),
-            'description': 'Si está marcado, el usuario puede crear y gestionar campañas de '
-                           'correos automáticos (sección "Automáticos" del escritorio). Los '
-                           'admins siempre tienen este permiso aunque esté desmarcado.',
+            'fields': ('puede_campanas', 'puede_taller'),
+            'description': 'Permisos opcionales para usuarios no-admin. Los admins '
+                           'siempre los tienen aunque estén desmarcados.\n\n'
+                           '• puede_campanas: gestionar campañas de correos automáticos.\n'
+                           '• puede_taller: gestionar catálogo y reservas del taller.',
         }),
         ('Historial', {
             'fields': ('creado', 'ultimo_login'),

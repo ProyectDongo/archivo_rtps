@@ -42,22 +42,6 @@ def healthz_view(request):
     return HttpResponse('ok', content_type='text/plain')
 
 
-def para_talleres_view(request):
-    """
-    Página comercial pública: presenta el producto a otros talleres /
-    plantas RT que podrían contratarlo. No toca BD, render estático.
-    """
-    return render(request, 'correos/para_talleres.html')
-
-
-def sla_view(request):
-    """
-    SLA / términos de servicio del producto. Para clientes activos.
-    Página estática pública.
-    """
-    return render(request, 'correos/sla.html')
-
-
 def privacidad_view(request):
     """
     Política de privacidad y cookies. Página estática pública, sin BD.

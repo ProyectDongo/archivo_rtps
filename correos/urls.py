@@ -12,8 +12,6 @@ from . import views
 urlpatterns = [
     path('healthz',                          views.healthz_view,      name='healthz'),
     path('',                                 views.landing_view,      name='landing'),
-    path('para-talleres/',                   views.para_talleres_view, name='para_talleres'),
-    path('sla/',                             views.sla_view,           name='sla'),
     path('privacidad/',                      views.privacidad_view,   name='privacidad'),
     path('intranet/',                        views.login_view,        name='login'),
     path('intranet/captcha/',                views.captcha_regenerar,    name='captcha_regenerar'),
@@ -89,4 +87,16 @@ urlpatterns = [
     path('intranet/campanas/listas/<int:lista_id>/contactos/',  views.contacto_agregar_view,          name='contacto_agregar'),
     path('intranet/campanas/listas/<int:lista_id>/import/',     views.contactos_importar_csv_view,    name='contactos_importar'),
     path('intranet/campanas/contactos/<int:contacto_id>/eliminar/', views.contacto_eliminar_view,     name='contacto_eliminar'),
+
+    # ─── Taller: gestión catálogo + agenda desde el escritorio ───────────────
+    path('intranet/taller/<str:tipo>/',                          views.taller_items_list_view,         name='taller_items_list'),
+    path('intranet/taller/<str:tipo>/nuevo/',                    views.taller_item_form_view,          name='taller_item_crear'),
+    path('intranet/taller/<str:tipo>/<int:item_id>/',            views.taller_item_form_view,          name='taller_item_editar'),
+    path('intranet/taller/item/<int:item_id>/eliminar/',         views.taller_item_eliminar_view,      name='taller_item_eliminar'),
+    path('intranet/taller/item/<int:item_id>/toggle/',           views.taller_item_toggle_view,        name='taller_item_toggle'),
+    path('intranet/taller/agenda/',                              views.taller_agenda_view,             name='taller_agenda'),
+    path('intranet/taller/reserva/<int:reserva_id>/',            views.taller_reserva_detalle_view,    name='taller_reserva_detalle'),
+    path('intranet/taller/reserva/<int:reserva_id>/confirmar/',  views.taller_reserva_confirmar_view,  name='taller_reserva_confirmar'),
+    path('intranet/taller/reserva/<int:reserva_id>/cancelar/',   views.taller_reserva_cancelar_view,   name='taller_reserva_cancelar'),
+    path('intranet/taller/reserva/<int:reserva_id>/completar/',  views.taller_reserva_completar_view,  name='taller_reserva_completar'),
 ]

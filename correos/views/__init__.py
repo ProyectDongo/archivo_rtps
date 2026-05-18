@@ -2,7 +2,6 @@
 # siga funcionando sin modificar urls.py.
 from .auth import (
     landing_view, healthz_view, privacidad_view,
-    para_talleres_view, sla_view,
     login_view, logout_view,
     setup_2fa_view, verify_2fa_view,
     mostrar_recovery_codes_view, confirmar_recovery_codes_view,
@@ -56,4 +55,11 @@ from .campanas import (
     lista_crear_view, lista_editar_view, lista_eliminar_view,
     contacto_agregar_view, contacto_eliminar_view,
     contactos_importar_csv_view,
+)
+from .taller_admin import (
+    taller_items_list_view, taller_item_form_view,
+    taller_item_eliminar_view, taller_item_toggle_view,
+    taller_agenda_view,
+    taller_reserva_detalle_view, taller_reserva_confirmar_view,
+    taller_reserva_cancelar_view, taller_reserva_completar_view,
 )

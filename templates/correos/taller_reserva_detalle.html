@@ -1,0 +1,133 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Reserva #{{ reserva.id }} — {{ reserva.cliente_nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-8">
+
+  <div class="mb-6">
+    <a href="{% url 'taller_agenda' %}?year={{ reserva.fecha.year }}&month={{ reserva.fecha.month }}"
+       class="text-xs text-gray-soft hover:text-primary inline-flex items-center gap-1 mb-2">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a la agenda
+    </a>
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-black text-gray-dark">{{ reserva.cliente_nombre }}</h1>
+        <p class="text-gray-soft text-sm mt-1">{{ reserva.fecha|date:"l d \d\e F" }} · {{ reserva.hora_inicio|time:"H:i" }} hrs</p>
+      </div>
+      {% if reserva.estado == 'pendiente_email' %}<span class="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Pendiente email</span>
+      {% elif reserva.estado == 'confirmada_email' %}<span class="bg-primary-light text-primary-dark px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Confirmada email</span>
+      {% elif reserva.estado == 'confirmada_llamada' %}<span class="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Confirmada llamada</span>
+      {% elif reserva.estado == 'completada' %}<span class="bg-gray-200 text-gray-mid px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Completada</span>
+      {% elif 'cancelada' in reserva.estado %}<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Cancelada</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {% include 'partials/_messages.html' %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    {# Datos #}
+    <div class="lg:col-span-2 space-y-5">
+
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-4">👤 Cliente</h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex gap-4"><dt class="w-32 text-gray-soft">Nombre:</dt><dd class="font-semibold text-gray-dark">{{ reserva.cliente_nombre }}</dd></div>
+          <div class="flex gap-4"><dt class="w-32 text-gray-soft">Email:</dt><dd><a href="mailto:{{ reserva.cliente_email }}" class="text-primary hover:underline">{{ reserva.cliente_email }}</a></dd></div>
+          <div class="flex gap-4"><dt class="w-32 text-gray-soft">Teléfono:</dt><dd><a href="tel:{{ reserva.cliente_telefono }}" class="text-primary hover:underline font-mono">{{ reserva.cliente_telefono }}</a></dd></div>
+        </dl>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-4">🚗 Vehículo</h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex gap-4"><dt class="w-32 text-gray-soft">Patente:</dt><dd class="font-mono font-bold text-gray-dark bg-amber-50 px-2 py-0.5 rounded inline-block">{{ reserva.patente }}</dd></div>
+          <div class="flex gap-4"><dt class="w-32 text-gray-soft">Vehículo:</dt><dd class="font-semibold text-gray-dark">{{ reserva.marca }} {{ reserva.modelo }}{% if reserva.anio %} · {{ reserva.anio }}{% endif %}</dd></div>
+          {% if reserva.motor %}<div class="flex gap-4"><dt class="w-32 text-gray-soft">Motor:</dt><dd class="text-gray-dark">{{ reserva.motor }}</dd></div>{% endif %}
+          {% if reserva.kilometraje %}<div class="flex gap-4"><dt class="w-32 text-gray-soft">Kilometraje:</dt><dd class="text-gray-dark">{{ reserva.kilometraje }} km</dd></div>{% endif %}
+          {% if reserva.contexto_problema %}
+          <div class="flex gap-4"><dt class="w-32 text-gray-soft shrink-0">Contexto:</dt>
+            <dd class="text-gray-dark italic bg-amber-50/50 p-2 rounded text-xs leading-relaxed">{{ reserva.contexto_problema }}</dd>
+          </div>
+          {% endif %}
+        </dl>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-4">🛒 Items reservados ({{ reserva.items.count }})</h2>
+        <table class="w-full text-sm">
+          <tbody class="divide-y divide-border">
+            {% for it in reserva.items.all %}
+            <tr>
+              <td class="py-2 text-gray-dark">{{ it.nombre }}</td>
+              <td class="py-2 text-gray-soft text-xs">{{ it.get_categoria_display }}</td>
+              <td class="py-2 text-right text-gray-mid">{{ it.duracion_min }} min</td>
+              <td class="py-2 text-right font-mono text-gray-dark">${{ it.precio_referencia_clp|stringformat:"d" }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="border-t-2 border-border">
+              <td colspan="2" class="py-2 font-bold text-gray-dark">Total referencial</td>
+              <td class="py-2 text-right font-bold">{{ reserva.duracion_estimada_min }} min</td>
+              <td class="py-2 text-right font-bold text-primary-dark text-lg">${{ reserva.total_referencial_clp|stringformat:"d" }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# Acciones #}
+    <div class="space-y-4">
+
+      {% if reserva.estado != 'completada' and 'cancelada' not in reserva.estado %}
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <h3 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-3">Acciones</h3>
+
+        {% if reserva.estado in 'pendiente_email,confirmada_email' %}
+        <form method="post" action="{% url 'taller_reserva_confirmar' reserva_id=reserva.id %}" class="space-y-2">
+          {% csrf_token %}
+          <input type="text" name="nota" maxlength="500" placeholder="Nota (ej: habló con la esposa)"
+                 class="w-full px-3 py-2 border-2 border-border rounded-lg text-xs focus:border-primary focus:outline-none">
+          <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg text-sm font-bold transition">
+            📞 Confirmar por llamada
+          </button>
+        </form>
+        {% endif %}
+
+        <form method="post" action="{% url 'taller_reserva_completar' reserva_id=reserva.id %}" data-confirm="¿Marcar como completada?" class="mt-2">
+          {% csrf_token %}
+          <button type="submit" class="w-full bg-gray-mid hover:bg-gray-dark text-white py-2 rounded-lg text-sm font-bold transition">
+            ✅ Marcar completada
+          </button>
+        </form>
+
+        <form method="post" action="{% url 'taller_reserva_cancelar' reserva_id=reserva.id %}" class="space-y-2 mt-4 pt-4 border-t border-border"
+              data-confirm="¿Cancelar esta reserva?">
+          {% csrf_token %}
+          <input type="text" name="motivo" maxlength="200" placeholder="Motivo cancelación"
+                 class="w-full px-3 py-2 border-2 border-border rounded-lg text-xs focus:border-red-500 focus:outline-none">
+          <button type="submit" class="w-full bg-white border border-red-200 text-red-700 hover:bg-red-50 py-2 rounded-lg text-sm font-semibold transition">
+            🗑 Cancelar reserva
+          </button>
+        </form>
+      </div>
+      {% endif %}
+
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <h3 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-3">Historial</h3>
+        <dl class="space-y-2 text-xs text-gray-mid">
+          <div><dt class="text-[10px] font-bold uppercase text-gray-soft">Creada</dt><dd>{{ reserva.creada_en|date:"d/m/Y H:i" }}</dd></div>
+          {% if reserva.confirmada_email_en %}<div><dt class="text-[10px] font-bold uppercase text-gray-soft">Confirmó email</dt><dd>{{ reserva.confirmada_email_en|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+          {% if reserva.confirmada_llamada_en %}<div><dt class="text-[10px] font-bold uppercase text-gray-soft">Confirmó llamada</dt><dd>{{ reserva.confirmada_llamada_en|date:"d/m/Y H:i" }}{% if reserva.confirmada_llamada_nota %}<br><em class="text-gray-soft">"{{ reserva.confirmada_llamada_nota }}"</em>{% endif %}</dd></div>{% endif %}
+          {% if reserva.cancelada_en %}<div><dt class="text-[10px] font-bold uppercase text-red-600">Cancelada</dt><dd>{{ reserva.cancelada_en|date:"d/m/Y H:i" }} por {{ reserva.cancelada_por }}{% if reserva.cancelada_motivo %}<br><em>"{{ reserva.cancelada_motivo }}"</em>{% endif %}</dd></div>{% endif %}
+          {% if reserva.reminder_24h_enviado_en %}<div><dt class="text-[10px] font-bold uppercase text-gray-soft">Reminder 24h</dt><dd>{{ reserva.reminder_24h_enviado_en|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+          {% if reserva.reminder_1h_enviado_en %}<div><dt class="text-[10px] font-bold uppercase text-gray-soft">Reminder 1h</dt><dd>{{ reserva.reminder_1h_enviado_en|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

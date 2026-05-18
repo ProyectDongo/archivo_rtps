@@ -235,6 +235,10 @@ class UsuarioPortal(models.Model):
         default=False,
         help_text='Permite crear y gestionar campañas de correos automáticos. Los admins siempre pueden.',
     )
+    puede_taller   = models.BooleanField(
+        default=False,
+        help_text='Permite gestionar el catálogo del taller (servicios, repuestos) y ver/confirmar reservas. Los admins siempre pueden.',
+    )
     activo         = models.BooleanField(default=True)
     creado         = models.DateTimeField(auto_now_add=True)
     ultimo_login   = models.DateTimeField(null=True, blank=True)

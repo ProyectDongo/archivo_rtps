@@ -1,0 +1,94 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Agenda · {{ mes_nombre }} {{ year }} — Taller{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+  {# Header con navegación mes #}
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+      <div class="text-[11px] font-semibold tracking-[2px] uppercase text-gray-soft mb-1">Agenda</div>
+      <h1 class="text-3xl font-black text-gray-dark capitalize">{{ mes_nombre }} {{ year }}</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="?year={{ prev_year }}&month={{ prev_month }}"
+         class="inline-flex items-center justify-center w-10 h-10 bg-white border border-border rounded-lg hover:bg-off-white-2 transition">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <a href="?year={{ hoy.year }}&month={{ hoy.month }}"
+         class="px-4 py-2 bg-white border border-border hover:bg-off-white-2 text-gray-dark rounded-lg text-sm font-semibold transition">
+        Hoy
+      </a>
+      <a href="?year={{ next_year }}&month={{ next_month }}"
+         class="inline-flex items-center justify-center w-10 h-10 bg-white border border-border rounded-lg hover:bg-off-white-2 transition">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  {% include 'partials/_messages.html' %}
+
+  {# Stats del mes #}
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div class="bg-white rounded-xl shadow-card p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-gray-soft">Total mes</div>
+      <div class="text-3xl font-black text-gray-dark mt-1">{{ stats.total }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-card p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Pendientes</div>
+      <div class="text-3xl font-black text-amber-700 mt-1">{{ stats.pendientes }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-card p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-primary-dark">Confirmadas</div>
+      <div class="text-3xl font-black text-primary-dark mt-1">{{ stats.confirmadas }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-card p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-gray-soft">Completadas</div>
+      <div class="text-3xl font-black text-gray-mid mt-1">{{ stats.completadas }}</div>
+    </div>
+  </div>
+
+  {# Calendario grilla mensual #}
+  <div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <div class="grid grid-cols-7 bg-off-white-2 text-[11px] font-bold uppercase tracking-wider text-gray-soft">
+      <div class="p-3 text-center">Lun</div>
+      <div class="p-3 text-center">Mar</div>
+      <div class="p-3 text-center">Mié</div>
+      <div class="p-3 text-center">Jue</div>
+      <div class="p-3 text-center">Vie</div>
+      <div class="p-3 text-center bg-amber-50">Sáb</div>
+      <div class="p-3 text-center bg-red-50">Dom</div>
+    </div>
+    <div class="grid grid-cols-7 divide-x divide-y divide-border">
+      {% for semana in semanas %}
+        {% for dia in semana %}
+        <div class="min-h-[120px] p-2 {% if dia.es_otro_mes %}bg-off-white-2/50 text-gray-soft{% elif dia.es_hoy %}bg-primary-light/40{% endif %} {% if dia.bloqueo %}bg-red-50/30{% endif %}">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold {% if dia.es_hoy %}bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center{% else %}{% if dia.es_otro_mes %}text-gray-soft{% else %}text-gray-dark{% endif %}{% endif %}">{{ dia.dia }}</span>
+            {% if dia.bloqueo %}<span class="text-[9px] font-bold uppercase text-red-700">{{ dia.bloqueo|truncatechars:10 }}</span>{% endif %}
+          </div>
+          {% for r in dia.reservas %}
+          <a href="{% url 'taller_reserva_detalle' reserva_id=r.id %}"
+             class="block text-[11px] {% if r.estado == 'pendiente_email' %}bg-amber-100 text-amber-900 hover:bg-amber-200{% elif r.estado == 'confirmada_llamada' %}bg-primary text-white hover:bg-primary-dark{% elif r.estado == 'confirmada_email' %}bg-primary-light text-primary-dark hover:bg-primary/20{% elif r.estado == 'completada' %}bg-gray-200 text-gray-mid hover:bg-gray-300{% else %}bg-off-white-2 text-gray-mid hover:bg-border{% endif %} rounded px-1.5 py-1 mb-0.5 transition truncate font-semibold"
+             title="{{ r.cliente_nombre }} · {{ r.patente }} · {{ r.get_estado_display }}">
+            {{ r.hora_inicio|time:"H:i" }} {{ r.cliente_nombre|truncatechars:14 }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Leyenda #}
+  <div class="mt-4 flex flex-wrap items-center gap-4 text-[11px] text-gray-soft">
+    <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-amber-100 rounded"></span>Pendiente email</span>
+    <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-primary-light rounded"></span>Confirmado email</span>
+    <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-primary rounded"></span>Confirmado llamada</span>
+    <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-gray-200 rounded"></span>Completado</span>
+  </div>
+
+</div>
+{% endblock %}
