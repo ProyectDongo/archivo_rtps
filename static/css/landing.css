@@ -438,8 +438,8 @@ nav {
   transition: color .3s;
 }
 .sv:hover .sv-num { color: rgba(200,12,15,.08); }
-.sv-icon { width: 32px; height: 32px; stroke: var(--r); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 16px; transition: transform .3s var(--ease); }
-.sv:hover .sv-icon { transform: scale(1.15) rotate(-5deg); }
+.sv-icon { width: 56px; height: 56px; stroke: var(--r); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 18px; transition: transform .3s var(--ease), filter .3s var(--ease); filter: drop-shadow(0 2px 6px rgba(0,0,0,.08)); }
+.sv:hover .sv-icon { transform: scale(1.12) translateY(-2px); filter: drop-shadow(0 6px 14px rgba(30,125,50,.25)); }
 .sv-name { font-size: 12px; font-weight: 700; color: var(--gd); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
 .sv-desc { font-size: 12px; color: var(--gl); line-height: 1.85; }
 .sv-list { list-style: none; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--bdr); }
