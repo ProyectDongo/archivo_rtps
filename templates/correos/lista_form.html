@@ -89,15 +89,33 @@
   {# Agregar contacto individual #}
   <div class="bg-white rounded-xl shadow-card p-5 mb-6">
     <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-3">➕ Agregar contacto</h2>
-    <form method="post" action="{% url 'contacto_agregar' lista.id %}" class="grid grid-cols-1 md:grid-cols-12 gap-2">
+    <form method="post" action="{% url 'contacto_agregar' lista.id %}" class="space-y-2">
       {% csrf_token %}
-      <input type="email" name="email" required placeholder="cliente@empresa.cl"
-             class="md:col-span-4 px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
-      <input type="text" name="nombre" placeholder="Nombre"
-             class="md:col-span-3 px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
-      <input type="text" name="datos_extra" placeholder='{"empresa":"ACME","ciudad":"Concepción"}'
-             class="md:col-span-4 px-3 py-2 border-2 border-border rounded-lg text-xs font-mono focus:border-primary focus:outline-none">
-      <button type="submit" class="md:col-span-1 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark">+</button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-soft mb-1">Email *</label>
+          <input type="email" name="email" required placeholder="cliente@empresa.cl"
+                 class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-soft mb-1">Nombre</label>
+          <input type="text" name="nombre" placeholder="Juan Pérez"
+                 class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-soft mb-1">Datos extra <span class="text-gray-soft normal-case font-normal">(opcional)</span></label>
+        <input type="text" name="datos_extra" placeholder="empresa=ACME, telefono=+56912345678, ciudad=Concepción, rut=12.345.678-9"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+        <p class="text-[11px] text-gray-soft mt-1">
+          Formato: <code class="bg-off-white-2 px-1 rounded">nombre=valor</code> separados por coma.
+          Cualquier cosa: empresa, telefono, rut, ciudad, fecha_vencimiento, etc.
+          Usalos en el cuerpo como <code class="bg-off-white-2 px-1 rounded">{% verbatim %}{{ extra.empresa }}{% endverbatim %}</code>.
+        </p>
+      </div>
+      <div class="flex justify-end">
+        <button type="submit" class="bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark px-5 py-2">+ Agregar</button>
+      </div>
     </form>
   </div>
 
@@ -121,7 +139,13 @@
         <tr class="hover:bg-off-white">
           <td class="px-4 py-2 text-gray-dark font-mono text-xs">{{ c.email }}</td>
           <td class="px-4 py-2 text-gray-mid">{{ c.nombre|default:'—' }}</td>
-          <td class="px-4 py-2 text-xs text-gray-soft font-mono">{{ c.datos_extra|truncatechars:50 }}</td>
+          <td class="px-4 py-2 text-xs text-gray-soft">
+            {% if c.datos_extra %}
+              {% for k, v in c.datos_extra.items %}<span class="inline-block bg-off-white-2 text-gray-mid px-1.5 py-0.5 rounded mr-1 mb-0.5 text-[10px]"><strong>{{ k }}:</strong> {{ v|truncatechars:20 }}</span>{% endfor %}
+            {% else %}
+              <span class="text-gray-soft italic">—</span>
+            {% endif %}
+          </td>
           <td class="px-4 py-2 text-right">
             <form method="post" action="{% url 'contacto_eliminar' c.id %}" style="display:inline" data-confirm="¿Eliminar {{ c.email }}?">
               {% csrf_token %}

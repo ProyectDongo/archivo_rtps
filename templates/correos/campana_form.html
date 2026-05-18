@@ -46,24 +46,28 @@
       {# Asunto + cuerpo #}
       <div class="bg-white rounded-xl shadow-card p-5">
         <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">
-          Asunto <span class="text-gray-soft normal-case font-normal tracking-normal">— admite {{ '{{ nombre }}' }}, {{ '{{ extra.empresa }}' }}</span>
+          Asunto <span class="text-gray-soft normal-case font-normal tracking-normal">— admite {% verbatim %}{{ nombre }}, {{ extra.empresa }}{% endverbatim %}</span>
         </label>
         <input type="text" name="asunto" required maxlength="300"
                value="{{ campana.asunto|default:'' }}"
                class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
-               placeholder="Hola {{ '{{ nombre }}' }}, te recordamos que…">
+               placeholder="{% verbatim %}Hola {{ nombre }}, te recordamos que…{% endverbatim %}">
 
         <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-4">
           Cuerpo (HTML) <span class="text-gray-soft normal-case font-normal tracking-normal">— la firma del buzón se agrega automáticamente</span>
         </label>
         <textarea name="cuerpo_html" required rows="14"
                   class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm font-mono focus:border-primary focus:outline-none"
-                  placeholder="<p>Hola {{ '{{ nombre }}' }},</p>&#10;<p>Te recordamos…</p>">{{ campana.cuerpo_html|default:'' }}</textarea>
+                  placeholder="{% verbatim %}<p>Hola {{ nombre }},</p>&#10;<p>Te recordamos…</p>{% endverbatim %}">{{ campana.cuerpo_html|default:'' }}</textarea>
         <p class="text-[11px] text-gray-soft mt-2">
-          Variables disponibles: <code class="bg-off-white-2 px-1 rounded">{{ '{{ nombre }}' }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ '{{ email }}' }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ '{{ extra.empresa }}' }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ '{{ extra.telefono }}' }}</code>, etc.
+          Variables disponibles:
+          {% verbatim %}
+          <code class="bg-off-white-2 px-1 rounded">{{ nombre }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ email }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ extra.empresa }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ extra.telefono }}</code>,
+          <code class="bg-off-white-2 px-1 rounded">{{ extra.ciudad }}</code>, etc.
+          {% endverbatim %}
         </p>
       </div>
 

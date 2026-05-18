@@ -555,6 +555,38 @@ def lista_eliminar_view(request, lista_id: int):
 
 # ────────────────────────────── Contactos ───────────────────────────────────
 
+def _parse_datos_extra(raw: str) -> dict:
+    """
+    Parsea el campo "datos extra" en 2 formatos a elección del usuario:
+      1) JSON: {"empresa": "ACME", "ciudad": "Concepción"}
+      2) Pares clave=valor coma-separados: empresa=ACME, ciudad=Concepción
+
+    El formato 2 es más amigable para usuarios no técnicos. Si el input
+    arranca con `{` intentamos JSON; sino, parseamos key=value.
+    Cualquier error devuelve dict vacío (no rompe el guardado).
+    """
+    raw = (raw or '').strip()
+    if not raw:
+        return {}
+    if raw.startswith('{'):
+        try:
+            data = json.loads(raw)
+            return data if isinstance(data, dict) else {}
+        except json.JSONDecodeError:
+            return {}
+    # Formato key=value separado por coma, punto y coma o newline
+    out: dict = {}
+    for piece in raw.replace(';', ',').replace('\n', ',').split(','):
+        if '=' not in piece:
+            continue
+        k, _, v = piece.partition('=')
+        k = k.strip().lower()
+        v = v.strip()
+        if k and v:
+            out[k] = v
+    return out
+
+
 @portal_login_required
 @require_POST
 def contacto_agregar_view(request, lista_id: int):
@@ -565,18 +597,11 @@ def contacto_agregar_view(request, lista_id: int):
 
     email  = (request.POST.get('email') or '').strip().lower()
     nombre = (request.POST.get('nombre') or '').strip()[:120]
-    extra_raw = (request.POST.get('datos_extra') or '').strip()
+    extra = _parse_datos_extra(request.POST.get('datos_extra'))
 
     if not EMAIL_RE.match(email):
         messages.error(request, 'Email inválido.')
         return redirect('lista_editar', lista_id=lista.id)
-
-    try:
-        extra = json.loads(extra_raw) if extra_raw else {}
-        if not isinstance(extra, dict):
-            extra = {}
-    except json.JSONDecodeError:
-        extra = {}
 
     ContactoLista.objects.update_or_create(
         lista=lista, email=email,
