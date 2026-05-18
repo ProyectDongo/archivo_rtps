@@ -71,14 +71,33 @@ Guía rápida para asistentes IA y colaboradores. Para deploy paso-a-paso ver
 | `adj_viewer.js` | Modal inline para PDF / audio / video adjuntos. |
 | `theme.js` | Toggles tema/densidad en sidebar. |
 
-## CSS
+## CSS — Tailwind v4
 
-Todo en `static/css/correos.css` (~5000 líneas). El CSS del modo split-preview
-(`.split-preview`, `.is-reading`, `.preview-back-mobile-btn`) fue limpiado.
-Sin deuda CSS conocida pendiente.
+**El proyecto migró a Tailwind v4** (`django-tailwind==4.4.2`, app `theme`).
+El CSS legacy `static/css/correos.css` ya no se usa; el bundle real es
+`theme/static/css/dist/styles.css` compilado desde `theme/static_src/src/styles.css`.
 
-`static/css/base.css` define vars (`--r`, `--gd`, `--gl`, `--bdr`, etc.) y
-reset. Los tema dark se aplican vía `[data-theme="dark"]` overrides.
+**Regla de diseño:** todo estilo nuevo va como **utility classes Tailwind
+directamente en el HTML del template** (`class="flex items-center gap-2 bg-primary-light ..."`).
+NO crear clases custom nuevas en `styles.css` salvo cuando sea imposible
+con utilities (estados toggleados por JS, pseudo-elementos, sibling/parent
+selectors, fill de SVG, gradientes complejos, keyframes). Esos van en
+`@layer components` del mismo `styles.css`.
+
+**Tokens del proyecto** (en `@theme` del `styles.css`):
+- Colores: `primary`, `primary-dark`, `primary-light`, `navy`, `navy-mid`,
+  `navy-light`, `gray-dark`, `gray-mid`, `gray-soft`, `off-white`,
+  `off-white-2`, `border`.
+- Tipografía: `font-sans` (Montserrat / system).
+- Sombras: `shadow-card`, `shadow-modal`.
+- Dark mode: `@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *))`.
+
+**Compilar después de editar templates o styles.css:**
+```bash
+tailwindcss -i theme/static_src/src/styles.css -o theme/static/css/dist/styles.css --minify
+```
+(Binario instalado por `pytailwindcss` en el venv. El bundle compilado se
+commitea al repo — producción no compila.)
 
 ## Settings clave (`archivo/settings.py`)
 
