@@ -1340,23 +1340,32 @@ class CampanaCorreo(models.Model):
         return not meses or mes in meses
 
     def proxima_fecha_envio(self, desde=None):
+        """Atajo: la primera fecha de `proximas_fechas_envio()`. None si no hay."""
+        fechas = self.proximas_fechas_envio(n=1, desde=desde)
+        return fechas[0] if fechas else None
+
+    def proximas_fechas_envio(self, n: int = 12, desde=None):
         """
-        Devuelve la próxima fecha (date) en que esta campaña debería enviarse,
-        respetando dias_del_mes y meses_activos. None si no hay programación.
+        Devuelve hasta `n` próximas fechas (lista de date) en que esta
+        campaña debería enviarse, respetando dias_del_mes y meses_activos.
+        Útil para mostrar "calendario de envíos" en la UI.
         """
         import calendar
-        from datetime import date, timedelta
+        from datetime import date
         from django.utils import timezone
 
         dias = sorted(d for d in (self.dias_del_mes or []) if 1 <= d <= 31)
-        if not dias or not self.activa:
-            return None
+        if not dias or not self.activa or n <= 0:
+            return []
 
         if desde is None:
             desde = timezone.localdate()
 
-        # Busca hasta 13 meses adelante (cubre el caso anual)
-        for i in range(13):
+        ahora_hora = timezone.localtime().time() if desde == timezone.localdate() else None
+        out = []
+
+        # Busca hasta 24 meses adelante para cubrir el caso anual con n grande
+        for i in range(24):
             year  = desde.year + (desde.month - 1 + i) // 12
             month = (desde.month - 1 + i) % 12 + 1
             if not self.mes_activo(month):
@@ -1368,13 +1377,12 @@ class CampanaCorreo(models.Model):
                 cand = date(year, month, d)
                 if cand < desde:
                     continue
-                if cand == desde:
-                    # Hoy: solo cuenta si la hora aún no pasó
-                    ahora = timezone.localtime().time()
-                    if self.hora_envio <= ahora:
-                        continue
-                return cand
-        return None
+                if cand == desde and ahora_hora and self.hora_envio <= ahora_hora:
+                    continue  # hoy pero la hora ya pasó
+                out.append(cand)
+                if len(out) >= n:
+                    return out
+        return out
 
 
 class EnvioCampana(models.Model):

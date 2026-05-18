@@ -463,16 +463,17 @@ def campana_envios_json_view(request, campana_id: int):
         e['fecha'] = e['fecha'].isoformat() if e['fecha'] else None
         e['enviado_en'] = e['enviado_en'].isoformat() if e['enviado_en'] else None
 
-    proxima = campana.proxima_fecha_envio()
+    proximas = campana.proximas_fechas_envio(n=12)
     return JsonResponse({
         'ok': True,
         'envios': envios,
         'total':    campana.envios.count(),
         'ok_count': campana.envios.filter(estado=EnvioCampana.ESTADO_OK).count(),
         'err_count': campana.envios.filter(estado=EnvioCampana.ESTADO_ERROR).count(),
-        'proxima_fecha': proxima.isoformat() if proxima else None,
-        'hora_envio':    campana.hora_envio.strftime('%H:%M') if campana.hora_envio else None,
-        'activa':        campana.activa,
+        'proxima_fecha':   proximas[0].isoformat() if proximas else None,
+        'proximas_fechas': [f.isoformat() for f in proximas],
+        'hora_envio':      campana.hora_envio.strftime('%H:%M') if campana.hora_envio else None,
+        'activa':          campana.activa,
     })
 
 

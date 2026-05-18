@@ -50,15 +50,40 @@ class Command(BaseCommand):
         parser.add_argument('--force', action='store_true', help='Ignora chequeo de día.')
         parser.add_argument('--hora-min', type=int, default=0,
                             help='Solo corre si hora_envio <= now + margen (minutos). 0=siempre.')
+        parser.add_argument('--simular-fecha', type=str, default=None,
+                            help='Pretende que hoy es esta fecha (YYYY-MM-DD). Útil para '
+                                 'validar que día 15 con meses [3,6,9,12] dispara correctamente. '
+                                 'Combinar SIEMPRE con --dry-run para no enviar de verdad.')
 
     def handle(self, *args, **opts):
+        from datetime import datetime as _dt
         dry         = opts['dry_run']
         force       = opts['force']
         campana_id  = opts['campana']
         margen_min  = opts['hora_min']
+        simular     = opts['simular_fecha']
 
         ahora_local = timezone.localtime()
-        hoy = ahora_local.date()
+        if simular:
+            try:
+                fecha_sim = _dt.strptime(simular, '%Y-%m-%d').date()
+            except ValueError:
+                self.stdout.write(self.style.ERROR(
+                    f'--simular-fecha "{simular}" inválido. Formato esperado: YYYY-MM-DD.'
+                ))
+                return
+            if not dry:
+                self.stdout.write(self.style.WARNING(
+                    '⚠ --simular-fecha sin --dry-run podría crear EnvioCampana con fecha '
+                    'inventada. Forzando --dry-run.'
+                ))
+                dry = True
+            hoy = fecha_sim
+            self.stdout.write(self.style.NOTICE(
+                f'[SIMULANDO fecha {hoy} — día {hoy.day}, mes {hoy.month}]'
+            ))
+        else:
+            hoy = ahora_local.date()
         dia = hoy.day
         mes = hoy.month
 
