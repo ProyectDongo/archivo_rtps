@@ -45,30 +45,90 @@
 
       {# Asunto + cuerpo #}
       <div class="bg-white rounded-xl shadow-card p-5">
-        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">
-          Asunto <span class="text-gray-soft normal-case font-normal tracking-normal">— admite {% verbatim %}{{ nombre }}, {{ extra.empresa }}{% endverbatim %}</span>
-        </label>
-        <input type="text" name="asunto" required maxlength="300"
-               value="{{ campana.asunto|default:'' }}"
-               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
-               placeholder="{% verbatim %}Hola {{ nombre }}, te recordamos que…{% endverbatim %}">
 
-        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-4">
-          Cuerpo (HTML) <span class="text-gray-soft normal-case font-normal tracking-normal">— la firma del buzón se agrega automáticamente</span>
+        {# Asunto #}
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5">
+          Asunto
         </label>
-        <textarea name="cuerpo_html" required rows="14"
-                  class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm font-mono focus:border-primary focus:outline-none"
-                  placeholder="{% verbatim %}<p>Hola {{ nombre }},</p>&#10;<p>Te recordamos…</p>{% endverbatim %}">{{ campana.cuerpo_html|default:'' }}</textarea>
-        <p class="text-[11px] text-gray-soft mt-2">
-          Variables disponibles:
-          {% verbatim %}
-          <code class="bg-off-white-2 px-1 rounded">{{ nombre }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ email }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ extra.empresa }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ extra.telefono }}</code>,
-          <code class="bg-off-white-2 px-1 rounded">{{ extra.ciudad }}</code>, etc.
-          {% endverbatim %}
+        <div class="relative">
+          <input type="text" name="asunto" id="campana-asunto" required maxlength="300"
+                 value="{{ campana.asunto|default:'' }}"
+                 class="w-full px-3 py-2 pr-32 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none"
+                 placeholder="Ej: Recordatorio de revisión técnica">
+          <button type="button" data-insert-target="campana-asunto"
+                  class="insert-var-btn absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary-dark bg-primary-light hover:bg-primary/20 px-2 py-1 rounded">
+            + Variable ▾
+          </button>
+        </div>
+        <p class="text-[11px] text-gray-soft mt-1">
+          Podés insertar variables que se reemplazan por destinatario.
         </p>
+
+        {# Cuerpo — editor visual #}
+        <label class="block text-[11px] font-bold uppercase tracking-[2px] text-gray-mid mb-1.5 mt-5">
+          Mensaje
+          <span class="text-gray-soft normal-case font-normal tracking-normal">— la firma del buzón y el logo se agregan automáticamente</span>
+        </label>
+
+        {# Botones de variables inline arriba del editor #}
+        <div class="flex flex-wrap items-center gap-1 mb-2 p-2 bg-off-white-2 border border-border rounded-t-lg border-b-0">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-gray-soft mr-2">Insertar:</span>
+          <button type="button" data-insert-quill="{% verbatim %}{{ nombre }}{% endverbatim %}"
+                  class="quill-var-btn text-[11px] font-semibold bg-white border border-border rounded px-2 py-0.5 hover:bg-primary-light hover:border-primary hover:text-primary-dark transition">
+            👤 Nombre
+          </button>
+          <button type="button" data-insert-quill="{% verbatim %}{{ email }}{% endverbatim %}"
+                  class="quill-var-btn text-[11px] font-semibold bg-white border border-border rounded px-2 py-0.5 hover:bg-primary-light hover:border-primary hover:text-primary-dark transition">
+            ✉ Email
+          </button>
+          <button type="button" data-insert-quill="{% verbatim %}{{ extra.empresa }}{% endverbatim %}"
+                  class="quill-var-btn text-[11px] font-semibold bg-white border border-border rounded px-2 py-0.5 hover:bg-primary-light hover:border-primary hover:text-primary-dark transition">
+            🏢 Empresa
+          </button>
+          <button type="button" data-insert-quill="{% verbatim %}{{ extra.telefono }}{% endverbatim %}"
+                  class="quill-var-btn text-[11px] font-semibold bg-white border border-border rounded px-2 py-0.5 hover:bg-primary-light hover:border-primary hover:text-primary-dark transition">
+            📞 Teléfono
+          </button>
+          <button type="button" data-insert-quill="{% verbatim %}{{ extra.rut }}{% endverbatim %}"
+                  class="quill-var-btn text-[11px] font-semibold bg-white border border-border rounded px-2 py-0.5 hover:bg-primary-light hover:border-primary hover:text-primary-dark transition">
+            🆔 RUT
+          </button>
+          <button type="button" data-insert-quill="{% verbatim %}{{ extra.ciudad }}{% endverbatim %}"
+                  class="quill-var-btn text-[11px] font-semibold bg-white border border-border rounded px-2 py-0.5 hover:bg-primary-light hover:border-primary hover:text-primary-dark transition">
+            📍 Ciudad
+          </button>
+        </div>
+
+        {# Editor Quill #}
+        <div id="campana-editor"
+             class="bg-white min-h-[280px] border-2 border-border rounded-b-lg"
+             style="border-top: 0"
+             data-placeholder="Escribí el mensaje… Tip: usá los botones de arriba para insertar variables que se completan por cada destinatario.">{{ campana.cuerpo_html|default:''|safe }}</div>
+        <input type="hidden" name="cuerpo_html" id="campana-cuerpo-hidden"
+               value="{{ campana.cuerpo_html|default:'' }}">
+
+        {# Plantillas predefinidas #}
+        <div class="mt-4 pt-4 border-t border-border">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-gray-soft mb-2">⚡ Plantillas rápidas</div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="campana-plantilla text-xs bg-white border border-border rounded-lg px-3 py-1.5 hover:bg-primary-light hover:border-primary transition"
+                    data-tpl-asunto="Recordatorio: revisión técnica próxima a vencer"
+                    data-tpl-cuerpo="<p>Hola {% verbatim %}{{ nombre }}{% endverbatim %},</p><p>Te recordamos que la revisión técnica de tu vehículo se acerca a su vencimiento. Te invitamos a agendar tu cita con anticipación para evitar contratiempos.</p><p>📅 <strong>Agendá online:</strong> <a href='https://portal.rtriosanpedro.cl/agendar/'>portal.rtriosanpedro.cl/agendar</a></p><p>Saludos cordiales.</p>">
+              📅 Recordatorio RT
+            </button>
+            <button type="button" class="campana-plantilla text-xs bg-white border border-border rounded-lg px-3 py-1.5 hover:bg-primary-light hover:border-primary transition"
+                    data-tpl-asunto="Saludos desde Río San Pedro RT"
+                    data-tpl-cuerpo="<p>Estimado/a {% verbatim %}{{ nombre }}{% endverbatim %},</p><p>Esperamos que se encuentre muy bien. Le escribimos desde Río San Pedro Revisiones Técnicas para mantenernos en contacto.</p><p>Quedamos atentos a cualquier consulta o requerimiento que pueda tener.</p>">
+              👋 Saludo general
+            </button>
+            <button type="button" class="campana-plantilla text-xs bg-white border border-border rounded-lg px-3 py-1.5 hover:bg-primary-light hover:border-primary transition"
+                    data-tpl-asunto="Promoción del mes — {% verbatim %}{{ extra.empresa }}{% endverbatim %}"
+                    data-tpl-cuerpo="<p>Hola {% verbatim %}{{ nombre }}{% endverbatim %},</p><p>Este mes tenemos una promoción especial para {% verbatim %}{{ extra.empresa }}{% endverbatim %}. Si agendás tu revisión antes de fin de mes, tenés un descuento especial.</p><p>📅 Reservá tu hora en <a href='https://portal.rtriosanpedro.cl/agendar/'>portal.rtriosanpedro.cl/agendar</a></p>">
+              🎁 Promo del mes
+            </button>
+          </div>
+          <p class="text-[11px] text-gray-soft mt-2">Click → se carga la plantilla. Después podés editar todo.</p>
+        </div>
       </div>
 
       {# Destinatarios #}

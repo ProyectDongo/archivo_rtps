@@ -1,14 +1,130 @@
 /**
  * UI del formulario de campañas:
+ *   - Editor Quill rico para el cuerpo + botones insertar variable.
+ *   - Plantillas pre-armadas (1-click load).
+ *   - Dropdown "+ Variable" para el asunto.
  *   - Grids de días/meses con multi-select sincronizado a inputs hidden.
  *   - Modal "Enviar test" con POST AJAX.
  *   - Botón "Ejecutar ahora" con feedback en vivo.
  *   - Auto-refresh del log de envíos cada 6 segundos.
  *
- * Depende de PM.csrf() / PM.post() (portal_helpers.js).
+ * Depende de PM.csrf() / PM.post() (portal_helpers.js) y Quill.js.
  */
 (function () {
   'use strict';
+
+  // ─── Editor Quill para el cuerpo ──────────────────────────────────────────
+  let quill = null;
+  const editorEl = document.getElementById('campana-editor');
+  const hiddenCuerpo = document.getElementById('campana-cuerpo-hidden');
+  if (editorEl && typeof Quill !== 'undefined') {
+    // Convertir el HTML inicial en delta antes de inicializar Quill
+    const inicialHtml = editorEl.innerHTML;
+    editorEl.innerHTML = '';
+
+    quill = new Quill(editorEl, {
+      theme: 'snow',
+      placeholder: editorEl.dataset.placeholder || 'Escribí el mensaje…',
+      modules: {
+        toolbar: [
+          [{ 'header': [2, 3, false] }],
+          ['bold', 'italic', 'underline'],
+          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+          ['link'],
+          [{ 'align': [] }],
+          ['clean'],
+        ],
+      },
+    });
+    if (inicialHtml.trim()) {
+      // Pegar el HTML inicial (de un edit). Quill lo sanea pero respeta estructura básica.
+      quill.clipboard.dangerouslyPasteHTML(inicialHtml);
+    }
+    quill.on('text-change', function () {
+      if (hiddenCuerpo) hiddenCuerpo.value = quill.root.innerHTML;
+    });
+    // Sync inicial
+    if (hiddenCuerpo) hiddenCuerpo.value = quill.root.innerHTML;
+  }
+
+  // ─── Botones "Insertar variable" arriba del editor ────────────────────────
+  document.querySelectorAll('.quill-var-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const text = btn.dataset.insertQuill || '';
+      if (!text) return;
+      if (quill) {
+        const range = quill.getSelection(true);
+        const pos = range ? range.index : quill.getLength();
+        quill.insertText(pos, text, 'user');
+        quill.setSelection(pos + text.length, 0);
+        quill.focus();
+      }
+    });
+  });
+
+  // ─── Plantillas rápidas ───────────────────────────────────────────────────
+  document.querySelectorAll('.campana-plantilla').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const asunto = btn.dataset.tplAsunto || '';
+      const cuerpo = btn.dataset.tplCuerpo || '';
+      if (asunto) {
+        const input = document.getElementById('campana-asunto');
+        if (input) input.value = asunto;
+      }
+      if (cuerpo && quill) {
+        quill.setText('');
+        quill.clipboard.dangerouslyPasteHTML(cuerpo);
+      }
+    });
+  });
+
+  // ─── Dropdown "+ Variable" del asunto ─────────────────────────────────────
+  document.querySelectorAll('.insert-var-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Quitar cualquier dropdown existente
+      document.querySelectorAll('.insert-var-menu').forEach(m => m.remove());
+
+      const targetId = btn.dataset.insertTarget;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      const opciones = [
+        { label: '👤 Nombre',    val: '{{ nombre }}'         },
+        { label: '✉ Email',      val: '{{ email }}'          },
+        { label: '🏢 Empresa',   val: '{{ extra.empresa }}'  },
+        { label: '📞 Teléfono',  val: '{{ extra.telefono }}' },
+        { label: '🆔 RUT',       val: '{{ extra.rut }}'      },
+        { label: '📍 Ciudad',    val: '{{ extra.ciudad }}'   },
+      ];
+      const menu = document.createElement('div');
+      menu.className = 'insert-var-menu absolute right-0 top-full mt-1 bg-white border border-border rounded-lg shadow-modal py-1 z-50 min-w-[180px]';
+      opciones.forEach((o) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'block w-full text-left px-3 py-1.5 text-xs hover:bg-primary-light hover:text-primary-dark transition';
+        item.textContent = o.label;
+        item.addEventListener('click', () => {
+          const start = input.selectionStart || input.value.length;
+          const end = input.selectionEnd || input.value.length;
+          input.value = input.value.slice(0, start) + o.val + input.value.slice(end);
+          input.focus();
+          input.setSelectionRange(start + o.val.length, start + o.val.length);
+          menu.remove();
+        });
+        menu.appendChild(item);
+      });
+      btn.parentElement.appendChild(menu);
+
+      // Cerrar al click afuera
+      setTimeout(() => {
+        document.addEventListener('click', function close() {
+          menu.remove();
+          document.removeEventListener('click', close);
+        });
+      }, 10);
+    });
+  });
 
   // ─── Helper genérico para grids tipo "días" / "meses" ─────────────────────
   function initGrid(checkClass, labelClass, hiddenId) {

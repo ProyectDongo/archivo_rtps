@@ -114,6 +114,7 @@ def ejecutar_campana(campana, hoy, dry: bool = False, stdout=None):
     [(email, estado, error_msg), ...] para mostrar en la UI.
     """
     from django.conf import settings
+    from django.template.loader import render_to_string
     from email import encoders
     from email.mime.base import MIMEBase
     from email.utils import formataddr
@@ -146,8 +147,7 @@ def ejecutar_campana(campana, hoy, dry: bool = False, stdout=None):
     log(f'    {len(dest_map)} destinatario(s).')
 
     brand_ctx, brand_inline = build_brand_logo()
-    firma_html = render_firma_html(campana.buzon) or ''
-    firma_txt  = render_firma_texto(campana.buzon) or ''
+    firma_txt = render_firma_texto(campana.buzon) or ''
 
     ok = err = skip = 0
     detalle = []
@@ -160,10 +160,15 @@ def ejecutar_campana(campana, hoy, dry: bool = False, stdout=None):
 
         asunto = _render_merge(campana.asunto, ctx_dest)
         cuerpo = _render_merge(campana.cuerpo_html, ctx_dest)
-        html = (
-            '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
-            'line-height:1.5;color:#222">' + cuerpo + '</div>' + firma_html
-        )
+
+        # Usar el mismo wrapper que los emails de compose: header con logo,
+        # barras de acento, firma del buzón y footer "ISO 9001".
+        html = render_to_string('correos/email/compose.html', {
+            'asunto': asunto,
+            'cuerpo_usuario': cuerpo,
+            'buzon': campana.buzon,
+            **brand_ctx,
+        })
         texto = html_a_texto(cuerpo)
         if firma_txt:
             texto = (texto + '\n\n' + firma_txt).strip()

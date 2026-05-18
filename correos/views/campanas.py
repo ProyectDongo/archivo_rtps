@@ -298,20 +298,29 @@ def campana_toggle_view(request, campana_id: int):
 
 # ────────────────────────────── Test + Preview ──────────────────────────────
 
-def _construir_email_destinatario(campana: CampanaCorreo, ctx_dest: dict):
+def _construir_email_destinatario(campana: CampanaCorreo, ctx_dest: dict, brand_ctx: dict | None = None):
     """
     Renderiza asunto + cuerpo de la campaña para un destinatario específico.
     Devuelve (asunto, html_completo, texto_plano).
+
+    Usa el mismo template wrapper que los emails de compose normal
+    (correos/email/compose.html): header con logo + barras + firma del
+    buzón + footer ISO 9001 — diseño unificado en toda la app.
     """
+    from django.template.loader import render_to_string
+
     asunto = _render_merge(campana.asunto, ctx_dest)
     cuerpo = _render_merge(campana.cuerpo_html, ctx_dest)
 
-    # Firma del buzón (auto-append)
-    firma_html = render_firma_html(campana.buzon) or ''
-    html_completo = (
-        '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
-        'line-height:1.5;color:#222">' + cuerpo + '</div>' + firma_html
-    )
+    if brand_ctx is None:
+        brand_ctx = {}
+
+    html_completo = render_to_string('correos/email/compose.html', {
+        'asunto': asunto,
+        'cuerpo_usuario': cuerpo,
+        'buzon': campana.buzon,
+        **brand_ctx,
+    })
 
     firma_txt = render_firma_texto(campana.buzon) or ''
     texto = html_a_texto(cuerpo)
@@ -341,9 +350,8 @@ def campana_test_view(request, campana_id: int):
         'email': dest,
         'extra': {'empresa': 'Empresa Demo', 'ciudad': 'Concepción'},
     }
-    asunto, html, texto = _construir_email_destinatario(campana, ctx_dest)
-
     brand_ctx, brand_inline = build_brand_logo()
+    asunto, html, texto = _construir_email_destinatario(campana, ctx_dest, brand_ctx)
     # Mandamos el HTML completo como cuerpo_html del template wrapper, o más
     # simple: usar EmailMultiAlternatives directo. safe_send espera template
     # files — para test, lo enviamos via EmailMultiAlternatives.
@@ -391,7 +399,17 @@ def campana_preview_view(request, campana_id: int):
         'email': 'demo@ejemplo.com',
         'extra': {'empresa': 'Empresa Demo S.A.', 'ciudad': 'Concepción'},
     }
-    asunto, html, _ = _construir_email_destinatario(campana, ctx_dest)
+    # En el preview NO mandamos brand_ctx con CID porque no se renderiza
+    # un email, sino una pagina HTML. El template compose.html cae al
+    # fallback de logo de tabla cuando brand_logo_url esta vacio.
+    from archivo.email_utils import build_brand_logo
+    brand_ctx, _ = build_brand_logo()
+    # Para el preview en pagina, reemplazamos cid: por URL del static
+    if brand_ctx.get('brand_logo_url', '').startswith('cid:'):
+        brand_ctx = {**brand_ctx, 'brand_logo_url': '/static/logos/logo_medium.png'}
+    if brand_ctx.get('brand_firma_logo_url', '').startswith('cid:'):
+        brand_ctx = {**brand_ctx, 'brand_firma_logo_url': '/static/logos/logo_firma.png'}
+    asunto, html, _ = _construir_email_destinatario(campana, ctx_dest, brand_ctx)
     return render(request, 'correos/campana_preview.html', {
         'campana': campana, 'asunto': asunto, 'html': html,
     })
