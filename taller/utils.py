@@ -157,3 +157,102 @@ def fechas_disponibles_proximas(dias: int = 28) -> list[dict]:
             'slots_libres': max(0, total_slots_dia - ocupadas),
         })
     return out
+
+
+def mes_disponibilidad(year: int, month: int) -> dict:
+    """
+    Devuelve el calendario completo de un mes para la vista pública /agendar/.
+
+    Estructura:
+      {
+        'year': 2026, 'month': 5, 'mes_nombre': 'mayo',
+        'prev_year': 2026, 'prev_month': 4,
+        'next_year': 2026, 'next_month': 6,
+        'semanas': [
+          [dia, dia, dia, dia, dia, dia, dia],  # cada lista = una semana lun-dom
+          ...
+        ],
+      }
+
+    Cada `dia` tiene los mismos campos que `fechas_disponibles_proximas` más:
+      - `dia`: número del día (1-31)
+      - `es_otro_mes`: True si pertenece al mes anterior/siguiente (relleno de grilla)
+      - `es_hoy`: True si es la fecha de hoy
+      - `es_pasado`: True si la fecha ya pasó
+    """
+    import calendar as _cal
+    from datetime import date
+
+    hoy = timezone.localdate()
+    primer_dia = date(year, month, 1)
+    ultimo_dia = date(year, month, _cal.monthrange(year, month)[1])
+
+    # Pre-cargar bloqueos del mes
+    bloqueos = {
+        b.fecha: b.motivo for b in
+        BloqueoCalendario.objects.filter(
+            fecha__range=(primer_dia, ultimo_dia), activo=True,
+        )
+    }
+
+    # Pre-cargar reservas activas del mes (para contar slots libres)
+    reservas_por_fecha: dict = {}
+    for fecha_, hora in Reserva.objects.filter(
+        fecha__range=(primer_dia, ultimo_dia),
+        estado__in=[
+            Reserva.Estado.PENDIENTE_EMAIL,
+            Reserva.Estado.CONFIRMADA_EMAIL,
+            Reserva.Estado.CONFIRMADA_LLAMADA,
+        ],
+    ).values_list('fecha', 'hora_inicio'):
+        reservas_por_fecha.setdefault(fecha_, set()).add(hora)
+
+    total_slots_dia = len(_todos_los_slots())
+
+    cal = _cal.Calendar(firstweekday=0)  # 0 = lunes
+    semanas = []
+    for week in cal.monthdatescalendar(year, month):
+        fila = []
+        for d in week:
+            es_otro_mes = d.month != month
+            es_pasado = d < hoy
+            laboral_semana = d.weekday() in DIAS_LABORALES
+            bloqueo_motivo = bloqueos.get(d)
+            if not laboral_semana:
+                es_laboral, motivo, libres = False, 'Cerrado', 0
+            elif bloqueo_motivo:
+                es_laboral, motivo, libres = False, bloqueo_motivo, 0
+            elif es_pasado:
+                es_laboral, motivo, libres = False, 'Pasado', 0
+            else:
+                es_laboral = True
+                motivo = ''
+                ocupadas = len(reservas_por_fecha.get(d, set()))
+                libres = max(0, total_slots_dia - ocupadas)
+            fila.append({
+                'fecha':        d,
+                'dia':          d.day,
+                'es_laboral':   es_laboral,
+                'motivo':       motivo,
+                'slots_libres': libres,
+                'es_otro_mes':  es_otro_mes,
+                'es_hoy':       d == hoy,
+                'es_pasado':    es_pasado,
+            })
+        semanas.append(fila)
+
+    # Navegación
+    prev = (primer_dia - timedelta(days=1)).replace(day=1)
+    nxt  = (ultimo_dia + timedelta(days=1))
+
+    return {
+        'year':       year,
+        'month':      month,
+        'mes_nombre': primer_dia.strftime('%B'),
+        'prev_year':  prev.year,
+        'prev_month': prev.month,
+        'next_year':  nxt.year,
+        'next_month': nxt.month,
+        'semanas':    semanas,
+        'hoy':        hoy,
+    }

@@ -92,13 +92,26 @@ def _items_activos_por_tipo() -> dict:
 @never_cache
 @require_GET
 def agendar_view(request):
+    from .utils import mes_disponibilidad
+
     items_por_tipo = _items_activos_por_tipo()
-    fechas_calendario = fechas_disponibles_proximas(dias=28)
+
+    # Mes a mostrar (default = mes actual). Query params: ?year=Y&month=M
+    hoy = timezone.localdate()
+    try:
+        year  = int(request.GET.get('year')  or hoy.year)
+        month = int(request.GET.get('month') or hoy.month)
+        if not (1 <= month <= 12):
+            raise ValueError
+    except (TypeError, ValueError):
+        year, month = hoy.year, hoy.month
+
+    calendario_mes = mes_disponibilidad(year, month)
 
     return render(request, 'taller/agendar.html', {
         'servicios':       items_por_tipo['servicio'],
         'repuestos':       items_por_tipo['repuesto'],
-        'fechas_calendario': fechas_calendario,
+        'calendario_mes':  calendario_mes,
         'turnstile_site_key': getattr(settings, 'TURNSTILE_SITE_KEY', ''),
         # Categorías para chips
         'categorias_servicios': [

@@ -132,17 +132,28 @@
   let horaElegida  = null;
 
   els.calendario.addEventListener('click', async (e) => {
-    const dia = e.target.closest('.cal-day:not([disabled])');
-    if (!dia) return;
+    // Solo <button> dentro del calendario (los días disabled son <div>).
+    const dia = e.target.closest('button.cal-day');
+    if (!dia || !dia.dataset.fecha) return;
 
     fechaElegida = dia.dataset.fecha;
     horaElegida  = null;
     els.hiddenFecha.value = fechaElegida;
     els.hiddenHora.value  = '';
 
-    document.querySelectorAll('.cal-day').forEach(d => d.classList.toggle('active', d === dia));
+    // Highlight visual: bordes/anillo de Tailwind via clase JS-controlada
+    document.querySelectorAll('.cal-day').forEach(d => {
+      d.classList.remove('!bg-primary', '!text-white', 'ring-2', 'ring-primary');
+    });
+    dia.classList.add('!bg-primary', '!text-white', 'ring-2', 'ring-primary');
+
+    // Scroll suave a los slots
     await cargarSlots(fechaElegida);
     actualizarBtnConf();
+    setTimeout(() => {
+      const slots = document.getElementById('slots-container');
+      if (slots && !slots.hidden) slots.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   });
 
   async function cargarSlots(fecha) {

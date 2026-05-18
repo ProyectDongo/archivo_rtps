@@ -68,24 +68,73 @@
         <div id="form-items-hidden"></div>
 
         <h2 class="text-[18px] text-gray-dark m-0 mb-3">📅 Día y hora</h2>
-        <div class="grid gap-2 mb-6" id="calendario" style="grid-template-columns:repeat(auto-fill,minmax(95px,1fr))">
-          {% for d in fechas_calendario %}
-          <button type="button" class="cal-day {% if not d.es_laboral %}is-blocked{% endif %}"
-                  data-fecha="{{ d.fecha|date:'Y-m-d' }}"
-                  {% if not d.es_laboral or d.slots_libres == 0 %}disabled{% endif %}
-                  title="{% if d.es_laboral %}{{ d.slots_libres }} slots libres{% else %}{{ d.motivo }}{% endif %}">
-            <span class="cal-dow">{{ d.fecha|date:"D"|truncatechars:3 }}</span>
-            <span class="cal-num">{{ d.fecha|date:"j" }}</span>
-            <span class="cal-mon">{{ d.fecha|date:"M" }}</span>
-            {% if d.es_laboral and d.slots_libres > 0 %}
-            <span class="cal-libres">{{ d.slots_libres }} libres</span>
-            {% elif d.es_laboral %}
-            <span class="cal-libres cal-llena">Lleno</span>
-            {% else %}
-            <span class="cal-libres">{{ d.motivo|truncatechars:14 }}</span>
-            {% endif %}
-          </button>
-          {% endfor %}
+
+        {# Cabecera con navegación mes #}
+        <div class="flex items-center justify-between gap-2 mb-3 bg-white rounded-xl border border-[#e5e5e5] px-4 py-2.5">
+          <a href="?year={{ calendario_mes.prev_year }}&month={{ calendario_mes.prev_month }}#calendario"
+             class="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-off-white-2 text-gray-mid hover:text-primary transition"
+             title="Mes anterior" aria-label="Mes anterior">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </a>
+          <div class="text-center">
+            <div class="text-[16px] font-bold text-gray-dark capitalize">{{ calendario_mes.mes_nombre }} {{ calendario_mes.year }}</div>
+            <a href="?year={{ calendario_mes.hoy.year }}&month={{ calendario_mes.hoy.month }}#calendario"
+               class="text-[11px] text-primary hover:underline font-semibold">Ir a hoy</a>
+          </div>
+          <a href="?year={{ calendario_mes.next_year }}&month={{ calendario_mes.next_month }}#calendario"
+             class="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-off-white-2 text-gray-mid hover:text-primary transition"
+             title="Mes siguiente" aria-label="Mes siguiente">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+
+        {# Grilla del mes: Lun-Dom #}
+        <div id="calendario" class="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden mb-6">
+          <div class="grid grid-cols-7 bg-off-white-2 text-[10px] font-bold uppercase tracking-wider text-gray-soft">
+            <div class="p-2 text-center">Lun</div>
+            <div class="p-2 text-center">Mar</div>
+            <div class="p-2 text-center">Mié</div>
+            <div class="p-2 text-center">Jue</div>
+            <div class="p-2 text-center">Vie</div>
+            <div class="p-2 text-center text-amber-700">Sáb</div>
+            <div class="p-2 text-center text-red-600">Dom</div>
+          </div>
+          <div class="grid grid-cols-7 divide-x divide-y divide-border">
+            {% for semana in calendario_mes.semanas %}
+              {% for d in semana %}
+              {% if d.es_laboral and d.slots_libres > 0 %}
+                {# Día seleccionable #}
+                <button type="button"
+                        class="cal-day relative min-h-[68px] p-2 text-left bg-white hover:bg-primary-light/40 transition group {% if d.es_otro_mes %}opacity-40{% endif %}"
+                        data-fecha="{{ d.fecha|date:'Y-m-d' }}"
+                        title="{{ d.slots_libres }} slots libres">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[14px] font-bold {% if d.es_hoy %}bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center{% else %}{% if d.es_otro_mes %}text-gray-soft{% else %}text-gray-dark{% endif %}{% endif %}">{{ d.dia }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wide text-primary-dark bg-primary-light px-1.5 py-0.5 rounded">{{ d.slots_libres }}</span>
+                  </div>
+                  <div class="text-[10px] text-primary font-semibold mt-1 hidden sm:block group-hover:text-primary-dark">Disponible</div>
+                </button>
+              {% else %}
+                {# Día NO seleccionable #}
+                <div class="cal-day relative min-h-[68px] p-2 text-left {% if d.es_otro_mes %}bg-off-white-2/40{% elif d.es_pasado %}bg-off-white-2 text-gray-soft{% elif not d.es_laboral %}bg-red-50/40{% else %}bg-off-white-2/60{% endif %} cursor-not-allowed">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[14px] font-bold {% if d.es_hoy %}bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center{% else %}{% if d.es_otro_mes or d.es_pasado %}text-gray-soft{% else %}text-gray-mid{% endif %}{% endif %}">{{ d.dia }}</span>
+                  </div>
+                  {% if d.motivo and not d.es_otro_mes %}
+                  <div class="text-[9px] uppercase tracking-wider text-gray-soft mt-1 truncate">{{ d.motivo|truncatechars:10 }}</div>
+                  {% endif %}
+                </div>
+              {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
+
+        {# Leyenda #}
+        <div class="flex flex-wrap items-center gap-3 text-[11px] text-gray-soft mb-4">
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-white border border-border rounded"></span>Disponible</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-off-white-2 rounded"></span>Pasado / lleno</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 bg-red-50 rounded"></span>Cerrado / feriado</span>
         </div>
 
         <div id="slots-container" hidden>
