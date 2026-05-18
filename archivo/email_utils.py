@@ -21,6 +21,56 @@ from django.template.loader import render_to_string
 logger = logging.getLogger('archivo.email_utils')
 
 
+def build_brand_logo() -> tuple[dict, list]:
+    """
+    Devuelve `(brand_ctx, inline_images)` listos para pasar a `safe_send()`.
+
+    Lee `static/logos/logo_medium.png` (header) y `logo_firma.png` (firma)
+    desde el filesystem y los devuelve como partes MIME inline con CID
+    `logo_rsp_header` / `logo_rsp_firma`. Los templates de email referencian
+    los logos como `<img src="{{ brand_logo_url }}">` y se renderizan
+    embebidos en el cuerpo del MIME — funciona en Gmail/Outlook sin
+    depender de URL externa ni SSL.
+
+    Si no encuentra los PNG, devuelve URLs vacías y los templates caen al
+    fallback de texto.
+    """
+    inline: list = []
+    logo_url = firma_url = ''
+
+    def _read(filename: str) -> bytes | None:
+        for base in (
+            settings.BASE_DIR / 'static' / 'logos',
+            settings.BASE_DIR / 'staticfiles' / 'logos',
+        ):
+            try:
+                return (base / filename).read_bytes()
+            except OSError:
+                continue
+        return None
+
+    header = _read('logo_medium.png')
+    firma  = _read('logo_firma.png')
+
+    if header:
+        inline.append(('logo_medium.png', header, 'image/png', 'logo_rsp_header'))
+        logo_url = 'cid:logo_rsp_header'
+
+    firma_bytes = firma or header
+    if firma_bytes:
+        fname = 'logo_firma.png' if firma else 'logo_medium.png'
+        inline.append((fname, firma_bytes, 'image/png', 'logo_rsp_firma'))
+        firma_url = 'cid:logo_rsp_firma'
+
+    brand_ctx = {
+        'brand_logo_url':       logo_url,
+        'brand_firma_logo_url': firma_url,
+        'brand_color':          getattr(settings, 'BRAND_PRIMARY_COLOR', '#1e7d32'),
+        'brand_company_name':   getattr(settings, 'BRAND_COMPANY_NAME', 'Río San Pedro Revisiones Técnicas'),
+    }
+    return brand_ctx, inline
+
+
 def safe_send(
     *,
     asunto: str,

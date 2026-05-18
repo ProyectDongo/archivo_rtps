@@ -301,11 +301,14 @@ def confirmar_reserva_view(request):
 
     # ─── Mandar código de 6 dígitos al email del cliente ───────────────
     codigo = anti_bot.generar_codigo_email(email)
+    from archivo.email_utils import build_brand_logo
+    brand_ctx, brand_inline = build_brand_logo()
     safe_send(
         asunto=f'Código de verificación · {codigo}',
         para=email,
         template='taller/email/codigo_verificacion',
-        contexto={'codigo': codigo, 'reserva': reserva},
+        contexto={'codigo': codigo, 'reserva': reserva, **brand_ctx},
+        inline_images=brand_inline,
         from_alias=getattr(settings, 'EMAIL_AGENDA_FROM', None),
         reply_to=[settings.EMAIL_REPLY_TO_AGENDA] if settings.EMAIL_REPLY_TO_AGENDA else None,
     )
@@ -370,6 +373,8 @@ def verificar_email_view(request):
     anti_bot.rl_reserva(ip_h)
 
     # ─── Email de confirmación al cliente (con link al detalle) ────────
+    from archivo.email_utils import build_brand_logo
+    brand_ctx, brand_inline = build_brand_logo()
     safe_send(
         asunto=f'Reserva confirmada: {reserva.fecha:%d/%m/%Y} a las {reserva.hora_inicio:%H:%M}',
         para=reserva.cliente_email,
@@ -378,7 +383,9 @@ def verificar_email_view(request):
             'reserva': reserva,
             'token': token,
             'site_url': request.build_absolute_uri('/').rstrip('/'),
+            **brand_ctx,
         },
+        inline_images=brand_inline,
         from_alias=getattr(settings, 'EMAIL_AGENDA_FROM', None),
         reply_to=[settings.EMAIL_REPLY_TO_AGENDA] if settings.EMAIL_REPLY_TO_AGENDA else None,
     )
@@ -386,11 +393,13 @@ def verificar_email_view(request):
     # ─── Email de notificación a los admins ────────────────────────────
     admin_emails = getattr(settings, 'ADMIN_NOTIFY_AGENDA', [])
     if admin_emails:
+        admin_brand_ctx, admin_brand_inline = build_brand_logo()
         safe_send(
             asunto=f'🚗 Nueva reserva: {reserva.fecha:%d/%m} {reserva.hora_inicio:%H:%M} · {reserva.cliente_nombre} · {reserva.patente}',
             para=admin_emails,
             template='taller/email/nueva_reserva_admin',
-            contexto={'reserva': reserva, 'site_url': request.build_absolute_uri('/').rstrip('/')},
+            contexto={'reserva': reserva, 'site_url': request.build_absolute_uri('/').rstrip('/'), **admin_brand_ctx},
+            inline_images=admin_brand_inline,
             from_alias=getattr(settings, 'EMAIL_AGENDA_FROM', None),
         )
 
@@ -420,11 +429,14 @@ def reenviar_codigo_view(request):
         return redirect('ver_reserva', token=token)
 
     codigo = anti_bot.generar_codigo_email(reserva.cliente_email)
+    from archivo.email_utils import build_brand_logo
+    brand_ctx, brand_inline = build_brand_logo()
     safe_send(
         asunto=f'Código de verificación · {codigo}',
         para=reserva.cliente_email,
         template='taller/email/codigo_verificacion',
-        contexto={'codigo': codigo, 'reserva': reserva},
+        contexto={'codigo': codigo, 'reserva': reserva, **brand_ctx},
+        inline_images=brand_inline,
         from_alias=getattr(settings, 'EMAIL_AGENDA_FROM', None),
         reply_to=[settings.EMAIL_REPLY_TO_AGENDA] if settings.EMAIL_REPLY_TO_AGENDA else None,
     )

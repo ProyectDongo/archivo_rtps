@@ -148,11 +148,14 @@ class Command(BaseCommand):
         # Por simplicidad de Commit H, el reminder solo informa; los links
         # confirmar/cancelar quedan en el email original de confirmación.
 
+        from archivo.email_utils import build_brand_logo
+        brand_ctx, brand_inline = build_brand_logo()
         result = safe_send(
             asunto=asunto,
             para=r.cliente_email,
             template=template,
-            contexto={'reserva': r, 'tipo_reminder': tipo},
+            contexto={'reserva': r, 'tipo_reminder': tipo, **brand_ctx},
+            inline_images=brand_inline,
             from_alias=getattr(settings_obj, 'EMAIL_AGENDA_FROM', None),
             reply_to=[settings_obj.EMAIL_REPLY_TO_AGENDA] if settings_obj.EMAIL_REPLY_TO_AGENDA else None,
         )
