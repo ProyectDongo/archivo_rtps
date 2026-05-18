@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 
 from django.conf import settings
@@ -1305,7 +1306,7 @@ class CampanaCorreo(models.Model):
         help_text='Lista de meses 1-12 en que se envía. Vacío = todos (mensual). '
                   '[3,6,9,12]=trimestral, [6,12]=semestral, [1]=anual en enero.')
     hora_envio   = models.TimeField(
-        default='09:00',
+        default=datetime.time(9, 0),
         help_text='Hora local Chile en que arranca el envío. El cron debe correr cerca de esta hora.')
 
     # Estado
