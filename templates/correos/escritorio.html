@@ -1,372 +1,608 @@
 {% extends 'base_app.html' %}
 {% load static %}
 
-{% block title %}Escritorio — {{ usuario.email }}{% endblock %}
+{% block title %}[ ESCRITORIO ] // {{ usuario.email }}{% endblock %}
 {% block body_class %}page-escritorio{% endblock %}
 
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+/* ── BRUTAL TELEMETRY / ESCRITORIO ─────────────────────────────────── */
+.bru {
+  background: #0A0A0A;
+  color: #EAEAEA;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  position: relative;
+  min-height: 100%;
+}
+.bru *, .bru *::before, .bru *::after { box-sizing: border-box; }
+
+/* CRT scanlines */
+.bru-scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,.10) 2px, rgba(0,0,0,.10) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* gap:1px grid — red bg = razor dividers */
+.bru-g  { display: grid; gap: 1px; background: #E61919; }
+.bru-c  { background: #0A0A0A; }
+.bru-c2 { background: #0d0d0d; }
+
+/* ── Status bar */
+.bru-bar {
+  background: #E61919;
+  color: #0A0A0A;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  padding: 5px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.bru-bar-r { display: flex; align-items: center; gap: 16px; }
+
+/* ── App dock */
+.bru-dock { grid-template-columns: repeat(auto-fit, minmax(82px, 1fr)); }
+.bru-dock-tile {
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 8px 14px;
+  text-decoration: none;
+  color: #EAEAEA;
+  position: relative;
+  transition: background .1s;
+}
+.bru-dock-tile:hover { background: #161616; }
+.bru-dock-tile:hover .bru-t-ico { color: #E61919; }
+.bru-t-id {
+  position: absolute;
+  top: 6px; left: 8px;
+  font-size: 8px;
+  color: #E61919;
+  letter-spacing: .14em;
+}
+.bru-t-ico {
+  width: 20px; height: 20px;
+  margin-bottom: 10px;
+  transition: color .1s;
+}
+.bru-t-lbl { font-size: 8px; letter-spacing: .14em; color: #777; }
+.bru-t-badge {
+  position: absolute;
+  top: 5px; right: 8px;
+  background: #E61919;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  letter-spacing: .04em;
+}
+
+/* ── KPI row */
+.bru-kpi-grid { grid-template-columns: repeat(8, 1fr); }
+.bru-kpi { padding: 14px 14px 10px; display: flex; flex-direction: column; gap: 4px; }
+.bru-kpi-v {
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: clamp(20px, 2.4vw, 34px);
+  line-height: 1;
+  letter-spacing: -.02em;
+  text-transform: none;
+}
+.bru-kpi-v small {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #E61919;
+}
+.bru-kpi-l  { font-size: 8px; color: #555; letter-spacing: .10em; }
+.bru-kpi-hi { background: #0f0f0f; }
+.bru-kpi-alert .bru-kpi-v { color: #E61919; }
+
+/* ── Widget grid */
+.bru-widgets { grid-template-columns: 1fr 1fr 1fr; }
+.bru-w-full  { grid-column: 1 / -1; }
+.bru-w-span2 { grid-column: span 2; }
+
+/* ── Widget chrome */
+.bru-w { background: #0A0A0A; overflow: hidden; }
+.bru-w-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid #E61919;
+}
+.bru-w-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8px;
+  font-weight: 700;
+  color: #E61919;
+  letter-spacing: .14em;
+}
+.bru-w-title svg { width: 11px; height: 11px; flex-shrink: 0; }
+.bru-w-act  { font-size: 8px; color: #555; text-decoration: none; letter-spacing: .08em; }
+.bru-w-act:hover { color: #E61919; }
+.bru-w-hint { font-size: 8px; color: #444; }
+
+/* ── Lists */
+.bru-lst { list-style: none; margin: 0; padding: 0; }
+.bru-lst-empty { padding: 10px 14px; font-size: 9px; color: #3a3a3a; }
+
+/* Email list */
+.bru-eml { border-bottom: 1px solid #141414; }
+.bru-eml a { text-decoration: none; color: inherit; display: block; padding: 7px 14px; }
+.bru-eml:hover { background: #0d0d0d; }
+.bru-eml-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+.bru-eml-from { font-size: 9px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 72%; }
+.bru-eml-date { font-size: 8px; color: #444; flex-shrink: 0; }
+.bru-eml-sub  { font-size: 8px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-eml-unread .bru-eml-from { color: #fff; }
+.bru-eml-unread .bru-eml-from::before { content: '▸ '; color: #E61919; }
+
+/* Top temas */
+.bru-tema { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid #141414; }
+.bru-tema-n { font-size: 9px; width: 88px; flex-shrink: 0; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-tema-bar  { flex: 1; height: 3px; background: #1a1a1a; }
+.bru-tema-fill { height: 100%; }
+.bru-tema-c { font-size: 9px; color: #E61919; width: 24px; text-align: right; flex-shrink: 0; }
+
+/* Top perfiles */
+.bru-perf { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid #141414; }
+.bru-perf-av {
+  width: 24px; height: 24px;
+  background: #E61919; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; flex-shrink: 0;
+}
+.bru-perf-info { flex: 1; min-width: 0; }
+.bru-perf-n { font-size: 9px; color: #EAEAEA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-perf-e { font-size: 8px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-perf-bar { display: flex; height: 3px; width: 42px; flex-shrink: 0; }
+.bru-pfr { background: #E61919; }
+.bru-pfe { background: #4AF626; }
+.bru-pfo { background: #444; }
+.bru-perf-c { font-size: 8px; color: #555; width: 20px; text-align: right; flex-shrink: 0; }
+
+/* Donut */
+.bru-donut-w { display: flex; align-items: center; gap: 16px; padding: 16px 14px; }
+.bru-donut-svg { width: 90px; height: 90px; flex-shrink: 0; }
+.bru-donut-tot { font-family: 'Archivo Black', sans-serif; font-size: 30px; fill: #EAEAEA; }
+.bru-donut-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; fill: #555; text-transform: uppercase; letter-spacing: .1em; }
+.bru-donut-leg { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.bru-donut-leg li { display: flex; align-items: center; gap: 6px; font-size: 8px; }
+.bru-donut-dot { width: 7px; height: 7px; display: inline-block; flex-shrink: 0; }
+.bru-donut-nm { flex: 1; color: #666; }
+.bru-donut-ct { color: #EAEAEA; width: 24px; text-align: right; }
+.bru-donut-pc { color: #E61919; width: 28px; text-align: right; }
+
+/* Volume line chart */
+.bru-line-w  { padding: 12px 14px 6px; }
+.bru-line-svg { width: 100%; height: 110px; display: block; }
+.bru-line-ax  { display: flex; justify-content: space-between; padding: 3px 0 4px; }
+.bru-line-tk  { font-size: 7px; color: #444; }
+
+/* Top remitentes */
+.bru-rem { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid #141414; }
+.bru-rem-n  { font-size: 8px; color: #E61919; width: 16px; flex-shrink: 0; }
+.bru-rem-i  { flex: 1; min-width: 0; }
+.bru-rem-nm { font-size: 9px; color: #EAEAEA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-rem-em { font-size: 8px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-rem-bar  { width: 52px; height: 3px; background: #1a1a1a; flex-shrink: 0; }
+.bru-rem-fill { height: 100%; background: #E61919; }
+.bru-rem-c  { font-size: 9px; color: #E61919; width: 20px; text-align: right; flex-shrink: 0; }
+
+/* Heatmap */
+.bru-hm     { padding: 8px 14px 14px; overflow-x: auto; }
+.bru-hm-row { display: flex; align-items: center; gap: 2px; margin-bottom: 2px; }
+.bru-hm-dow { font-size: 7px; color: #444; width: 24px; flex-shrink: 0; letter-spacing: .06em; }
+.bru-hm-h   { font-size: 7px; color: #2a2a2a; width: 14px; text-align: center; flex-shrink: 0; }
+.bru-hm-cell { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* Files */
+.bru-file   { border-bottom: 1px solid #141414; }
+.bru-file a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 14px; text-decoration: none; color: inherit; }
+.bru-file:hover { background: #0d0d0d; }
+.bru-file-n { font-size: 9px; color: #EAEAEA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bru-file-m { font-size: 8px; color: #444; flex-shrink: 0; }
+
+/* ── Responsive */
+@media (max-width: 960px) {
+  .bru-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .bru-widgets  { grid-template-columns: 1fr 1fr; }
+  .bru-dock     { grid-template-columns: repeat(4, 1fr); }
+  .bru-w-span2  { grid-column: span 1; }
+}
+@media (max-width: 600px) {
+  .bru-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .bru-widgets  { grid-template-columns: 1fr; }
+  .bru-dock     { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="escritorio">
+<div class="bru" aria-label="Escritorio RT Río San Pedro">
+<div class="bru-scanlines" aria-hidden="true"></div>
 
-  <main class="esc-desktop">
+  {# ── STATUS BAR ─────────────────────────────────────────────── #}
+  <div class="bru-bar">
+    <span>[ PORTAL.RSP / ESCRITORIO ]</span>
+    <div class="bru-bar-r">
+      <span>{{ usuario.email }}</span>
+      <span>// {% now "Y-m-d" %}</span>
+    </div>
+  </div>
 
-    <section class="esc-apps" aria-label="Aplicaciones">
+  {# ── APP DOCK ────────────────────────────────────────────────── #}
+  <nav class="bru-g bru-dock" aria-label="Aplicaciones del portal">
 
-      <a class="esc-app" href="{% url 'inbox' %}" title="Correos">
-        <div class="esc-app-tile esc-tile-correos">
+    <a class="bru-dock-tile" href="{% url 'inbox' %}">
+      <span class="bru-t-id">01</span>
+      <svg class="bru-t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
+      </svg>
+      {% if stats.correos_total %}<span class="bru-t-badge">{{ stats.correos_total }}</span>{% endif %}
+      <span class="bru-t-lbl">// CORREOS</span>
+    </a>
+
+    <a class="bru-dock-tile" href="{% url 'agendar' %}" target="_blank" rel="noopener">
+      <span class="bru-t-id">02</span>
+      <svg class="bru-t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </svg>
+      <span class="bru-t-lbl">// AGENDAR</span>
+    </a>
+
+    {% if usuario.es_admin or usuario.puede_campanas %}
+    <a class="bru-dock-tile" href="{% url 'campanas' %}">
+      <span class="bru-t-id">03</span>
+      <svg class="bru-t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 8l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/>
+        <circle cx="19" cy="6" r="3" fill="currentColor"/>
+      </svg>
+      <span class="bru-t-lbl">// AUTO</span>
+    </a>
+    {% endif %}
+
+    <a class="bru-dock-tile" href="{% url 'papelera' %}">
+      <span class="bru-t-id">04</span>
+      <svg class="bru-t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+      </svg>
+      <span class="bru-t-lbl">// PAPELERA</span>
+    </a>
+
+    {% if usuario.es_admin or usuario.puede_taller %}
+    <a class="bru-dock-tile" href="{% url 'taller_agenda' %}">
+      <span class="bru-t-id">05</span>
+      <svg class="bru-t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <circle cx="12" cy="16" r="2" fill="currentColor"/>
+      </svg>
+      <span class="bru-t-lbl">// TALLER</span>
+    </a>
+    {% endif %}
+
+    <a class="bru-dock-tile" href="{% url 'cambiar_password' %}">
+      <span class="bru-t-id">06</span>
+      <svg class="bru-t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      <span class="bru-t-lbl">// AJUSTES</span>
+    </a>
+
+  </nav>
+
+  {# ── KPI ROW ─────────────────────────────────────────────────── #}
+  <div class="bru-g bru-kpi-grid" role="region" aria-label="Métricas">
+
+    <div class="bru-c bru-kpi">
+      <div class="bru-kpi-v">{{ kpis.total }}</div>
+      <div class="bru-kpi-l">[ TOTAL ]</div>
+    </div>
+    <div class="bru-c bru-kpi">
+      <div class="bru-kpi-v">{{ kpis.recibidos }}</div>
+      <div class="bru-kpi-l">[ RECIBIDOS ]</div>
+    </div>
+    <div class="bru-c bru-kpi">
+      <div class="bru-kpi-v">{{ kpis.enviados }}</div>
+      <div class="bru-kpi-l">[ ENVIADOS ]</div>
+    </div>
+    <div class="bru-c bru-kpi">
+      <div class="bru-kpi-v">{{ kpis.tasa_respuesta }}<small>%</small></div>
+      <div class="bru-kpi-l">[ RESP. % ]</div>
+    </div>
+    <div class="bru-c bru-kpi bru-kpi-hi" title="Tiempo promedio entre recepción y primera respuesta. Últimos 90 días.">
+      <div class="bru-kpi-v">{{ tiempo_resp.tiempo_respuesta_str }}</div>
+      <div class="bru-kpi-l">[ T. RESP. ]</div>
+    </div>
+    <div class="bru-c bru-kpi {% if tiempo_resp.sin_responder_7d %}bru-kpi-alert{% endif %}" title="Correos recibidos hace +7 días sin respuesta.">
+      <div class="bru-kpi-v">{{ tiempo_resp.sin_responder_7d }}</div>
+      <div class="bru-kpi-l">[ &gt;7D PEND. ]</div>
+    </div>
+    <div class="bru-c bru-kpi">
+      <div class="bru-kpi-v">{{ kpis.no_leidos }}</div>
+      <div class="bru-kpi-l">[ SIN LEER ]</div>
+    </div>
+    <div class="bru-c bru-kpi">
+      <div class="bru-kpi-v">{{ kpis.snooze_activos }}</div>
+      <div class="bru-kpi-l">[ POSPUESTOS ]</div>
+    </div>
+
+  </div>
+
+  {# ── WIDGET GRID ─────────────────────────────────────────────── #}
+  <div class="bru-g bru-widgets">
+
+    {# Últimos correos #}
+    <article class="bru-c bru-w">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="14" rx="2"/>
-            <path d="M3 7l9 6 9-6"/>
+            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
           </svg>
-          {% if stats.correos_total %}
-          <span class="esc-app-badge">{{ stats.correos_total }}</span>
-          {% endif %}
-        </div>
-        <span class="esc-app-label">Correos</span>
-      </a>
+          // ÚLTIMOS CORREOS
+        </h3>
+        <a class="bru-w-act" href="{% url 'inbox' %}">ABRIR ›</a>
+      </header>
+      <ul class="bru-lst">
+        {% for c in ultimos_correos %}
+        <li class="bru-eml {% if not c.is_leido %}bru-eml-unread{% endif %}">
+          <a href="{% url 'detalle' c.id %}">
+            <div class="bru-eml-row">
+              <span class="bru-eml-from">{{ c.remitente|default:c.buzon.email|truncatechars:30 }}</span>
+              <span class="bru-eml-date">{{ c.fecha|date:"d/m" }}</span>
+            </div>
+            <div class="bru-eml-sub">{{ c.asunto|default:"(sin asunto)"|truncatechars:56 }}</div>
+          </a>
+        </li>
+        {% empty %}
+        <li class="bru-lst-empty">SIN CORREOS TODAVÍA.</li>
+        {% endfor %}
+      </ul>
+    </article>
 
-      <a class="esc-app" href="{% url 'agendar' %}" title="Taller — agenda de servicios" target="_blank" rel="noopener">
-        <div class="esc-app-tile esc-tile-taller">
+    {# Top temas #}
+    <article class="bru-c bru-w">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            <path d="M7 7h10M7 12h10M7 17h6"/>
           </svg>
-        </div>
-        <span class="esc-app-label">Taller</span>
-      </a>
+          // TOP TEMAS
+        </h3>
+        {% if usuario.es_admin %}
+        <a class="bru-w-act" href="/{{ admin_url_path|default:'admin-pm-staff/' }}correos/categoriatema/">EDITAR ›</a>
+        {% endif %}
+      </header>
+      <ul class="bru-lst">
+        {% for t in top_temas %}
+        <li class="bru-tema">
+          <span class="bru-tema-n">{{ t.nombre }}</span>
+          <div class="bru-tema-bar"><div class="bru-tema-fill" style="width:{{ t.pct }}%; background:{{ t.color }}"></div></div>
+          <span class="bru-tema-c">{{ t.count }}</span>
+        </li>
+        {% empty %}
+        <li class="bru-lst-empty">SIN CATEGORÍAS ACTIVAS.</li>
+        {% endfor %}
+      </ul>
+    </article>
 
-      {% if usuario.es_admin or usuario.puede_campanas %}
-      <a class="esc-app" href="{% url 'campanas' %}" title="Correos automáticos">
-        <div class="esc-app-tile esc-tile-campanas">
+    {# Top perfiles #}
+    <article class="bru-c bru-w">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 8l9 6 9-6"/>
-            <rect x="3" y="5" width="18" height="14" rx="2"/>
-            <circle cx="19" cy="6" r="3" fill="currentColor"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-        </div>
-        <span class="esc-app-label">Automáticos</span>
-      </a>
-      {% endif %}
+          // TOP PERFILES
+        </h3>
+      </header>
+      <ul class="bru-lst">
+        {% for p in top_perfiles %}
+        <li class="bru-perf">
+          <span class="bru-perf-av">{{ p.iniciales }}</span>
+          <div class="bru-perf-info">
+            <div class="bru-perf-n">{{ p.nombre|truncatechars:22 }}</div>
+            <div class="bru-perf-e">{{ p.email|truncatechars:26 }}</div>
+          </div>
+          <div class="bru-perf-bar" title="Recibidos {{ p.recibidos }} · Enviados {{ p.enviados }} · Otros {{ p.otros }}">
+            <div class="bru-pfr" style="width:{{ p.pct_r }}%"></div>
+            <div class="bru-pfe" style="width:{{ p.pct_e }}%"></div>
+            <div class="bru-pfo" style="width:{{ p.pct_o }}%"></div>
+          </div>
+          <span class="bru-perf-c">{{ p.total }}</span>
+        </li>
+        {% empty %}
+        <li class="bru-lst-empty">SIN PERFILES VISIBLES.</li>
+        {% endfor %}
+      </ul>
+    </article>
 
-      <a class="esc-app" href="{% url 'papelera' %}" title="Papelera">
-        <div class="esc-app-tile esc-tile-papelera">
+    {# Volumen mensual — full width #}
+    <article class="bru-c bru-w bru-w-full">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M3 3v18h18"/><polyline points="6 16 10 10 14 13 19 7"/>
           </svg>
+          // VOLUMEN MENSUAL · ÚLTIMOS {{ volumen_mensual.serie|length }} MESES
+        </h3>
+      </header>
+      <div class="bru-line-w">
+        <svg class="bru-line-svg" viewBox="0 0 720 160" preserveAspectRatio="none" role="img" aria-label="Volumen de correos por mes">
+          <line x1="0" y1="120" x2="720" y2="120" stroke="#1a1a1a" stroke-width="1"/>
+          <line x1="0" y1="80"  x2="720" y2="80"  stroke="#1a1a1a" stroke-width="1" stroke-dasharray="2 4"/>
+          <line x1="0" y1="40"  x2="720" y2="40"  stroke="#1a1a1a" stroke-width="1" stroke-dasharray="2 4"/>
+          <polyline
+            fill="none" stroke="#E61919" stroke-width="2"
+            stroke-linecap="square" stroke-linejoin="miter"
+            points="{{ volumen_mensual.points_str }}"/>
+          {% for s in volumen_mensual.serie %}
+          <circle cx="{{ s.x_svg }}" cy="{{ s.y_svg }}" r="3" fill="#E61919">
+            <title>{{ s.label }}: {{ s.c }} correos</title>
+          </circle>
+          {% endfor %}
+        </svg>
+        <div class="bru-line-ax">
+          {% for s in volumen_mensual.serie %}
+          <span class="bru-line-tk" title="{{ s.label }}: {{ s.c }}">{% if forloop.counter|divisibleby:2 %}{{ s.label|slice:"5:7" }}/{{ s.label|slice:"2:4" }}{% endif %}</span>
+          {% endfor %}
         </div>
-        <span class="esc-app-label">Papelera</span>
-      </a>
+      </div>
+    </article>
 
-      {% if usuario.es_admin or usuario.puede_taller %}
-      <a class="esc-app" href="{% url 'taller_agenda' %}" title="Taller — agenda + catálogo">
-        <div class="esc-app-tile esc-tile-taller-admin">
+    {# Distribución por carpeta #}
+    <article class="bru-c bru-w">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/>
+          </svg>
+          // DIST. CARPETA
+        </h3>
+      </header>
+      <div class="bru-donut-w">
+        <svg class="bru-donut-svg" viewBox="0 0 200 200" role="img" aria-label="Distribución por carpeta">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#1a1a1a" stroke-width="28"/>
+          {% for s in pie_carpetas.slices %}{% if s.pct %}
+          <circle cx="100" cy="100" r="80" fill="none"
+                  stroke="{{ s.color }}" stroke-width="28"
+                  stroke-dasharray="{% widthratio s.pct 100 502 %} 502"
+                  stroke-dashoffset="-{% widthratio s.offset_pct 100 502 %}"
+                  transform="rotate(-90 100 100)">
+            <title>{{ s.nombre }}: {{ s.count }} ({{ s.pct }}%)</title>
+          </circle>
+          {% endif %}{% endfor %}
+          <text x="100" y="92" text-anchor="middle" class="bru-donut-tot">{{ pie_carpetas.total }}</text>
+          <text x="100" y="115" text-anchor="middle" class="bru-donut-lbl">correos</text>
+        </svg>
+        <ul class="bru-donut-leg">
+          {% for s in pie_carpetas.slices %}
+          <li>
+            <span class="bru-donut-dot" style="background:{{ s.color }}"></span>
+            <span class="bru-donut-nm">{{ s.nombre }}</span>
+            <span class="bru-donut-ct">{{ s.count }}</span>
+            <span class="bru-donut-pc">{{ s.pct }}%</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </article>
+
+    {# Archivos recientes — span 2 #}
+    <article class="bru-c bru-w bru-w-span2">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/>
+          </svg>
+          // ARCHIVOS RECIENTES
+        </h3>
+      </header>
+      <ul class="bru-lst">
+        {% for a in archivos_recientes %}
+        <li class="bru-file">
+          <a href="{% url 'adjunto' a.id %}">
+            <span class="bru-file-n">{{ a.nombre_original|truncatechars:46 }}</span>
+            <span class="bru-file-m">{{ a.correo.buzon.email|truncatechars:24 }} · {{ a.creado|date:"d/m/Y" }}</span>
+          </a>
+        </li>
+        {% empty %}
+        <li class="bru-lst-empty">SIN ADJUNTOS TODAVÍA.</li>
+        {% endfor %}
+      </ul>
+    </article>
+
+    {# Top remitentes externos — full width #}
+    <article class="bru-c bru-w bru-w-full">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+          </svg>
+          // TOP REMITENTES EXTERNOS
+        </h3>
+      </header>
+      <ul class="bru-lst">
+        {% for r in top_remitentes %}
+        <li class="bru-rem">
+          <span class="bru-rem-n">{{ forloop.counter }}</span>
+          <div class="bru-rem-i">
+            <div class="bru-rem-nm" title="{{ r.remitente }}">{{ r.display|truncatechars:46 }}</div>
+            <div class="bru-rem-em">{{ r.email|truncatechars:60 }}</div>
+          </div>
+          <div class="bru-rem-bar"><div class="bru-rem-fill" style="width:{{ r.pct }}%"></div></div>
+          <span class="bru-rem-c">{{ r.c }}</span>
+        </li>
+        {% empty %}
+        <li class="bru-lst-empty">SIN REMITENTES EXTERNOS DETECTADOS.</li>
+        {% endfor %}
+      </ul>
+    </article>
+
+    {# Heatmap actividad — full width #}
+    <article class="bru-c bru-w bru-w-full">
+      <header class="bru-w-head">
+        <h3 class="bru-w-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-            <circle cx="12" cy="16" r="2" fill="currentColor"/>
+            <line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="22"/>
           </svg>
+          // ACTIVIDAD DÍA · HORA (90 DÍAS)
+        </h3>
+        <span class="bru-w-hint">MÁX {{ heatmap.max_count }} / H</span>
+      </header>
+      <div class="bru-hm">
+        <div class="bru-hm-row">
+          <span class="bru-hm-dow"></span>
+          {% for h in "0123456789"|make_list %}<span class="bru-hm-h">{{ h }}</span>{% endfor %}
+          {% for h in "0123456789"|make_list %}<span class="bru-hm-h">1{{ h }}</span>{% endfor %}
+          <span class="bru-hm-h">20</span>
+          <span class="bru-hm-h">21</span>
+          <span class="bru-hm-h">22</span>
+          <span class="bru-hm-h">23</span>
         </div>
-        <span class="esc-app-label">Taller</span>
-      </a>
-      {% endif %}
-
-      <a class="esc-app" href="{% url 'cambiar_password' %}" title="Ajustes">
-        <div class="esc-app-tile esc-tile-ajustes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-        </div>
-        <span class="esc-app-label">Ajustes</span>
-      </a>
-    </section>
-
-    <section class="esc-widgets" aria-label="Widgets">
-
-      <article class="esc-widget esc-widget-wide esc-kpis-row">
-        <div class="esc-kpi-card">
-          <div class="esc-kpi-v">{{ kpis.total }}</div>
-          <div class="esc-kpi-l">Total correos</div>
-        </div>
-        <div class="esc-kpi-card">
-          <div class="esc-kpi-v">{{ kpis.recibidos }}</div>
-          <div class="esc-kpi-l">Recibidos</div>
-        </div>
-        <div class="esc-kpi-card">
-          <div class="esc-kpi-v">{{ kpis.enviados }}</div>
-          <div class="esc-kpi-l">Enviados</div>
-        </div>
-        <div class="esc-kpi-card">
-          <div class="esc-kpi-v">{{ kpis.tasa_respuesta }}<small>%</small></div>
-          <div class="esc-kpi-l">Tasa respuesta</div>
-        </div>
-        <div class="esc-kpi-card esc-kpi-highlight" title="Tiempo promedio entre que llega un correo externo y la primera respuesta del mismo buzón al mismo remitente. Sample: últimos 90 días.">
-          <div class="esc-kpi-v">{{ tiempo_resp.tiempo_respuesta_str }}</div>
-          <div class="esc-kpi-l">T. respuesta</div>
-        </div>
-        <div class="esc-kpi-card {% if tiempo_resp.sin_responder_7d %}esc-kpi-alert{% endif %}" title="Correos recibidos hace más de 7 días sin respuesta detectada. Algo se te está acumulando.">
-          <div class="esc-kpi-v">{{ tiempo_resp.sin_responder_7d }}</div>
-          <div class="esc-kpi-l">Sin responder &gt;7d</div>
-        </div>
-        <div class="esc-kpi-card">
-          <div class="esc-kpi-v">{{ kpis.no_leidos }}</div>
-          <div class="esc-kpi-l">Sin leer</div>
-        </div>
-        <div class="esc-kpi-card">
-          <div class="esc-kpi-v">{{ kpis.snooze_activos }}</div>
-          <div class="esc-kpi-l">Pospuestos</div>
-        </div>
-      </article>
-
-      <article class="esc-widget esc-widget-wide">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 3v18h18"/><polyline points="6 16 10 10 14 13 19 7"/>
-            </svg>
-            Volumen mensual · últimos {{ volumen_mensual.serie|length }} meses
-          </h3>
-        </header>
-        <div class="esc-line-wrap">
-          <svg class="esc-line-svg" viewBox="0 0 720 160" preserveAspectRatio="none" role="img" aria-label="Volumen de correos por mes">
-            <line x1="0" y1="120" x2="720" y2="120" stroke="#e2e8f0" stroke-width="1"/>
-            <line x1="0" y1="80"  x2="720" y2="80"  stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 4"/>
-            <line x1="0" y1="40"  x2="720" y2="40"  stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 4"/>
-            <polyline
-              fill="none" stroke="#1e7d32" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round"
-              points="{{ volumen_mensual.points_str }}"/>
-            {% for s in volumen_mensual.serie %}
-            <circle cx="{{ s.x_svg }}" cy="{{ s.y_svg }}" r="3" fill="#1e7d32">
-              <title>{{ s.label }}: {{ s.c }} correos</title>
-            </circle>
-            {% endfor %}
-          </svg>
-          <div class="esc-line-axis">
-            {% for s in volumen_mensual.serie %}
-            <span class="esc-line-tick" title="{{ s.label }}: {{ s.c }}">{% if forloop.counter|divisibleby:2 %}{{ s.label|slice:"5:7" }}/{{ s.label|slice:"2:4" }}{% endif %}</span>
-            {% endfor %}
-          </div>
-        </div>
-      </article>
-
-      <article class="esc-widget">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
-            </svg>
-            Últimos correos
-          </h3>
-          <a class="esc-widget-action" href="{% url 'inbox' %}">Abrir →</a>
-        </header>
-        <ul class="esc-list">
-          {% for c in ultimos_correos %}
-          <li class="esc-list-item esc-email{% if not c.is_leido %} esc-email-unread{% endif %}">
-            <a href="{% url 'detalle' c.id %}">
-              <div class="esc-email-row">
-                <div class="esc-email-sender">{{ c.remitente|default:c.buzon.email|truncatechars:32 }}</div>
-                <div class="esc-email-date">{{ c.fecha|date:"d/m/Y" }}</div>
-              </div>
-              <div class="esc-email-subject">{{ c.asunto|default:"(sin asunto)"|truncatechars:60 }}</div>
-            </a>
-          </li>
-          {% empty %}
-          <li class="esc-list-empty">No hay correos todavía.</li>
-          {% endfor %}
-        </ul>
-      </article>
-
-      <article class="esc-widget">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M7 7h10M7 12h10M7 17h6"/>
-            </svg>
-            Top temas mencionados
-          </h3>
-          {% if usuario.es_admin %}
-          <a class="esc-widget-action" href="/{{ admin_url_path|default:'admin-pm-staff/' }}correos/categoriatema/" title="Editar categorías y keywords">Editar →</a>
-          {% endif %}
-        </header>
-        <ul class="esc-list esc-list-temas">
-          {% for t in top_temas %}
-          <li class="esc-tema">
-            <span class="esc-tema-name">{{ t.nombre }}</span>
-            <div class="esc-tema-bar"><div class="esc-tema-fill" style="width:{{ t.pct }}%; background:{{ t.color }}"></div></div>
-            <span class="esc-tema-count">{{ t.count }}</span>
-          </li>
-          {% empty %}
-          <li class="esc-list-empty">Sin categorías activas. Crealas desde el admin.</li>
-          {% endfor %}
-        </ul>
-      </article>
-
-      <article class="esc-widget">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            Top perfiles · recibe vs envía
-          </h3>
-        </header>
-        <ul class="esc-list">
-          {% for p in top_perfiles %}
-          <li class="esc-perfil">
-            <span class="esc-perfil-avatar">{{ p.iniciales }}</span>
-            <div class="esc-perfil-info">
-              <div class="esc-perfil-name">{{ p.nombre|truncatechars:24 }}</div>
-              <div class="esc-perfil-email">{{ p.email|truncatechars:28 }}</div>
-            </div>
-            <div class="esc-perfil-bar esc-perfil-stacked" title="Recibidos {{ p.recibidos }} · Enviados {{ p.enviados }} · Otros {{ p.otros }}">
-              <div class="esc-perfil-fill-r" style="width:{{ p.pct_r }}%"></div>
-              <div class="esc-perfil-fill-e" style="width:{{ p.pct_e }}%"></div>
-              <div class="esc-perfil-fill-o" style="width:{{ p.pct_o }}%"></div>
-            </div>
-            <span class="esc-perfil-count">{{ p.total }}</span>
-          </li>
-          {% empty %}
-          <li class="esc-list-empty">No hay perfiles visibles.</li>
-          {% endfor %}
-        </ul>
-      </article>
-
-      <article class="esc-widget">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 2v20M2 12h20"/>
-            </svg>
-            Distribución por carpeta
-          </h3>
-        </header>
-        <div class="esc-donut-wrap">
-          <svg class="esc-donut-svg" viewBox="0 0 200 200" role="img" aria-label="Donut chart de carpetas">
-            <circle cx="100" cy="100" r="80" fill="none" stroke="#e2e8f0" stroke-width="28"/>
-            {% for s in pie_carpetas.slices %}{% if s.pct %}
-            <circle cx="100" cy="100" r="80" fill="none"
-                    stroke="{{ s.color }}" stroke-width="28"
-                    stroke-dasharray="{% widthratio s.pct 100 502 %} 502"
-                    stroke-dashoffset="-{% widthratio s.offset_pct 100 502 %}"
-                    transform="rotate(-90 100 100)">
-              <title>{{ s.nombre }}: {{ s.count }} ({{ s.pct }}%)</title>
-            </circle>
-            {% endif %}{% endfor %}
-            <text x="100" y="92" text-anchor="middle" class="esc-donut-total">{{ pie_carpetas.total }}</text>
-            <text x="100" y="115" text-anchor="middle" class="esc-donut-label">correos</text>
-          </svg>
-          <ul class="esc-donut-legend">
-            {% for s in pie_carpetas.slices %}
-            <li><span class="esc-donut-dot" style="background:{{ s.color }}"></span>
-              <span class="esc-donut-name">{{ s.nombre }}</span>
-              <span class="esc-donut-count">{{ s.count }}</span>
-              <span class="esc-donut-pct">{{ s.pct }}%</span>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </article>
-
-      <article class="esc-widget esc-widget-wide">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="8.5" cy="7" r="4"/>
-              <line x1="20" y1="8" x2="20" y2="14"/>
-              <line x1="23" y1="11" x2="17" y2="11"/>
-            </svg>
-            Top remitentes externos · qué dominios te escriben más
-          </h3>
-        </header>
-        <ul class="esc-list">
-          {% for r in top_remitentes %}
-          <li class="esc-rem">
-            <span class="esc-rem-num">{{ forloop.counter }}</span>
-            <div class="esc-rem-info">
-              <div class="esc-rem-name" title="{{ r.remitente }}">{{ r.display|truncatechars:48 }}</div>
-              <div class="esc-rem-email">{{ r.email|truncatechars:60 }}</div>
-            </div>
-            <div class="esc-rem-bar"><div class="esc-rem-fill" style="width:{{ r.pct }}%"></div></div>
-            <span class="esc-rem-count">{{ r.c }}</span>
-          </li>
-          {% empty %}
-          <li class="esc-list-empty">No hay remitentes externos detectados.</li>
-          {% endfor %}
-        </ul>
-      </article>
-
-      <article class="esc-widget esc-widget-wide">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-              <line x1="9" y1="4" x2="9" y2="22"/>
-            </svg>
-            Actividad por día · hora (últimos 90 días)
-          </h3>
-          <span class="esc-widget-hint">color = volumen relativo (máx {{ heatmap.max_count }})</span>
-        </header>
-        <div class="esc-heatmap">
-          <div class="esc-heatmap-row esc-heatmap-row-header">
-            <span class="esc-heatmap-dow"></span>
-            {% for h in "0123456789"|make_list %}
-            <span class="esc-heatmap-h">{{ h }}</span>
-            {% endfor %}
-            {% for h in "0123456789"|make_list %}
-            <span class="esc-heatmap-h">1{{ h }}</span>
-            {% endfor %}
-            <span class="esc-heatmap-h">20</span>
-            <span class="esc-heatmap-h">21</span>
-            <span class="esc-heatmap-h">22</span>
-            <span class="esc-heatmap-h">23</span>
-          </div>
-          {% for f in heatmap.filas %}
-          <div class="esc-heatmap-row">
-            <span class="esc-heatmap-dow">{{ f.dow_label }}</span>
-            {% for c in f.celdas %}
-            <span class="esc-heatmap-cell"
-                  style="background:rgba(200, 12, 15, {{ c.opacity }})"
-                  title="{{ f.dow_label }} {{ c.h }}:00 — {{ c.count }} correos"></span>
-            {% endfor %}
-          </div>
+        {% for f in heatmap.filas %}
+        <div class="bru-hm-row">
+          <span class="bru-hm-dow">{{ f.dow_label }}</span>
+          {% for c in f.celdas %}
+          <span class="bru-hm-cell"
+                style="background:rgba(230,25,25,{{ c.opacity }})"
+                title="{{ f.dow_label }} {{ c.h }}:00 — {{ c.count }} correos"></span>
           {% endfor %}
         </div>
-      </article>
+        {% endfor %}
+      </div>
+    </article>
 
-      <article class="esc-widget esc-widget-wide">
-        <header class="esc-widget-head">
-          <h3 class="esc-widget-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 8v4l3 2"/>
-              <circle cx="12" cy="12" r="10"/>
-            </svg>
-            Archivos recientes
-          </h3>
-        </header>
-        <ul class="esc-list">
-          {% for a in archivos_recientes %}
-          <li class="esc-archivo">
-            <a href="{% url 'adjunto' a.id %}">
-              <span class="esc-archivo-name">{{ a.nombre_original|truncatechars:48 }}</span>
-              <span class="esc-archivo-meta">{{ a.correo.buzon.email|truncatechars:28 }} · {{ a.creado|date:"d/m/Y" }}</span>
-            </a>
-          </li>
-          {% empty %}
-          <li class="esc-list-empty">Sin adjuntos todavía.</li>
-          {% endfor %}
-        </ul>
-      </article>
+  </div>{# /bru-widgets #}
 
-    </section>
-  </main>
-
-</div>
+</div>{# /bru #}
 {% endblock %}
