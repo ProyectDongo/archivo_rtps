@@ -22,14 +22,14 @@ body.page-escritorio-v2 { overflow: hidden; }
   color: #fff;
   overflow: hidden;
 
-  /* Fondo — colocá tu imagen en static/img/bg/escritorio-bg.jpg     */
-  /* Si no existe, se usa el gradiente oscuro como fallback           */
+  /* Fondo: gradiente oscuro por defecto.
+     Para usar una foto, agregala a static/img/bg/escritorio-bg.jpg,
+     corré collectstatic y actualizá background-image abajo. */
   background:
     linear-gradient(to bottom,
       rgba(0,0,0,.52) 0%,
       rgba(0,0,0,.28) 45%,
       rgba(0,0,0,.68) 100%),
-    url("{% static 'img/bg/escritorio-bg.jpg' %}") center / cover no-repeat,
     linear-gradient(135deg, #1a1a2e 0%, #0f2027 40%, #1a1a1a 100%);
 }
 
