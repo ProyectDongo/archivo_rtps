@@ -22,15 +22,25 @@ body.page-escritorio-v2 { overflow: hidden; }
   color: #fff;
   overflow: hidden;
 
-  /* Fondo: gradiente oscuro por defecto.
-     Para usar una foto, agregala a static/img/bg/escritorio-bg.jpg,
-     corré collectstatic y actualizá background-image abajo. */
-  background:
+  /* Textura de hormigón CSS — para usar una foto guardala en
+     static/img/bg/escritorio-bg.jpg y corré collectstatic */
+  background-color: #18150f;
+  background-image:
     linear-gradient(to bottom,
-      rgba(0,0,0,.52) 0%,
-      rgba(0,0,0,.28) 45%,
-      rgba(0,0,0,.68) 100%),
-    linear-gradient(135deg, #1a1a2e 0%, #0f2027 40%, #1a1a1a 100%);
+      rgba(0,0,0,.62) 0%,
+      rgba(0,0,0,.22) 45%,
+      rgba(0,0,0,.72) 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 3px,
+      rgba(180,155,110,.028) 3px, rgba(180,155,110,.028) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 48px,
+      rgba(0,0,0,.06) 48px, rgba(0,0,0,.06) 96px
+    ),
+    radial-gradient(ellipse at 30% 20%, #2e2820 0%, #1c1912 45%, #0e0d0b 100%);
 }
 
 /* ── Header ─────────────────────────────────────────────────────── */
@@ -93,20 +103,16 @@ body.page-escritorio-v2 { overflow: hidden; }
   flex-shrink: 0;
 }
 
-/* ── Tiles ───────────────────────────────────────────────────────── */
+/* ── Tiles — posicionamiento libre ───────────────────────────────── */
 .ev2-tiles {
   flex: 1;
-  display: grid;
-  grid-template-columns: 420px 420px;
-  grid-auto-rows: min-content;
-  gap: 10px;
-  padding: 24px 32px 12px;
-  align-content: start;
-  overflow-y: auto;
-  max-height: calc(100vh - 190px);
+  position: relative;   /* tiles se posicionan absolute dentro */
+  overflow: hidden;
 }
 
 .ev2-tile {
+  position: absolute;
+  width: 405px;
   background: rgba(252,252,252,.88);
   backdrop-filter: blur(18px) saturate(1.6);
   border: 1px solid rgba(255,255,255,.65);
@@ -117,10 +123,11 @@ body.page-escritorio-v2 { overflow: hidden; }
   overflow: hidden;
   transition: box-shadow .18s;
 }
-.ev2-tile:hover {
+.ev2-tile.ev2-dragging {
   box-shadow:
-    0 8px 36px rgba(0,0,0,.22),
+    0 20px 56px rgba(0,0,0,.30),
     inset 0 1px 0 rgba(255,255,255,.6);
+  opacity: .93;
 }
 
 /* Tile header */
@@ -129,9 +136,10 @@ body.page-escritorio-v2 { overflow: hidden; }
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  cursor: pointer;
+  cursor: grab;
   user-select: none;
 }
+.ev2-tile-head:active { cursor: grabbing; }
 .ev2-tile-icon {
   width: 32px; height: 32px;
   border-radius: 8px;
@@ -491,7 +499,7 @@ body.page-escritorio-v2 { overflow: hidden; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
-      Hacé clic en cualquier tarjeta para ver su contenido
+      Arrastrá cualquier tarjeta para reposicionarla · clic para abrir
     </div>
 
     <nav class="ev2-dock" aria-label="Aplicaciones del portal">
