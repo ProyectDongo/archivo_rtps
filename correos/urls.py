@@ -99,4 +99,10 @@ urlpatterns = [
     path('intranet/taller/reserva/<int:reserva_id>/confirmar/',  views.taller_reserva_confirmar_view,  name='taller_reserva_confirmar'),
     path('intranet/taller/reserva/<int:reserva_id>/cancelar/',   views.taller_reserva_cancelar_view,   name='taller_reserva_cancelar'),
     path('intranet/taller/reserva/<int:reserva_id>/completar/',  views.taller_reserva_completar_view,  name='taller_reserva_completar'),
+
+    # ─── Ajustes: fondos del escritorio (solo admin) ─────────────────────────
+    path('intranet/ajustes/fondos/',                             views.fondos_list_view,               name='fondos_list'),
+    path('intranet/ajustes/fondos/subir/',                       views.fondo_subir_view,               name='fondo_subir'),
+    path('intranet/ajustes/fondos/<int:fondo_id>/toggle/',       views.fondo_toggle_view,              name='fondo_toggle'),
+    path('intranet/ajustes/fondos/<int:fondo_id>/eliminar/',     views.fondo_eliminar_view,            name='fondo_eliminar'),
 ]

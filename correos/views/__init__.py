@@ -63,3 +63,6 @@ from .taller_admin import (
     taller_reserva_detalle_view, taller_reserva_confirmar_view,
     taller_reserva_cancelar_view, taller_reserva_completar_view,
 )
+from .fondos import (
+    fondos_list_view, fondo_subir_view, fondo_toggle_view, fondo_eliminar_view,
+)

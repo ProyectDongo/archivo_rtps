@@ -1224,6 +1224,48 @@ class UserDesktopPrefs(models.Model):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Fondos del escritorio (brutalist/architecture/lo que el usuario suba)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class FondoEscritorio(models.Model):
+    """
+    Imágenes de fondo que rotan aleatoriamente en el escritorio del portal
+    (`/intranet/escritorio/`). Gestionables desde la UI (`/intranet/ajustes/
+    fondos/`) sin tocar el filesystem ni necesitar acceso SSH.
+
+    El escritorio elige una al azar (entre las `activa=True`) por carga.
+    Si la tabla está vacía, el escritorio cae al fondo CSS de hormigón
+    (gradientes radiales) que ya está como fallback.
+    """
+    nombre     = models.CharField(
+        max_length=120, blank=True, default='',
+        help_text='Nombre amigable para identificarla en el panel (ej. "Habitat 67"). Opcional.',
+    )
+    imagen     = models.ImageField(
+        upload_to='escritorio_bg/',
+        help_text='Recomendado: 1920×1080 mínimo, JPG/WEBP comprimido a 300-700 KB.',
+    )
+    activa     = models.BooleanField(
+        default=True,
+        help_text='Si está apagada, no entra en la rotación pero queda guardada.',
+    )
+    subida_por = models.ForeignKey(
+        UsuarioPortal, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='fondos_escritorio_subidos',
+    )
+    subida_en  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Fondo de escritorio'
+        verbose_name_plural = 'Fondos de escritorio'
+        ordering = ['-subida_en']
+        indexes = [models.Index(fields=['activa'], name='correos_fondo_act_idx')]
+
+    def __str__(self):
+        return self.nombre or self.imagen.name
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Campañas de correos automáticos
 # ─────────────────────────────────────────────────────────────────────────────
 

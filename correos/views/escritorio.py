@@ -24,38 +24,59 @@ from ..throttle import throttle_user
 ESCRITORIO_CACHE_TTL = 30 * 60
 ESCRITORIO_CHART_DIAS = 14
 
-# Imágenes brutalistas para el fondo del escritorio. Si el directorio
-# `static/img/brutalist/` tiene archivos .jpg/.png/.webp, el escritorio
-# elige uno al azar por carga. Sin archivos, cae al fondo CSS de hormigón.
+# Imágenes de fondo del escritorio.
+# Fuente 1 (preferida): modelo FondoEscritorio (subidas desde la UI a media/).
+# Fuente 2 (fallback): static/img/brutalist/*.{jpg,png,webp} (semilla manual).
+# Si las dos están vacías, el escritorio cae al fondo CSS de hormigón.
 _BRUTALIST_EXTS = {'.jpg', '.jpeg', '.png', '.webp'}
-_BRUTALIST_CACHE_KEY = 'esc:brutalist:files:v1'
+_BRUTALIST_CACHE_KEY = 'esc:bg:fondos:v1'
 _BRUTALIST_CACHE_TTL = 5 * 60  # 5 min — re-escanea si el usuario sube fotos
 
 
 def _brutalist_bg_random() -> str | None:
     """
-    Devuelve la URL static de una imagen aleatoria de `static/img/brutalist/`.
-    None si no hay archivos válidos en el directorio.
+    Devuelve la URL de una imagen aleatoria para el fondo del escritorio.
+
+    Prioridad:
+      1. Modelo FondoEscritorio (activa=True) — la fuente "oficial",
+         gestionable desde /intranet/ajustes/fondos/.
+      2. Archivos en static/img/brutalist/ — fallback para deploys
+         que tengan semilla manual sin haber usado todavía la UI.
+      3. None — el escritorio usa el gradiente CSS de hormigón.
     """
-    archivos = cache.get(_BRUTALIST_CACHE_KEY)
-    if archivos is None:
-        archivos = []
-        for base in (
-            Path(settings.BASE_DIR) / 'static' / 'img' / 'brutalist',
-            Path(settings.BASE_DIR) / 'staticfiles' / 'img' / 'brutalist',
-        ):
-            if not base.is_dir():
-                continue
-            for f in base.iterdir():
-                if f.is_file() and f.suffix.lower() in _BRUTALIST_EXTS:
-                    archivos.append(f.name)
-            if archivos:
-                break
-        archivos = sorted(set(archivos))
-        cache.set(_BRUTALIST_CACHE_KEY, archivos, _BRUTALIST_CACHE_TTL)
-    if not archivos:
+    from ..models import FondoEscritorio  # lazy import: evita ciclo
+
+    cache_key = _BRUTALIST_CACHE_KEY
+    urls = cache.get(cache_key)
+    if urls is None:
+        urls = []
+        # Fuente 1: DB (preferida)
+        try:
+            for fondo in FondoEscritorio.objects.filter(activa=True).only('imagen'):
+                try:
+                    urls.append(fondo.imagen.url)
+                except Exception:
+                    continue
+        except Exception:
+            pass  # tabla todavía no migrada en algún ambiente
+        # Fuente 2: filesystem (fallback)
+        if not urls:
+            for base in (
+                Path(settings.BASE_DIR) / 'static' / 'img' / 'brutalist',
+                Path(settings.BASE_DIR) / 'staticfiles' / 'img' / 'brutalist',
+            ):
+                if not base.is_dir():
+                    continue
+                for f in base.iterdir():
+                    if f.is_file() and f.suffix.lower() in _BRUTALIST_EXTS:
+                        urls.append(static(f'img/brutalist/{f.name}'))
+                if urls:
+                    break
+        urls = sorted(set(urls))
+        cache.set(cache_key, urls, _BRUTALIST_CACHE_TTL)
+    if not urls:
         return None
-    return static(f'img/brutalist/{random.choice(archivos)}')
+    return random.choice(urls)
 ESCRITORIO_TEMAS_VENTANA_DIAS = 180
 
 

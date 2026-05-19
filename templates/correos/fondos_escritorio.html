@@ -1,0 +1,108 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Fondos del escritorio — Ajustes{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8">
+
+  <div class="mb-8">
+    <div class="text-[11px] font-semibold tracking-[2px] uppercase text-gray-soft mb-1">Ajustes · Apariencia</div>
+    <h1 class="text-3xl font-black text-gray-dark">Fondos del escritorio</h1>
+    <p class="text-sm text-gray-soft mt-2 max-w-2xl leading-relaxed">
+      Subí imágenes para que el escritorio rote entre ellas al cargar.
+      Estilo recomendado: <strong>arquitectura brutalista</strong>, hormigón, geometría.
+      Cualquier foto horizontal funciona pero las muy claras o saturadas compiten con el texto.
+      {% if total %}<br><strong>{{ activos }} activas de {{ total }} totales.</strong>{% endif %}
+    </p>
+  </div>
+
+  {% include 'partials/_messages.html' %}
+
+  {# Form upload #}
+  <div class="bg-white rounded-xl shadow-card p-6 mb-8 border-2 border-dashed border-border hover:border-primary/40 transition">
+    <h2 class="text-sm font-bold uppercase tracking-[2px] text-gray-mid mb-4">📤 Subir nueva imagen</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'fondo_subir' %}" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+      {% csrf_token %}
+      <div class="md:col-span-4">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-soft mb-1.5">Nombre <span class="font-normal normal-case text-gray-soft">(opcional)</span></label>
+        <input type="text" name="nombre" maxlength="120" placeholder="Ej: Habitat 67"
+               class="w-full px-3 py-2 border-2 border-border rounded-lg text-sm focus:border-primary focus:outline-none">
+      </div>
+      <div class="md:col-span-6">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-soft mb-1.5">Imagen *</label>
+        <input type="file" name="imagen" required accept="image/jpeg,image/png,image/webp"
+               class="block w-full text-sm text-gray-mid file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-primary-light file:text-primary-dark file:font-semibold file:text-xs hover:file:bg-primary/20 file:cursor-pointer">
+      </div>
+      <div class="md:col-span-2">
+        <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg text-sm font-bold transition">
+          Subir
+        </button>
+      </div>
+    </form>
+    <p class="text-[11px] text-gray-soft mt-3">
+      Formatos: JPG, PNG, WEBP · Máx 8 MB · Recomendado 1920×1080+ comprimido a 300-700 KB
+      (usá <a href="https://squoosh.app/" target="_blank" rel="noopener" class="text-primary hover:underline">squoosh.app</a> o
+      <a href="https://tinypng.com/" target="_blank" rel="noopener" class="text-primary hover:underline">tinypng.com</a>).
+    </p>
+  </div>
+
+  {# Galería #}
+  {% if fondos %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for f in fondos %}
+    <div class="bg-white rounded-xl shadow-card overflow-hidden {% if not f.activa %}opacity-60{% endif %} group hover:shadow-modal transition">
+      <div class="relative aspect-video bg-gray-dark overflow-hidden">
+        <img src="{{ f.imagen.url }}" alt="{{ f.nombre|default:f.imagen.name }}"
+             class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+             loading="lazy">
+        {% if f.activa %}
+        <span class="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md">
+          <span class="inline-block w-1.5 h-1.5 bg-white rounded-full mr-1 align-middle animate-pulse"></span>
+          En rotación
+        </span>
+        {% else %}
+        <span class="absolute top-2 left-2 bg-gray-soft/90 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md">
+          Pausado
+        </span>
+        {% endif %}
+      </div>
+      <div class="p-3">
+        <div class="font-semibold text-gray-dark text-sm truncate">{{ f.nombre|default:f.imagen.name }}</div>
+        <div class="text-[11px] text-gray-soft mt-0.5">
+          {{ f.subida_en|date:"d M Y H:i" }}
+          {% if f.subida_por %}· {{ f.subida_por.email|truncatechars:20 }}{% endif %}
+        </div>
+        <div class="flex gap-1.5 mt-3">
+          <form method="post" action="{% url 'fondo_toggle' fondo_id=f.id %}" class="flex-1">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full px-3 py-1.5 {% if f.activa %}bg-off-white-2 hover:bg-amber-50 text-gray-dark hover:text-amber-700{% else %}bg-primary-light text-primary-dark hover:bg-primary hover:text-white{% endif %} text-xs font-semibold rounded-lg transition">
+              {% if f.activa %}Pausar{% else %}Activar{% endif %}
+            </button>
+          </form>
+          <form method="post" action="{% url 'fondo_eliminar' fondo_id=f.id %}" class="flex-1" data-confirm="¿Eliminar este fondo? El archivo se borra del disco.">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full px-3 py-1.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold rounded-lg transition">
+              🗑 Eliminar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="bg-white rounded-xl border-2 border-dashed border-border p-12 text-center">
+    <div class="text-4xl mb-3 opacity-50">🏛️</div>
+    <div class="text-gray-dark font-bold mb-1">Sin fondos todavía</div>
+    <div class="text-gray-soft text-sm mb-4">El escritorio está usando el fondo de hormigón CSS de fallback.</div>
+    <div class="text-xs text-gray-soft max-w-md mx-auto">
+      Subí 3-8 imágenes brutalistas usando el form de arriba para que el escritorio rote entre ellas.
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
