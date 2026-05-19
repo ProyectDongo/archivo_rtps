@@ -5,10 +5,12 @@ URL raíz — Archivo RSP.
   /agendar/...    → taller (agendamiento público)
   /admin-*/...    → Django admin (ruta ofuscada vía ADMIN_URL_PATH)
   /admin-*/2fa/   → admin 2FA (setup, verify, recovery)
+  /media/...      → media uploads (fondos escritorio, etc.)
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve as static_serve
 
 from taller import admin_views as taller_admin
 
@@ -25,6 +27,12 @@ urlpatterns = [
 
     # Admin Django (ruta ofuscada)
     path(settings.ADMIN_URL_PATH, admin.site.urls),
+
+    # Media uploads (fondos del escritorio, etc). Django serve es "no
+    # recomendado para producción" en docs por performance, pero para volumen
+    # bajo de assets públicos (fondos rotativos) es válido y simple. Si crece,
+    # migrar a S3/B2 o reverse proxy directo a /app/data/adjuntos/.
+    re_path(r'^media/(?P<path>.*)$', static_serve, {'document_root': settings.MEDIA_ROOT}),
 
     # Taller — agendamiento público
     path('', include('taller.urls')),
