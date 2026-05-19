@@ -22,25 +22,48 @@ body.page-escritorio-v2 { overflow: hidden; }
   color: #fff;
   overflow: hidden;
 
-  /* Textura de hormigón CSS — para usar una foto guardala en
-     static/img/bg/escritorio-bg.jpg y corré collectstatic */
-  background-color: #18150f;
+  /* Fondo: gradiente brutal CSS (siempre presente como fallback).
+     Si Python pasa bg_image_url, se inyecta como capa superior via
+     CSS variable --bg-image en style inline del body (ver template). */
+  background-color: #0e0d0b;
   background-image:
-    linear-gradient(to bottom,
-      rgba(0,0,0,.62) 0%,
-      rgba(0,0,0,.22) 45%,
-      rgba(0,0,0,.72) 100%),
+    /* Capa 1: overlay para legibilidad */
+    linear-gradient(135deg,
+      rgba(0,0,0,.78) 0%,
+      rgba(0,0,0,.55) 35%,
+      rgba(0,0,0,.45) 65%,
+      rgba(0,0,0,.80) 100%),
+    /* Capa 2: textura sutil tipo hormigón */
     repeating-linear-gradient(
       0deg,
       transparent 0px, transparent 3px,
-      rgba(180,155,110,.028) 3px, rgba(180,155,110,.028) 4px
+      rgba(180,155,110,.025) 3px, rgba(180,155,110,.025) 4px
     ),
+    /* Capa 3: gradiente de profundidad */
+    radial-gradient(ellipse at 30% 20%, #2e2820 0%, #1c1912 45%, #0e0d0b 100%);
+  background-size: cover, auto, cover;
+  background-position: center, center, center;
+  background-attachment: fixed, fixed, fixed;
+}
+
+/* Si el view inyecta una imagen brutalist, va como capa intermedia. */
+.esc-v2.has-bg-image {
+  background-image:
+    linear-gradient(135deg,
+      rgba(0,0,0,.78) 0%,
+      rgba(0,0,0,.55) 35%,
+      rgba(0,0,0,.45) 65%,
+      rgba(0,0,0,.80) 100%),
+    var(--bg-image),
     repeating-linear-gradient(
-      90deg,
-      transparent 0px, transparent 48px,
-      rgba(0,0,0,.06) 48px, rgba(0,0,0,.06) 96px
+      0deg,
+      transparent 0px, transparent 3px,
+      rgba(180,155,110,.025) 3px, rgba(180,155,110,.025) 4px
     ),
     radial-gradient(ellipse at 30% 20%, #2e2820 0%, #1c1912 45%, #0e0d0b 100%);
+  background-size: cover, cover, auto, cover;
+  background-position: center, center, center, center;
+  background-attachment: fixed, fixed, fixed, fixed;
 }
 
 /* ── Header ─────────────────────────────────────────────────────── */
@@ -113,21 +136,32 @@ body.page-escritorio-v2 { overflow: hidden; }
 .ev2-tile {
   position: absolute;
   width: 405px;
-  background: rgba(252,252,252,.88);
-  backdrop-filter: blur(18px) saturate(1.6);
-  border: 1px solid rgba(255,255,255,.65);
-  border-radius: 16px;
+  background: rgba(248,248,250,.72);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 18px;
   box-shadow:
-    0 4px 28px rgba(0,0,0,.14),
-    inset 0 1px 0 rgba(255,255,255,.6);
+    0 1px 0 rgba(255,255,255,.55) inset,
+    0 8px 32px rgba(0,0,0,.22),
+    0 2px 6px rgba(0,0,0,.12);
   overflow: hidden;
-  transition: box-shadow .18s;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.ev2-tile:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.6) inset,
+    0 12px 40px rgba(0,0,0,.28),
+    0 3px 8px rgba(0,0,0,.16);
 }
 .ev2-tile.ev2-dragging {
   box-shadow:
-    0 20px 56px rgba(0,0,0,.30),
-    inset 0 1px 0 rgba(255,255,255,.6);
-  opacity: .93;
+    0 1px 0 rgba(255,255,255,.65) inset,
+    0 24px 64px rgba(0,0,0,.36),
+    0 4px 12px rgba(0,0,0,.2);
+  opacity: .92;
+  transform: scale(1.02);
 }
 
 /* Tile header */
@@ -179,13 +213,15 @@ body.page-escritorio-v2 { overflow: hidden; }
 .ev2-tile.open .ev2-tile-body { display: block; }
 
 /* KPI mini-row inside tile */
-.ev2-kpi-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.ev2-kpi-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
 .ev2-kpi-item { flex: 1; min-width: 72px; }
 .ev2-kpi-n {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0a0a0a;
   line-height: 1;
+  letter-spacing: -0.8px;
+  font-feature-settings: 'tnum';
 }
 .ev2-kpi-l { font-size: 11px; color: #999; margin-top: 3px; }
 
@@ -312,7 +348,8 @@ body.page-escritorio-v2 { overflow: hidden; }
 {% endblock %}
 
 {% block content %}
-<div class="esc-v2">
+<div class="esc-v2 {% if bg_image_url %}has-bg-image{% endif %}"
+     {% if bg_image_url %}style="--bg-image: url('{{ bg_image_url }}');"{% endif %}>
 
   {# ── HEADER ──────────────────────────────────────────────────────── #}
   <header class="ev2-header">

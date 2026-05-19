@@ -2,10 +2,15 @@ from ._base import (
     portal_login_required, _usuario_actual,
     logger,
 )
+import random
+from pathlib import Path
+from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.core.cache import cache
 from django.db.models import Avg, Count, Exists, F, OuterRef, Q
 from django.db.models.functions import ExtractHour, ExtractIsoWeekDay, TruncDate, TruncMonth
 from django.shortcuts import redirect, render
+from django.templatetags.static import static
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from datetime import timedelta
@@ -18,6 +23,39 @@ from ..throttle import throttle_user
 
 ESCRITORIO_CACHE_TTL = 30 * 60
 ESCRITORIO_CHART_DIAS = 14
+
+# Imágenes brutalistas para el fondo del escritorio. Si el directorio
+# `static/img/brutalist/` tiene archivos .jpg/.png/.webp, el escritorio
+# elige uno al azar por carga. Sin archivos, cae al fondo CSS de hormigón.
+_BRUTALIST_EXTS = {'.jpg', '.jpeg', '.png', '.webp'}
+_BRUTALIST_CACHE_KEY = 'esc:brutalist:files:v1'
+_BRUTALIST_CACHE_TTL = 5 * 60  # 5 min — re-escanea si el usuario sube fotos
+
+
+def _brutalist_bg_random() -> str | None:
+    """
+    Devuelve la URL static de una imagen aleatoria de `static/img/brutalist/`.
+    None si no hay archivos válidos en el directorio.
+    """
+    archivos = cache.get(_BRUTALIST_CACHE_KEY)
+    if archivos is None:
+        archivos = []
+        for base in (
+            Path(settings.BASE_DIR) / 'static' / 'img' / 'brutalist',
+            Path(settings.BASE_DIR) / 'staticfiles' / 'img' / 'brutalist',
+        ):
+            if not base.is_dir():
+                continue
+            for f in base.iterdir():
+                if f.is_file() and f.suffix.lower() in _BRUTALIST_EXTS:
+                    archivos.append(f.name)
+            if archivos:
+                break
+        archivos = sorted(set(archivos))
+        cache.set(_BRUTALIST_CACHE_KEY, archivos, _BRUTALIST_CACHE_TTL)
+    if not archivos:
+        return None
+    return static(f'img/brutalist/{random.choice(archivos)}')
 ESCRITORIO_TEMAS_VENTANA_DIAS = 180
 
 
@@ -598,6 +636,8 @@ def escritorio_view(request):
         'top_remitentes':    _esc_top_remitentes_externos(usuario, visibles_qs),
         'heatmap':           _esc_heatmap_actividad(usuario, visibles_qs),
         'hoy': timezone.localdate(),
+        # Fondo brutalista aleatorio (None si no hay imágenes)
+        'bg_image_url':      _brutalist_bg_random(),
     }
     return render(request, 'correos/escritorio.html', ctx)
 
