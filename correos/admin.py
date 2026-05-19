@@ -30,6 +30,7 @@ from .models import (
     Correo,
     Etiqueta,
     EventoAuditoria,
+    FondoEscritorio,
     IntentoLogin,
     ReenvioCorreo,
     UserDesktopPrefs,
@@ -579,3 +580,60 @@ class ArchivoAdmin(admin.ModelAdmin):
     def tamano_legible(self, obj):
         return obj.tamano_legible
     tamano_legible.short_description = 'Tamaño'
+
+
+@admin.register(FondoEscritorio)
+class FondoEscritorioAdmin(admin.ModelAdmin):
+    list_display    = ('preview', 'nombre', 'activa', 'subida_por', 'subida_en')
+    list_filter     = ('activa', 'subida_en')
+    list_editable   = ('activa',)
+    search_fields   = ('nombre', 'subida_por__email')
+    readonly_fields = ('subida_en', 'subida_por', 'preview_grande')
+    raw_id_fields   = ('subida_por',)
+    date_hierarchy  = 'subida_en'
+
+    fieldsets = (
+        ('Imagen', {
+            'fields': ('preview_grande', 'imagen', 'nombre'),
+            'description': 'Recomendado: 1920×1080 mínimo, JPG/WEBP comprimido a 300-700 KB.',
+        }),
+        ('Estado', {
+            'fields': ('activa',),
+            'description': 'Si está apagada, no entra en la rotación pero queda guardada.',
+        }),
+        ('Audit', {
+            'fields': ('subida_por', 'subida_en'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    def preview(self, obj):
+        if not obj.imagen:
+            return '—'
+        return format_html(
+            '<img src="{}" style="height:36px;width:64px;object-fit:cover;'
+            'border-radius:3px;border:1px solid rgba(0,0,0,.15)">',
+            obj.imagen.url,
+        )
+    preview.short_description = 'Preview'
+
+    def preview_grande(self, obj):
+        if not obj.imagen:
+            return '—'
+        return format_html(
+            '<img src="{}" style="max-width:480px;max-height:270px;'
+            'object-fit:cover;border-radius:6px;'
+            'border:1px solid rgba(0,0,0,.2)">',
+            obj.imagen.url,
+        )
+    preview_grande.short_description = 'Preview actual'
+
+    def save_model(self, request, obj, form, change):
+        if not change and not obj.subida_por_id:
+            try:
+                obj.subida_por = UsuarioPortal.objects.filter(
+                    email__iexact=request.user.email
+                ).first()
+            except Exception:
+                pass
+        super().save_model(request, obj, form, change)
