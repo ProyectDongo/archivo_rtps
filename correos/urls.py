@@ -89,16 +89,20 @@ urlpatterns = [
     path('intranet/campanas/contactos/<int:contacto_id>/eliminar/', views.contacto_eliminar_view,     name='contacto_eliminar'),
 
     # ─── Taller: gestión catálogo + agenda desde el escritorio ───────────────
-    path('intranet/taller/<str:tipo>/',                          views.taller_items_list_view,         name='taller_items_list'),
-    path('intranet/taller/<str:tipo>/nuevo/',                    views.taller_item_form_view,          name='taller_item_crear'),
-    path('intranet/taller/<str:tipo>/<int:item_id>/',            views.taller_item_form_view,          name='taller_item_editar'),
-    path('intranet/taller/item/<int:item_id>/eliminar/',         views.taller_item_eliminar_view,      name='taller_item_eliminar'),
-    path('intranet/taller/item/<int:item_id>/toggle/',           views.taller_item_toggle_view,        name='taller_item_toggle'),
+    # CRITICO: rutas especificas ANTES de las que usan <str:tipo>. Sin este
+    # orden, el matcher generico se traga /intranet/taller/agenda/ y dispara
+    # taller_items_list_view(tipo='agenda') -> Http404. Ver issue del Not Found.
     path('intranet/taller/agenda/',                              views.taller_agenda_view,             name='taller_agenda'),
     path('intranet/taller/reserva/<int:reserva_id>/',            views.taller_reserva_detalle_view,    name='taller_reserva_detalle'),
     path('intranet/taller/reserva/<int:reserva_id>/confirmar/',  views.taller_reserva_confirmar_view,  name='taller_reserva_confirmar'),
     path('intranet/taller/reserva/<int:reserva_id>/cancelar/',   views.taller_reserva_cancelar_view,   name='taller_reserva_cancelar'),
     path('intranet/taller/reserva/<int:reserva_id>/completar/',  views.taller_reserva_completar_view,  name='taller_reserva_completar'),
+    path('intranet/taller/item/<int:item_id>/eliminar/',         views.taller_item_eliminar_view,      name='taller_item_eliminar'),
+    path('intranet/taller/item/<int:item_id>/toggle/',           views.taller_item_toggle_view,        name='taller_item_toggle'),
+    # Genericas con <str:tipo> al final. Solo matchean si nada anterior matcheo.
+    path('intranet/taller/<str:tipo>/',                          views.taller_items_list_view,         name='taller_items_list'),
+    path('intranet/taller/<str:tipo>/nuevo/',                    views.taller_item_form_view,          name='taller_item_crear'),
+    path('intranet/taller/<str:tipo>/<int:item_id>/',            views.taller_item_form_view,          name='taller_item_editar'),
 
     # ─── Ajustes: fondos del escritorio (solo admin) ─────────────────────────
     path('intranet/ajustes/fondos/',                             views.fondos_list_view,               name='fondos_list'),
