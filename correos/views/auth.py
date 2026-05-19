@@ -175,7 +175,7 @@ def login_view(request):
                 try:
                     EventoAuditoria.objects.create(
                         usuario=usuario,
-                        accion='login_ok',  # reusamos accion existente; meta diferencia
+                        accion='account_lockout',
                         target_tipo='usuarioportal',
                         target_id=usuario.id,
                         meta={

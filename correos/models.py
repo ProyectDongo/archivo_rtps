@@ -786,6 +786,7 @@ class EventoAuditoria(models.Model):
         # Auth / 2FA
         ('login_ok',           'Login exitoso'),
         ('logout',             'Logout'),
+        ('account_lockout',    'Cuenta bloqueada por brute-force'),
         ('password_cambio',    'Cambio de password'),
         ('totp_setup',         '2FA configurado'),
         ('totp_reset',         '2FA reseteado'),

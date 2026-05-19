@@ -70,6 +70,14 @@ class CSPMiddleware:
                 response['Content-Security-Policy'] = _CSP_PORTAL
             else:
                 response['Content-Security-Policy'] = _CSP_STRICT
+        # Siempre agregar Permissions-Policy y Referrer-Policy (no dependen de ruta).
+        if 'Permissions-Policy' not in response:
+            response['Permissions-Policy'] = (
+                'camera=(), microphone=(), geolocation=(), payment=(), '
+                'interest-cohort=()'
+            )
+        if 'Referrer-Policy' not in response:
+            response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         return response
 
 
@@ -82,7 +90,8 @@ _ADMIN_RL_RETRY   = 60 * 15 # Retry-After en segundos
 
 def _ip_hash(request) -> str:
     ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
-    return hashlib.sha256(ip.encode()).hexdigest()[:24]
+    # Mismo prefijo 'rsp::' que models.hash_ip para consistencia entre módulos.
+    return hashlib.sha256(('rsp::' + ip).encode()).hexdigest()[:24]
 
 
 class AdminLoginRateLimitMiddleware:

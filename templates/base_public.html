@@ -4,6 +4,18 @@
   {% include 'partials/_head.html' %}
   <title>{% block title %}RT Río San Pedro — Revisiones Técnicas{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Planta de revisión técnica vehicular en la Región de Atacama. Revisiones Clase A y B, verificación de gases, pre-revisión y más. Certificación ISO 9001.{% endblock %}">
+
+  {% block canonical_url %}<link rel="canonical" href="https://www.rtriosanpedro.cl/">{% endblock %}
+
+  {# Open Graph — redes sociales #}
+  <meta property="og:type"        content="website">
+  <meta property="og:locale"      content="es_CL">
+  <meta property="og:site_name"   content="RT Río San Pedro">
+  <meta property="og:title"       content="{% block og_title %}RT Río San Pedro — Revisiones Técnicas{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Planta de revisión técnica vehicular en la Región de Atacama. Revisiones Clase A y B, verificación de gases, pre-revisión y más.{% endblock %}">
+  <meta property="og:url"         content="{% block og_url %}https://www.rtriosanpedro.cl/{% endblock %}">
+  <meta property="og:image"       content="{% block og_image %}https://www.rtriosanpedro.cl/static/img/insignia.png{% endblock %}">
+
   {% block extra_head %}{% endblock %}
 </head>
 <body>

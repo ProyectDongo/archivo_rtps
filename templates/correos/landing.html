@@ -5,6 +5,48 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutomotiveBusiness",
+  "name": "RT Río San Pedro",
+  "description": "Planta de revisión técnica vehicular clase A y B, verificación de gases, pre-revisión y especialidades. Certificación ISO 9001.",
+  "url": "https://www.rtriosanpedro.cl",
+  "telephone": "+56933045056",
+  "email": "info@rtriosanpedro.cl",
+  "address": {
+    "@type": "PostalAddress",
+    "addressRegion": "Atacama",
+    "addressCountry": "CL"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "opens": "08:00",
+      "closes": "18:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Saturday",
+      "opens": "08:00",
+      "closes": "14:00"
+    }
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Servicios de Revisión Técnica",
+    "itemListElement": [
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Revisión Técnica Clase A"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Revisión Técnica Clase B"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Verificación de Gases"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Pre-Revisión"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Revisión GNC / GLP"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Verificación de Polarizados"}}
+    ]
+  }
+}
+</script>
 {% endblock %}
 
 {% block body %}
@@ -99,7 +141,7 @@
 <section class="banner-agendar">
   <div class="banner-inner">
     <div class="banner-text">
-      <div class="banner-kicker">📅 Agenda tu revisión en 1 minuto · sin llamar</div>
+      <div class="banner-kicker">Agenda tu revisión en 1 minuto · sin llamar</div>
       <h2 class="banner-h">Reserva tu hora <em>aquí</em></h2>
       <p class="banner-sub">Elige la revisión, selecciona día y hora, y te confirmamos por email. Disponible 24/7.</p>
     </div>
@@ -325,9 +367,18 @@
       </div>
     </div>
     <div class="cont-cards rv d2">
-      <div class="cc"><div class="cc-l">Teléfono</div><div class="cc-v">+56 9 3304 5056</div></div>
-      <div class="cc"><div class="cc-l">Email</div><div class="cc-v">info@rtriosanpedro.cl</div></div>
-      <div class="cc"><div class="cc-l">Sugerencias</div><div class="cc-v">syr.rtriosanpedro.cl</div></div>
+      <a class="cc" href="tel:+56933045056">
+        <div class="cc-l">Teléfono</div>
+        <div class="cc-v">+56 9 3304 5056</div>
+      </a>
+      <a class="cc" href="mailto:info@rtriosanpedro.cl">
+        <div class="cc-l">Email</div>
+        <div class="cc-v">info@rtriosanpedro.cl</div>
+      </a>
+      <a class="cc" href="https://syr.rtriosanpedro.cl" target="_blank" rel="noopener noreferrer">
+        <div class="cc-l">Sugerencias</div>
+        <div class="cc-v">syr.rtriosanpedro.cl</div>
+      </a>
     </div>
   </div>
 </section>

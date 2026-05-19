@@ -138,6 +138,15 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 _csrf_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_raw.split(',') if o.strip()]
 
+# HTTPS / cookie hardening — activo en producción (DEBUG=False).
+# No ponemos SECURE_SSL_REDIRECT porque el TLS lo termina Cloudflare Tunnel
+# antes de llegar al proceso Django (ve HTTP internamente aunque externamente sea HTTPS).
+SECURE_HSTS_SECONDS            = 0 if DEBUG else int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD            = not DEBUG
+SESSION_COOKIE_SECURE          = not DEBUG
+CSRF_COOKIE_SECURE             = not DEBUG
+
 # ─── Email / SMTP ───────────────────────────────────────────────────────────
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
